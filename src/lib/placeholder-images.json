@@ -2,14 +2,14 @@
   "placeholderImages": [
     {
       "id": "hero-panel",
-      "description": "Festa Junina Giant Panel Mockup",
-      "imageUrl": "https://picsum.photos/seed/junina1/1200/800",
-      "imageHint": "festa junina party decoration"
+      "description": "Painel Gigante Festa Junina - Produto Real",
+      "imageUrl": "/painel.png",
+      "imageHint": "festa junina panel"
     },
     {
       "id": "preview-comparison",
-      "description": "Panel compared to person height",
-      "imageUrl": "https://picsum.photos/seed/junina2/800/600",
+      "description": "Comparativo de escala do painel",
+      "imageUrl": "/painel.png",
       "imageHint": "giant wall poster"
     },
     {
