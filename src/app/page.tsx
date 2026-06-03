@@ -10,7 +10,8 @@ import {
   Camera, 
   Layout, 
   Star,
-  Gift
+  Gift,
+  PartyPopper
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -47,8 +48,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background relative overflow-x-hidden pb-20">
       <DecorativeFlags />
       
-      {/* Hero Section - Ultra Mobile Focused */}
-      <section className="relative pt-6 pb-12 px-6">
+      {/* Hero Section - Mobile First Impact */}
+      <section className="relative pt-4 pb-12 px-6">
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/20 border border-secondary/40 text-orange-600 font-black text-[10px] mb-6 uppercase tracking-wider">
             <Star className="w-3 h-3 fill-current" /> O MAIS VENDIDO DE 2024
@@ -59,16 +60,16 @@ export default function LandingPage() {
             <span className="text-2xl text-slate-700">Para Seu Arraiá em Casa</span>
           </h1>
 
-          {/* Product Image - High Impact & Enlarged */}
+          {/* Product Image - Optimized for Mobile */}
           <div className="relative w-full max-w-[400px] aspect-[1.2/1] mb-10 group px-2">
             <div className="absolute -inset-4 bg-secondary/10 rounded-[3rem] blur-3xl opacity-60 group-hover:opacity-100 transition-opacity" />
             
-            <div className="relative h-full w-full rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.12)] flex items-center justify-center bg-transparent transition-transform duration-500 hover:scale-[1.02]">
+            <div className="relative h-full w-full rounded-2xl overflow-hidden flex items-center justify-center bg-transparent transition-transform duration-500 hover:scale-[1.02]">
               <Image 
                 src="/painel.png" 
                 alt="Painel Gigante Festa Junina" 
                 fill 
-                className="object-contain"
+                className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)]"
                 priority
               />
               <div className="absolute bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-xl font-black text-xs shadow-2xl border border-white/20 z-10 animate-float">
@@ -94,7 +95,7 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof / Urgency */}
-      <section className="py-10 bg-white/60 backdrop-blur-md border-y border-secondary/20">
+      <section className="py-8 bg-white/60 backdrop-blur-md border-y border-secondary/20">
         <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-4 text-center">
           <p className="text-primary font-black text-xs uppercase tracking-[0.2em]">Oferta especial termina em:</p>
           <UrgencyTimer />
@@ -149,23 +150,28 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing / Offer Section - Style inspired by user image */}
+      {/* Pricing / Offer Section - Focused on Painel Gigante + Bonus */}
       <section className="py-20 px-6 bg-slate-50 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-black text-[10px] mb-4 uppercase tracking-widest">
-              <Gift className="w-3.5 h-3.5" /> SUPER BÔNUS EXCLUSIVO
+              <PartyPopper className="w-3.5 h-3.5" /> OFERTA ESPECIAL DO ARRAIÁ
             </div>
-            <h2 className="text-2xl font-black text-slate-800 leading-tight">Compre Hoje e Ganhe o Kit Festa Junina Completo!</h2>
+            <h2 className="text-3xl font-black text-slate-800 leading-tight tracking-tight">
+              Garanta seu Painel Gigante Hoje!
+            </h2>
+            <p className="text-slate-500 text-sm font-medium mt-4">
+              Comprando agora, você leva o painel e mais um kit completo de brindes.
+            </p>
           </div>
 
-          {/* Offer Card */}
+          {/* Main Offer Card */}
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden">
             {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
-              OFERTA POR TEMPO LIMITADO
+              PAINEL GIGANTE + KIT BRINDES
             </div>
             
             <div className="pt-16 pb-12 px-8">
@@ -184,24 +190,28 @@ export default function LandingPage() {
               {/* Dotted Separator */}
               <div className="w-full h-px bg-transparent border-b-2 border-dashed border-slate-100 mb-10" />
 
-              {/* Bonus List */}
-              <div className="space-y-4 mb-12">
-                <p className="text-primary font-black text-xs uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary" /> O QUE VOCÊ VAI RECEBER:
-                </p>
-                {bonuses.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+              {/* Bonus Highlight Section */}
+              <div className="space-y-6 mb-12">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
+                  <Gift className="w-4 h-4 text-green-600" />
+                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 KIT FESTA JUNINA COMPLETO INCLUSO</span>
+                </div>
+                
+                <div className="space-y-3">
+                  {bonuses.map((item, idx) => (
+                    <div key={idx} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+                      </div>
+                      <span className="text-slate-600 text-xs font-semibold leading-tight">{item}</span>
                     </div>
-                    <span className="text-slate-600 text-xs font-semibold leading-tight">{item}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
               {/* Action Button */}
               <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                QUERO MEU KIT AGORA
+                QUERO MEU PAINEL + KIT COMPLETO
               </Button>
               
               <div className="mt-6 flex flex-col items-center gap-2 opacity-50">
