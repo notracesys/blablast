@@ -156,7 +156,7 @@ export default function LandingPage() {
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
-          {/* Main Offer Card - Removed overflow-hidden to show the label */}
+          {/* Main Offer Card */}
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100">
             {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
@@ -179,11 +179,22 @@ export default function LandingPage() {
               {/* Dotted Separator */}
               <div className="w-full h-px bg-transparent border-b-2 border-dashed border-slate-100 mb-8" />
 
-              {/* BONUS TITLE - NOW INSIDE AND BIGGER AS REQUESTED */}
+              {/* BONUS SECTION */}
               <div className="text-center mb-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-4 uppercase tracking-[0.2em] rounded-full">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em] rounded-full">
                   <PartyPopper className="w-3.5 h-3.5" /> EXCLUSIVO
                 </div>
+                
+                {/* Bonus Image Placeholder */}
+                <div className="relative w-full aspect-video mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
+                  <Image 
+                    src="/brindes.png" 
+                    alt="Kit Brindes Festa Junina Completo" 
+                    fill 
+                    className="object-contain"
+                  />
+                </div>
+
                 <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-4">
                   COMPRANDO AINDA HOJE <br/>
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
