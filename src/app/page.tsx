@@ -185,8 +185,13 @@ export default function LandingPage() {
                   <PartyPopper className="w-3.5 h-3.5" /> EXCLUSIVO
                 </div>
                 
+                <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-8">
+                  COMPRANDO AINDA HOJE <br/>
+                  <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
+                </h2>
+
                 {/* Bonus Image Placeholder */}
-                <div className="relative w-full aspect-video mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
+                <div className="relative w-full aspect-video mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                   <Image 
                     src="/brindes.png" 
                     alt="Kit Brindes Festa Junina Completo" 
@@ -194,11 +199,6 @@ export default function LandingPage() {
                     className="object-contain"
                   />
                 </div>
-
-                <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-4">
-                  COMPRANDO AINDA HOJE <br/>
-                  <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
-                </h2>
               </div>
 
               {/* Bonus Highlight Section */}
