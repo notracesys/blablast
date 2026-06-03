@@ -237,16 +237,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA Footer */}
-      <section className="py-24 px-8 bg-primary text-center relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-wood-pattern pointer-events-none" />
-        <h2 className="text-3xl font-black text-white mb-12 leading-tight relative z-10">Não deixe seu Arraiá sem decoração!</h2>
-        <Button size="lg" className="w-full h-16 text-xl font-black bg-secondary text-slate-900 hover:bg-white transition-all shadow-2xl relative z-10 rounded-2xl">
-           APROVEITAR AGORA
-        </Button>
-        <p className="mt-8 text-white/80 text-[10px] font-bold uppercase tracking-widest relative z-10">Download imediato após o pagamento</p>
-      </section>
-
       {/* Footer Links */}
       <footer className="py-16 px-6 border-t border-slate-100 bg-white text-center space-y-8">
         <h3 className="text-xl font-black text-primary tracking-tighter">Arraiá Gigante</h3>
