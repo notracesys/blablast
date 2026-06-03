@@ -151,19 +151,21 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing / Offer Section - Focused on Painel Gigante + Bonus */}
-      <section className="py-20 px-6 bg-slate-50 relative overflow-hidden">
+      <section className="py-24 px-6 bg-slate-50 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-black text-[10px] mb-4 uppercase tracking-widest">
-              <PartyPopper className="w-3.5 h-3.5" /> OFERTA ESPECIAL DO ARRAIÁ
+          {/* TITULO BEM GRANDE COMO SOLICITADO */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em]">
+              <PartyPopper className="w-3.5 h-3.5" /> OFERTA POR TEMPO LIMITADO
             </div>
-            <h2 className="text-3xl font-black text-slate-800 leading-tight tracking-tight">
-              Garanta seu Painel Gigante Hoje!
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[0.95] tracking-tighter mb-6">
+              COMPRANDO AINDA HOJE <br/>
+              <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE ESTE BÔNUS:</span>
             </h2>
-            <p className="text-slate-500 text-sm font-medium mt-4">
-              Comprando agora, você leva o painel e mais um kit completo de brindes.
+            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+               Kit Festa Junina Completo Incluso 🎁
             </p>
           </div>
 
@@ -194,7 +196,7 @@ export default function LandingPage() {
               <div className="space-y-6 mb-12">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
                   <Gift className="w-4 h-4 text-green-600" />
-                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 KIT FESTA JUNINA COMPLETO INCLUSO</span>
+                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 PRESENTES EXCLUSIVOS ABAIXO:</span>
                 </div>
                 
                 <div className="space-y-3">
