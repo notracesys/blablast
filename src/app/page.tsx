@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Image from 'next/image';
 import { 
@@ -155,20 +156,6 @@ export default function LandingPage() {
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
-          {/* TITULO BEM GRANDE COMO SOLICITADO */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em]">
-              <PartyPopper className="w-3.5 h-3.5" /> OFERTA POR TEMPO LIMITADO
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[0.95] tracking-tighter mb-6">
-              COMPRANDO AINDA HOJE <br/>
-              <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE ESTE BÔNUS:</span>
-            </h2>
-            <p className="text-slate-500 text-sm font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-               Kit Festa Junina Completo Incluso 🎁
-            </p>
-          </div>
-
           {/* Main Offer Card */}
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden">
             {/* Gradient Top Label */}
@@ -178,7 +165,7 @@ export default function LandingPage() {
             
             <div className="pt-16 pb-12 px-8">
               {/* Price Display */}
-              <div className="text-center mb-10">
+              <div className="text-center mb-8">
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Acesso Vitalício por apenas</p>
                 <div className="flex items-start justify-center gap-0.5">
                   <span className="text-2xl font-black text-slate-300 mt-2">R$</span>
@@ -190,13 +177,24 @@ export default function LandingPage() {
               </div>
 
               {/* Dotted Separator */}
-              <div className="w-full h-px bg-transparent border-b-2 border-dashed border-slate-100 mb-10" />
+              <div className="w-full h-px bg-transparent border-b-2 border-dashed border-slate-100 mb-8" />
+
+              {/* BONUS TITLE - NOW INSIDE AND BIGGER AS REQUESTED */}
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-4 uppercase tracking-[0.2em] rounded-full">
+                  <PartyPopper className="w-3.5 h-3.5" /> EXCLUSIVO
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-4">
+                  COMPRANDO AINDA HOJE <br/>
+                  <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
+                </h2>
+              </div>
 
               {/* Bonus Highlight Section */}
               <div className="space-y-6 mb-12">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
                   <Gift className="w-4 h-4 text-green-600" />
-                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 PRESENTES EXCLUSIVOS ABAIXO:</span>
+                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 KIT FESTA COMPLETO INCLUSO:</span>
                 </div>
                 
                 <div className="space-y-3">
