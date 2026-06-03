@@ -35,7 +35,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-hidden pb-20">
       <DecorativeFlags />
       
       {/* Hero Section - Mobile Priority */}
@@ -49,24 +49,24 @@ export default function LandingPage() {
             Painel Gigante <span className="text-junino-orange">3 Metros</span> para seu Arraiá
           </h1>
 
-          {/* Product Image - High Contrast Focus */}
-          <div className="relative w-full max-w-sm aspect-[3/2.5] mb-8 animate-float">
+          {/* Product Image - Fully Visible */}
+          <div className="relative w-full max-w-[340px] aspect-[3/2.5] mb-8 animate-float">
             <div className="absolute -inset-4 bg-junino-yellow/10 rounded-full blur-3xl" />
-            <div className="relative border-4 border-white rounded-2xl overflow-hidden shadow-2xl h-full w-full bg-slate-100">
+            <div className="relative border-4 border-white rounded-2xl overflow-hidden shadow-2xl h-full w-full bg-white">
               <Image 
-                src={heroImg?.imageUrl || '/painel.png'} 
-                alt={heroImg?.description || 'Painel Gigante Festa Junina'} 
+                src="/painel.png" 
+                alt="Painel Gigante Festa Junina" 
                 fill 
-                className="object-cover"
+                className="object-contain p-1"
                 priority
               />
-              <div className="absolute bottom-4 right-4 bg-junino-red text-white px-4 py-1.5 rounded-full font-bold text-sm shadow-xl border-2 border-white">
+              <div className="absolute bottom-2 right-2 bg-junino-red text-white px-3 py-1 rounded-lg font-bold text-[10px] shadow-xl border border-white z-10">
                 3.0m x 2.5m
               </div>
             </div>
           </div>
 
-          <p className="text-base text-slate-600 max-w-[280px] mb-8 leading-relaxed font-medium">
+          <p className="text-base text-slate-600 max-w-[300px] mb-8 leading-relaxed font-medium">
             Transforme sua parede no cenário mais elogiado do Arraiá com impressão caseira.
           </p>
 
@@ -150,11 +150,11 @@ export default function LandingPage() {
       {/* Final CTA */}
       <section className="py-16 px-6 bg-junino-red text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-wood-pattern pointer-events-none" />
-        <h2 className="text-3xl font-black text-white mb-8 leading-tight relative z-10">Garanta o cenário perfeito para o seu Arraiá!</h2>
+        <h2 className="text-3xl font-black text-white mb-8 leading-tight relative z-10">Garanta o cenário perfeito!</h2>
         <Button size="lg" className="w-full h-16 text-xl font-black bg-junino-yellow text-junino-red hover:bg-white transition-all shadow-2xl relative z-10 rounded-2xl">
            COMPRAR AGORA
         </Button>
-        <p className="mt-6 text-white/80 text-xs font-bold relative z-10">Acesso imediato ao arquivo digital em PDF</p>
+        <p className="mt-6 text-white/80 text-xs font-bold relative z-10">Acesso imediato ao arquivo digital PDF</p>
       </section>
 
       {/* Footer */}

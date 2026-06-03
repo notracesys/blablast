@@ -1,11 +1,8 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function ScalePreview() {
-  const preview = PlaceHolderImages.find(img => img.id === 'preview-comparison');
-  
   return (
     <div className="relative bg-white rounded-3xl p-5 shadow-inner overflow-hidden border-4 border-junino-beige max-w-sm mx-auto">
       <div className="flex flex-col items-center gap-8">
@@ -20,25 +17,25 @@ export function ScalePreview() {
         {/* The Panel Reference */}
         <div className="relative w-full aspect-[3/2.5] bg-slate-50 border-2 border-dashed border-junino-red flex items-center justify-center overflow-hidden rounded-2xl shadow-xl">
            <Image
-            src={preview?.imageUrl || '/painel.png'}
-            alt={preview?.description || 'Comparativo de escala'}
+            src="/painel.png"
+            alt="Comparativo de escala do painel"
             fill
-            className="object-cover opacity-100"
+            className="object-contain p-1"
           />
           
           {/* Overlay Info */}
           <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 z-10">
-            <div className="bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-2xl border-2 border-junino-red text-center">
-              <span className="text-junino-red font-black text-sm block">3m x 2.5m</span>
-              <span className="text-slate-600 font-bold text-[9px] uppercase tracking-widest mt-1 block">Tamanho Real</span>
+            <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-xl shadow-2xl border-2 border-junino-red text-center">
+              <span className="text-junino-red font-black text-xs block leading-none">3m x 2.5m</span>
+              <span className="text-slate-600 font-bold text-[8px] uppercase tracking-widest mt-1 block">Tamanho Real</span>
             </div>
           </div>
           
           {/* Dimensions Labels */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-black/70 px-3 py-1 rounded-full text-[9px] font-black tracking-widest">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-black/70 px-3 py-1 rounded-full text-[9px] font-black tracking-widest z-10">
             3 METROS
           </div>
-          <div className="absolute left-2 top-1/2 -rotate-90 origin-left -translate-y-1/2 text-white bg-black/70 px-3 py-1 rounded-full text-[9px] font-black tracking-widest whitespace-nowrap">
+          <div className="absolute left-2 top-1/2 -rotate-90 origin-left -translate-y-1/2 text-white bg-black/70 px-3 py-1 rounded-full text-[9px] font-black tracking-widest whitespace-nowrap z-10">
             2.5 METROS
           </div>
         </div>
