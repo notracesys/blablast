@@ -190,8 +190,8 @@ export default function LandingPage() {
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
                 </h2>
 
-                {/* Bonus Image */}
-                <div className="relative w-full aspect-video mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
+                {/* Bonus Image - Adjusted container to fit image better */}
+                <div className="relative w-full aspect-square mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                   <Image 
                     src="/bonus.png" 
                     alt="Kit Brindes Festa Junina Completo" 
