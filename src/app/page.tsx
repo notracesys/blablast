@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DecorativeFlags } from '@/components/landing/DecorativeFlags';
 import { ScalePreview } from '@/components/landing/ScalePreview';
-import { AIPlannerAssistant } from '@/components/landing/AIPlannerAssistant';
 import { UrgencyTimer } from '@/components/landing/UrgencyTimer';
 import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
 
@@ -133,16 +132,6 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* AI Assistant - Value Add */}
-      <section className="py-20 px-6 bg-secondary/10">
-        <div className="text-center mb-10">
-           <div className="inline-block bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-full mb-4 shadow-sm">PRESENTE EXCLUSIVO</div>
-           <h2 className="text-2xl font-black text-primary tracking-tight">Planejador de Festas IA</h2>
-           <p className="text-slate-600 text-sm mt-3 max-w-[280px] mx-auto">Nossa inteligência ajuda você com músicas, comidas e muito mais!</p>
-        </div>
-        <AIPlannerAssistant />
       </section>
 
       {/* Final CTA */}
