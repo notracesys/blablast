@@ -24,20 +24,20 @@ export function UrgencyTimer() {
   const format = (n: number) => n.toString().padStart(2, '0');
 
   return (
-    <div className="flex gap-4 items-center justify-center font-bold text-xl md:text-3xl text-white">
+    <div className="flex gap-2 items-center justify-center font-black text-2xl text-junino-red">
       <div className="flex flex-col items-center">
-        <span className="bg-white/20 px-3 py-2 rounded-lg">{format(timeLeft.hours)}</span>
-        <span className="text-xs mt-1 uppercase opacity-80">Horas</span>
+        <span className="bg-junino-red text-white px-2 py-1 rounded-lg min-w-[40px]">{format(timeLeft.hours)}</span>
+        <span className="text-[8px] mt-1 uppercase opacity-60">Horas</span>
       </div>
-      <span className="mb-6">:</span>
+      <span className="mb-4">:</span>
       <div className="flex flex-col items-center">
-        <span className="bg-white/20 px-3 py-2 rounded-lg">{format(timeLeft.minutes)}</span>
-        <span className="text-xs mt-1 uppercase opacity-80">Mins</span>
+        <span className="bg-junino-red text-white px-2 py-1 rounded-lg min-w-[40px]">{format(timeLeft.minutes)}</span>
+        <span className="text-[8px] mt-1 uppercase opacity-60">Mins</span>
       </div>
-      <span className="mb-6">:</span>
+      <span className="mb-4">:</span>
       <div className="flex flex-col items-center">
-        <span className="bg-white/20 px-3 py-2 rounded-lg">{format(timeLeft.seconds)}</span>
-        <span className="text-xs mt-1 uppercase opacity-80">Segs</span>
+        <span className="bg-junino-red text-white px-2 py-1 rounded-lg min-w-[40px]">{format(timeLeft.seconds)}</span>
+        <span className="text-[8px] mt-1 uppercase opacity-60">Segs</span>
       </div>
     </div>
   );

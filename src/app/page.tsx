@@ -26,221 +26,159 @@ import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
 export default function LandingPage() {
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-panel');
   const steps = [
-    { id: 'step-1', title: 'Compre Agora', desc: 'Acesso imediato após confirmação.', icon: Zap },
-    { id: 'step-2', title: 'Baixe o Arquivo', desc: 'Receba em PDF de alta qualidade.', icon: Download },
-    { id: 'step-3', title: 'Imprima em Casa', desc: 'Ou em qualquer gráfica rápida.', icon: Printer },
-    { id: 'step-4', title: 'Monte na Parede', desc: 'Basta colar as folhas A4.', icon: Layout },
-    { id: 'step-5', title: 'Festa Incrível!', desc: 'Cenário perfeito para suas fotos.', icon: Camera },
+    { id: 'step-1', title: 'Compre', desc: 'Acesso imediato.', icon: Zap },
+    { id: 'step-2', title: 'Baixe', desc: 'PDF de alta qualidade.', icon: Download },
+    { id: 'step-3', title: 'Imprima', desc: 'Folhas A4 comuns.', icon: Printer },
+    { id: 'step-4', title: 'Monte', desc: 'Basta colar e fixar.', icon: Layout },
+    { id: 'step-5', title: 'Celebre!', desc: 'Cenário perfeito.', icon: Camera },
   ];
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
       <DecorativeFlags />
       
-      {/* Hero Section */}
-      <section className="relative pt-8 pb-20 px-4 overflow-hidden">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-junino-yellow/10 border border-junino-yellow text-junino-yellow font-bold text-sm">
-              <Star className="w-4 h-4 fill-current" /> O MAIOR PAINEL DO BRASIL
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-bold text-junino-red leading-tight">
-              Transforme Sua Festa Junina Com Um <span className="text-junino-orange">Painel Gigante</span> de 3 Metros
-            </h1>
-            <p className="text-xl text-slate-600 max-w-lg">
-              Imprima folha por folha em casa e monte uma decoração profissional gastando 10x menos que um painel de lona.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="h-16 px-8 text-xl font-bold bg-junino-red hover:bg-junino-red/90 shadow-2xl transition-transform hover:scale-105 active:scale-95">
-                🔥 QUERO RECEBER AGORA
-              </Button>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Entrega imediata</span>
-              <span className="flex items-center gap-1"><CheckCircle2 className="w-4 h-4 text-green-500" /> Arquivo Digital</span>
-            </div>
+      {/* Hero Section - Mobile Optimized */}
+      <section className="relative pt-4 pb-12 px-4 overflow-hidden">
+        <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-junino-yellow/10 border border-junino-yellow text-junino-yellow font-bold text-[10px] mb-4 uppercase tracking-wider">
+            <Star className="w-3 h-3 fill-current" /> O maior painel do Brasil
           </div>
           
-          <div className="relative animate-float">
-            <div className="absolute -inset-4 bg-junino-yellow rounded-3xl rotate-3 opacity-20 blur-2xl" />
-            <div className="relative border-8 border-white rounded-3xl overflow-hidden shadow-2xl aspect-[3/2.5]">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-junino-red leading-tight mb-6">
+            Transforme sua festa com um <span className="text-junino-orange">Painel Gigante</span> de 3 metros
+          </h1>
+
+          {/* Product Image - Top placement for Mobile */}
+          <div className="relative w-full max-w-sm aspect-[3/2.5] mb-8 animate-float group">
+            <div className="absolute -inset-2 bg-junino-yellow rounded-2xl rotate-2 opacity-20 blur-xl" />
+            <div className="relative border-4 border-white rounded-2xl overflow-hidden shadow-2xl h-full w-full">
               <Image 
                 src={heroImg?.imageUrl || ''} 
-                alt={heroImg?.description || 'Giant Panel'} 
+                alt={heroImg?.description || 'Painel Gigante Festa Junina'} 
                 fill 
                 className="object-cover"
                 data-ai-hint={heroImg?.imageHint}
                 priority
               />
-              <div className="absolute top-4 right-4 bg-junino-red text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+              <div className="absolute top-2 right-2 bg-junino-red text-white px-3 py-1 rounded-full font-bold text-[10px] shadow-lg">
                 3.0m x 2.5m
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Impact Section */}
-      <section className="py-24 bg-wood-pattern border-y border-junino-beige/20">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-4xl font-bold text-junino-red mb-6">Parece decoração profissional... Mas você imprime em casa!</h2>
-          <p className="text-lg text-slate-600 mb-10 leading-relaxed">
-            Esqueça fretes caros e a espera dos correios. Receba o arquivo digital imediatamente e transforme qualquer parede vazia no cenário mais elogiado do seu Arraiá. Perfeito para escolas, festas em casa e creches.
+          <p className="text-base sm:text-lg text-slate-600 max-w-md mb-8 px-2 leading-relaxed">
+            Imprima folha por folha em casa e monte uma decoração profissional gastando 10x menos que um painel de lona.
           </p>
-          <div className="inline-block relative">
-            <div className="absolute -inset-1 bg-junino-orange rounded-full blur opacity-25" />
-            <div className="bg-white px-8 py-4 rounded-full border-2 border-junino-orange font-bold text-junino-orange flex items-center gap-2">
-              <Zap className="fill-current" /> ARQUIVO PDF PRONTO PARA IMPRESSÃO
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Scale Preview Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h2 className="text-4xl font-bold text-junino-red mb-4">Veja o Tamanho Real</h2>
-          <p className="text-slate-600">Uma experiência visual que preenche todo o seu ambiente.</p>
-        </div>
-        <div className="max-w-5xl mx-auto">
-          <ScalePreview />
-        </div>
-      </section>
-
-      {/* Benefits Grid */}
-      <section className="py-24 px-4 bg-junino-beige/10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <BenefitCard 
-              icon={<Layout className="w-8 h-8 text-junino-red" />}
-              title="Painel Gigante"
-              desc="Dimensões impressionantes de 3 metros de largura por 2,5 metros de altura."
-            />
-            <BenefitCard 
-              icon={<Zap className="w-8 h-8 text-junino-yellow" />}
-              title="Entrega Imediata"
-              desc="O link de download é enviado para seu e-mail logo após a confirmação do pagamento."
-            />
-            <BenefitCard 
-              icon={<Printer className="w-8 h-8 text-junino-blue" />}
-              title="Impressão Fácil"
-              desc="Vem fatiado em folhas A4 padrão. Imprima em qualquer impressora comum."
-            />
-            <BenefitCard 
-              icon={<ShieldCheck className="w-8 h-8 text-green-500" />}
-              title="Economia Real"
-              desc="Pague apenas uma fração do custo de um painel de lona ou tecido tradicional."
-            />
-            <BenefitCard 
-              icon={<Camera className="w-8 h-8 text-junino-orange" />}
-              title="Fotos Incríveis"
-              desc="Crie o 'Espaço Instagramável' perfeito para seus convidados registrarem o momento."
-            />
-            <BenefitCard 
-              icon={<Download className="w-8 h-8 text-slate-700" />}
-              title="Arquivo Vitalício"
-              desc="O arquivo é seu para sempre. Imprima quantas vezes quiser em diferentes anos."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Process Section */}
-      <section className="py-24 px-4 bg-white relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-junino-red mb-4">Como Funciona o Seu Arraiá</h2>
-            <div className="w-24 h-1 bg-junino-yellow mx-auto rounded-full" />
-          </div>
-          
-          <div className="relative">
-            <div className="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-junino-beige -translate-y-1/2 z-0" />
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
-              {steps.map((step, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center space-y-4 group">
-                  <div className="w-20 h-20 rounded-full bg-white border-4 border-junino-red flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform bg-junino-beige/20">
-                    <step.icon className="w-10 h-10 text-junino-red" />
-                  </div>
-                  <div className="bg-junino-red text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                    {idx + 1}
-                  </div>
-                  <h3 className="font-bold text-xl text-slate-800">{step.title}</h3>
-                  <p className="text-slate-500 text-sm">{step.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* AI Assistant Section */}
-      <section className="py-24 px-4 bg-junino-beige/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-junino-yellow rounded-full text-white text-xs font-bold uppercase tracking-wider">
-               Exclusivo
-             </div>
-             <h2 className="text-4xl font-bold text-junino-red mb-4">Bônus: Planejador Inteligente</h2>
-             <p className="text-slate-600 max-w-2xl mx-auto">
-               Além do painel, ganhe acesso ao nosso assistente de IA que cria sugestões personalizadas de músicas, comidas e decorações extras para o seu evento.
-             </p>
-          </div>
-          <AIPlannerAssistant />
-        </div>
-      </section>
-
-      {/* Urgency Banner */}
-      <section className="py-16 px-4 bg-junino-red relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <DecorativeFlags />
-        </div>
-        <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">O São João Já Está Chegando!</h2>
-          <p className="text-xl text-white/90">
-            Não deixe para a última hora. Garanta agora o preço promocional antes que a oferta expire.
-          </p>
-          <UrgencyTimer />
-          <Button size="lg" className="h-16 px-12 text-2xl font-black bg-junino-yellow hover:bg-junino-yellow/90 text-junino-red shadow-2xl transition-all hover:scale-105 active:scale-95">
-             GARANTIR MEU ACESSO AGORA
-          </Button>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-32 px-4 bg-white">
-        <div className="max-w-5xl mx-auto rounded-[3rem] bg-junino-beige/10 border-4 border-dashed border-junino-beige p-12 lg:p-20 text-center space-y-8">
-          <Sun className="w-16 h-16 text-junino-yellow mx-auto animate-pulse" />
-          <h2 className="text-5xl font-bold text-junino-red">Sua Festa Merece Uma Decoração Inesquecível</h2>
-          <p className="text-2xl text-slate-600">
-            Crie memórias que vão durar para sempre. Transforme qualquer ambiente em um cenário digno de fotos profissionais.
-          </p>
-          <div className="space-y-4">
-            <Button size="lg" className="w-full sm:w-auto h-20 px-12 text-2xl font-bold bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl shadow-xl flex items-center justify-center gap-4 group">
-              <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              RECEBER AGORA NO WHATSAPP
+          <div className="w-full flex flex-col gap-4">
+            <Button size="lg" className="w-full h-16 text-xl font-bold bg-junino-red hover:bg-junino-red/90 shadow-xl transition-all active:scale-95">
+              🔥 QUERO MEU PAINEL AGORA
             </Button>
-            <p className="text-sm text-slate-400">
-              Pagamento 100% seguro • Recebimento instantâneo no e-mail
-            </p>
+            <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 font-bold uppercase">
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Envio Imediato</span>
+              <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Arquivo Digital</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 border-t border-junino-beige">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div className="text-center md:text-left space-y-4">
-            <h3 className="text-2xl font-bold text-junino-red">Arraiá Gigante</h3>
-            <p className="text-slate-500 text-sm">
-              © 2024 Festa Digital. Todos os direitos reservados.<br/>
-              Produto digital. Envio imediato. Suporte ao cliente 24/7.
-            </p>
+      {/* Social Proof / Urgency */}
+      <section className="py-8 bg-junino-yellow/5 border-y border-junino-yellow/10">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-4 text-center">
+          <p className="text-junino-red font-bold text-sm uppercase">Oferta por tempo limitado:</p>
+          <UrgencyTimer />
+        </div>
+      </section>
+
+      {/* Key Benefit Section */}
+      <section className="py-16 px-4 bg-wood-pattern">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-2xl font-bold text-junino-red mb-4">Decoração profissional que cabe no seu bolso</h2>
+          <p className="text-slate-600 mb-8 text-sm leading-relaxed">
+            Esqueça fretes caros. Receba o PDF e transforme qualquer parede vazia no cenário mais elogiado do seu Arraiá.
+          </p>
+          <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-junino-orange text-junino-orange font-bold text-xs inline-flex items-center gap-2">
+            <Zap className="w-4 h-4 fill-current" /> PRONTO PARA IMPRIMIR EM FOLHA A4
           </div>
-          <div className="flex justify-center md:justify-end gap-6 text-sm text-slate-500">
-             <a href="#" className="hover:text-junino-red transition-colors">Termos de Uso</a>
-             <a href="#" className="hover:text-junino-red transition-colors">Privacidade</a>
-             <a href="#" className="hover:text-junino-red transition-colors">Ajuda</a>
-          </div>
+        </div>
+      </section>
+
+      {/* Scale Comparison - Vertical Focus for Mobile */}
+      <section className="py-16 px-4 bg-white">
+        <h2 className="text-2xl font-bold text-center text-junino-red mb-10">Veja o Tamanho Real</h2>
+        <ScalePreview />
+      </section>
+
+      {/* Benefits Grid - Mobile Cards */}
+      <section className="py-16 px-4 bg-junino-beige/10">
+        <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
+          <BenefitCard 
+            icon={<Layout className="w-6 h-6 text-junino-red" />}
+            title="3.0m x 2.5m"
+            desc="Dimensões impressionantes que preenchem qualquer ambiente."
+          />
+          <BenefitCard 
+            icon={<Printer className="w-6 h-6 text-junino-blue" />}
+            title="Impressão Caseira"
+            desc="Fatiado em folhas A4. Use sua impressora comum."
+          />
+          <BenefitCard 
+            icon={<ShieldCheck className="w-6 h-6 text-green-500" />}
+            title="Economia de 90%"
+            desc="Gaste muito menos que um painel de lona tradicional."
+          />
+        </div>
+      </section>
+
+      {/* Steps Section - Simplified for Mobile */}
+      <section className="py-16 px-4 bg-white">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold text-junino-red">Como Funciona</h2>
+        </div>
+        <div className="space-y-12 max-w-xs mx-auto relative">
+          <div className="absolute left-6 top-0 w-0.5 h-full bg-junino-beige z-0" />
+          {steps.map((step, idx) => (
+            <div key={idx} className="flex items-center gap-6 relative z-10 group">
+              <div className="w-12 h-12 rounded-full bg-white border-2 border-junino-red flex items-center justify-center shadow-md shrink-0 group-hover:scale-110 transition-transform">
+                <step.icon className="w-6 h-6 text-junino-red" />
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-bold text-slate-800">{step.title}</h3>
+                <p className="text-slate-500 text-xs">{step.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* AI Assistant - Mobile Card */}
+      <section className="py-16 px-4 bg-junino-beige/30">
+        <div className="text-center mb-8">
+           <h2 className="text-2xl font-bold text-junino-red">Bônus Exclusivo</h2>
+           <p className="text-slate-600 text-sm mt-2">Use nossa IA para planejar o resto da sua festa.</p>
+        </div>
+        <AIPlannerAssistant />
+      </section>
+
+      {/* Final Mobile CTA */}
+      <section className="py-16 px-4 bg-junino-red text-center">
+        <h2 className="text-3xl font-black text-white mb-6 leading-tight">Prepare o seu Arraiá hoje mesmo!</h2>
+        <Button size="lg" className="w-full h-16 text-xl font-bold bg-junino-yellow text-junino-red hover:bg-white transition-all shadow-2xl">
+           GARANTIR MEU ACESSO
+        </Button>
+        <p className="mt-4 text-white/70 text-xs">Acesso vitalício ao arquivo digital</p>
+      </section>
+
+      {/* Simple Footer */}
+      <footer className="py-12 px-4 border-t border-junino-beige text-center space-y-4">
+        <h3 className="text-xl font-bold text-junino-red">Arraiá Gigante</h3>
+        <p className="text-slate-500 text-[10px] leading-relaxed">
+          © 2024 Festa Digital. Produto Digital. Suporte 24h via WhatsApp.
+        </p>
+        <div className="flex justify-center gap-6 text-[10px] text-slate-400 font-bold uppercase">
+             <a href="#">Termos</a>
+             <a href="#">Privacidade</a>
+             <a href="#">Ajuda</a>
         </div>
       </footer>
 
@@ -251,15 +189,15 @@ export default function LandingPage() {
 
 function BenefitCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
   return (
-    <Card className="border-2 border-white bg-white/50 backdrop-blur-sm hover:shadow-2xl hover:translate-y-[-4px] transition-all duration-300 rounded-3xl overflow-hidden group">
-      <CardContent className="p-8 space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center group-hover:rotate-6 transition-transform">
+    <Card className="border-none shadow-md bg-white rounded-2xl overflow-hidden">
+      <CardContent className="p-6 flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-junino-beige/50 flex items-center justify-center shrink-0">
           {icon}
         </div>
-        <h3 className="text-xl font-bold text-junino-red">{title}</h3>
-        <p className="text-slate-600 leading-relaxed text-sm">
-          {desc}
-        </p>
+        <div className="space-y-1">
+          <h3 className="font-bold text-slate-800">{title}</h3>
+          <p className="text-slate-500 text-xs leading-relaxed">{desc}</p>
+        </div>
       </CardContent>
     </Card>
   );
