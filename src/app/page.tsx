@@ -190,7 +190,7 @@ export default function LandingPage() {
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
                 </h2>
 
-                {/* Bonus Image - Adjusted container to fit image height perfectly */}
+                {/* Bonus Image */}
                 <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                   <Image 
                     src="/bonus.png" 
@@ -237,17 +237,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer Links */}
-      <footer className="py-16 px-6 border-t border-slate-100 bg-white text-center space-y-8">
-        <h3 className="text-xl font-black text-primary tracking-tighter">Arraiá Gigante</h3>
-        <p className="text-slate-400 text-[11px] leading-relaxed max-w-[260px] mx-auto font-medium">
-          Transformamos sua casa no melhor cenário do mundo. Suporte humanizado via WhatsApp.
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-slate-100 bg-white text-center">
+        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
+          Todos os direitos reservados
         </p>
-        <div className="flex justify-center gap-10 text-[11px] text-slate-400 font-black uppercase tracking-widest">
-             <a href="#" className="hover:text-primary transition-colors">Ajuda</a>
-             <a href="#" className="hover:text-primary transition-colors">Termos</a>
-             <a href="#" className="hover:text-primary transition-colors">Privacidade</a>
-        </div>
       </footer>
 
       <FloatingWhatsApp />
