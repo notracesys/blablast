@@ -49,7 +49,7 @@ export function ScalePreview() {
 
         <div className="text-center px-4">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] leading-relaxed">
-            Referência: Pessoa adulta média <br/>
+            Referência: Modelo com 1,60m de altura <br/>
             <span className="text-junino-red/60">Cenário ideal para fotos de corpo inteiro</span>
           </p>
         </div>
