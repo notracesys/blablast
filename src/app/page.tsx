@@ -37,19 +37,19 @@ export default function LandingPage() {
     <div className="min-h-screen bg-background relative overflow-x-hidden">
       <DecorativeFlags />
       
-      {/* Hero Section - Mobile Optimized */}
-      <section className="relative pt-4 pb-12 px-4 overflow-hidden">
+      {/* Hero Section - Ultra Mobile Optimized */}
+      <section className="relative pt-2 pb-12 px-4 overflow-hidden">
         <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-junino-yellow/10 border border-junino-yellow text-junino-yellow font-bold text-[10px] mb-4 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-junino-yellow/10 border border-junino-yellow text-junino-yellow font-bold text-[10px] mb-3 uppercase tracking-wider">
             <Star className="w-3 h-3 fill-current" /> O maior painel do Brasil
           </div>
           
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-junino-red leading-tight mb-6">
-            Transforme sua festa com um <span className="text-junino-orange">Painel Gigante</span> de 3 metros
+          <h1 className="text-3xl sm:text-4xl font-black text-junino-red leading-tight mb-4">
+            Painel Gigante <span className="text-junino-orange">3 Metros</span> para seu Arraiá
           </h1>
 
-          {/* Product Image - Top placement for Mobile */}
-          <div className="relative w-full max-w-sm aspect-[3/2.5] mb-8 animate-float group">
+          {/* Product Image - Top focus */}
+          <div className="relative w-full max-w-sm aspect-[3/2.5] mb-6 animate-float group">
             <div className="absolute -inset-2 bg-junino-yellow rounded-2xl rotate-2 opacity-20 blur-xl" />
             <div className="relative border-4 border-white rounded-2xl overflow-hidden shadow-2xl h-full w-full">
               <Image 
@@ -66,15 +66,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <p className="text-base sm:text-lg text-slate-600 max-w-md mb-8 px-2 leading-relaxed">
-            Imprima folha por folha em casa e monte uma decoração profissional gastando 10x menos que um painel de lona.
+          <p className="text-base text-slate-600 max-w-xs mb-6 leading-relaxed">
+            Monte uma decoração profissional em casa gastando 10x menos que um painel de lona.
           </p>
 
-          <div className="w-full flex flex-col gap-4">
-            <Button size="lg" className="w-full h-16 text-xl font-bold bg-junino-red hover:bg-junino-red/90 shadow-xl transition-all active:scale-95">
+          <div className="w-full max-w-xs flex flex-col gap-3">
+            <Button size="lg" className="w-full h-14 text-lg font-bold bg-junino-red hover:bg-junino-red/90 shadow-xl transition-all active:scale-95">
               🔥 QUERO MEU PAINEL AGORA
             </Button>
-            <div className="flex items-center justify-center gap-4 text-[10px] text-slate-500 font-bold uppercase">
+            <div className="flex items-center justify-center gap-3 text-[9px] text-slate-500 font-bold uppercase">
               <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Envio Imediato</span>
               <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" /> Arquivo Digital</span>
             </div>
@@ -83,99 +83,99 @@ export default function LandingPage() {
       </section>
 
       {/* Social Proof / Urgency */}
-      <section className="py-8 bg-junino-yellow/5 border-y border-junino-yellow/10">
-        <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-4 text-center">
-          <p className="text-junino-red font-bold text-sm uppercase">Oferta por tempo limitado:</p>
+      <section className="py-6 bg-junino-yellow/5 border-y border-junino-yellow/10">
+        <div className="max-w-4xl mx-auto px-4 flex flex-col items-center gap-3 text-center">
+          <p className="text-junino-red font-bold text-xs uppercase tracking-widest">Oferta encerra em:</p>
           <UrgencyTimer />
         </div>
       </section>
 
       {/* Key Benefit Section */}
-      <section className="py-16 px-4 bg-wood-pattern">
+      <section className="py-12 px-4 bg-wood-pattern">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-junino-red mb-4">Decoração profissional que cabe no seu bolso</h2>
-          <p className="text-slate-600 mb-8 text-sm leading-relaxed">
-            Esqueça fretes caros. Receba o PDF e transforme qualquer parede vazia no cenário mais elogiado do seu Arraiá.
+          <h2 className="text-xl font-bold text-junino-red mb-3 leading-tight">Decoração profissional que cabe no bolso</h2>
+          <p className="text-slate-600 mb-6 text-sm leading-relaxed max-w-xs mx-auto">
+            Receba o PDF e transforme qualquer parede no cenário mais elogiado do seu Arraiá.
           </p>
-          <div className="bg-white p-4 rounded-2xl border-2 border-dashed border-junino-orange text-junino-orange font-bold text-xs inline-flex items-center gap-2">
-            <Zap className="w-4 h-4 fill-current" /> PRONTO PARA IMPRIMIR EM FOLHA A4
+          <div className="bg-white px-4 py-2 rounded-2xl border-2 border-dashed border-junino-orange text-junino-orange font-bold text-[10px] inline-flex items-center gap-2">
+            <Zap className="w-3 h-3 fill-current" /> PRONTO PARA IMPRIMIR EM FOLHA A4
           </div>
         </div>
       </section>
 
-      {/* Scale Comparison - Vertical Focus for Mobile */}
-      <section className="py-16 px-4 bg-white">
-        <h2 className="text-2xl font-bold text-center text-junino-red mb-10">Veja o Tamanho Real</h2>
+      {/* Scale Comparison */}
+      <section className="py-12 px-4 bg-white">
+        <h2 className="text-xl font-bold text-center text-junino-red mb-8">Veja o Tamanho Real</h2>
         <ScalePreview />
       </section>
 
-      {/* Benefits Grid - Mobile Cards */}
-      <section className="py-16 px-4 bg-junino-beige/10">
-        <div className="grid grid-cols-1 gap-6 max-w-sm mx-auto">
+      {/* Benefits Grid */}
+      <section className="py-12 px-4 bg-junino-beige/10">
+        <div className="grid grid-cols-1 gap-4 max-w-sm mx-auto">
           <BenefitCard 
-            icon={<Layout className="w-6 h-6 text-junino-red" />}
+            icon={<Layout className="w-5 h-5 text-junino-red" />}
             title="3.0m x 2.5m"
-            desc="Dimensões impressionantes que preenchem qualquer ambiente."
+            desc="Dimensões que preenchem qualquer ambiente."
           />
           <BenefitCard 
-            icon={<Printer className="w-6 h-6 text-junino-blue" />}
+            icon={<Printer className="w-5 h-5 text-junino-blue" />}
             title="Impressão Caseira"
-            desc="Fatiado em folhas A4. Use sua impressora comum."
+            desc="Fatiado em folhas A4 comuns."
           />
           <BenefitCard 
-            icon={<ShieldCheck className="w-6 h-6 text-green-500" />}
+            icon={<ShieldCheck className="w-5 h-5 text-green-500" />}
             title="Economia de 90%"
-            desc="Gaste muito menos que um painel de lona tradicional."
+            desc="Gaste menos que um painel de lona."
           />
         </div>
       </section>
 
-      {/* Steps Section - Simplified for Mobile */}
-      <section className="py-16 px-4 bg-white">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-junino-red">Como Funciona</h2>
+      {/* Steps Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="text-center mb-8">
+          <h2 className="text-xl font-bold text-junino-red">Como Funciona</h2>
         </div>
-        <div className="space-y-12 max-w-xs mx-auto relative">
-          <div className="absolute left-6 top-0 w-0.5 h-full bg-junino-beige z-0" />
+        <div className="space-y-8 max-w-[280px] mx-auto relative">
+          <div className="absolute left-5 top-0 w-0.5 h-full bg-junino-beige z-0" />
           {steps.map((step, idx) => (
-            <div key={idx} className="flex items-center gap-6 relative z-10 group">
-              <div className="w-12 h-12 rounded-full bg-white border-2 border-junino-red flex items-center justify-center shadow-md shrink-0 group-hover:scale-110 transition-transform">
-                <step.icon className="w-6 h-6 text-junino-red" />
+            <div key={idx} className="flex items-center gap-4 relative z-10 group">
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-junino-red flex items-center justify-center shadow-md shrink-0 group-hover:scale-110 transition-transform">
+                <step.icon className="w-5 h-5 text-junino-red" />
               </div>
               <div className="flex flex-col">
-                <h3 className="font-bold text-slate-800">{step.title}</h3>
-                <p className="text-slate-500 text-xs">{step.desc}</p>
+                <h3 className="font-bold text-slate-800 text-sm">{step.title}</h3>
+                <p className="text-slate-500 text-[10px]">{step.desc}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* AI Assistant - Mobile Card */}
-      <section className="py-16 px-4 bg-junino-beige/30">
-        <div className="text-center mb-8">
-           <h2 className="text-2xl font-bold text-junino-red">Bônus Exclusivo</h2>
-           <p className="text-slate-600 text-sm mt-2">Use nossa IA para planejar o resto da sua festa.</p>
+      {/* AI Assistant */}
+      <section className="py-12 px-4 bg-junino-beige/30">
+        <div className="text-center mb-6 px-4">
+           <h2 className="text-xl font-bold text-junino-red">Bônus Exclusivo</h2>
+           <p className="text-slate-600 text-xs mt-2">Use nossa IA para planejar o resto da sua festa.</p>
         </div>
         <AIPlannerAssistant />
       </section>
 
       {/* Final Mobile CTA */}
-      <section className="py-16 px-4 bg-junino-red text-center">
-        <h2 className="text-3xl font-black text-white mb-6 leading-tight">Prepare o seu Arraiá hoje mesmo!</h2>
-        <Button size="lg" className="w-full h-16 text-xl font-bold bg-junino-yellow text-junino-red hover:bg-white transition-all shadow-2xl">
+      <section className="py-12 px-6 bg-junino-red text-center">
+        <h2 className="text-2xl font-black text-white mb-6 leading-tight">Prepare o seu Arraiá hoje mesmo!</h2>
+        <Button size="lg" className="w-full h-14 text-lg font-bold bg-junino-yellow text-junino-red hover:bg-white transition-all shadow-2xl">
            GARANTIR MEU ACESSO
         </Button>
-        <p className="mt-4 text-white/70 text-xs">Acesso vitalício ao arquivo digital</p>
+        <p className="mt-4 text-white/70 text-[10px]">Acesso vitalício ao arquivo digital</p>
       </section>
 
       {/* Simple Footer */}
-      <footer className="py-12 px-4 border-t border-junino-beige text-center space-y-4">
-        <h3 className="text-xl font-bold text-junino-red">Arraiá Gigante</h3>
-        <p className="text-slate-500 text-[10px] leading-relaxed">
-          © 2024 Festa Digital. Produto Digital. Suporte 24h via WhatsApp.
+      <footer className="py-10 px-4 border-t border-junino-beige text-center space-y-4">
+        <h3 className="text-lg font-bold text-junino-red">Arraiá Gigante</h3>
+        <p className="text-slate-500 text-[9px] leading-relaxed max-w-xs mx-auto">
+          © 2024 Festa Digital. Produto Digital. Suporte via WhatsApp.
         </p>
-        <div className="flex justify-center gap-6 text-[10px] text-slate-400 font-bold uppercase">
+        <div className="flex justify-center gap-4 text-[9px] text-slate-400 font-bold uppercase">
              <a href="#">Termos</a>
              <a href="#">Privacidade</a>
              <a href="#">Ajuda</a>
@@ -189,14 +189,14 @@ export default function LandingPage() {
 
 function BenefitCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
   return (
-    <Card className="border-none shadow-md bg-white rounded-2xl overflow-hidden">
-      <CardContent className="p-6 flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-junino-beige/50 flex items-center justify-center shrink-0">
+    <Card className="border-none shadow-sm bg-white rounded-xl overflow-hidden">
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-lg bg-junino-beige/50 flex items-center justify-center shrink-0">
           {icon}
         </div>
-        <div className="space-y-1">
-          <h3 className="font-bold text-slate-800">{title}</h3>
-          <p className="text-slate-500 text-xs leading-relaxed">{desc}</p>
+        <div className="space-y-0.5">
+          <h3 className="font-bold text-slate-800 text-sm">{title}</h3>
+          <p className="text-slate-500 text-[10px] leading-snug">{desc}</p>
         </div>
       </CardContent>
     </Card>
