@@ -169,7 +169,7 @@ export default function LandingPage() {
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Acesso Vitalício por apenas</p>
                 <div className="flex items-start justify-center gap-0.5">
                   <span className="text-2xl font-black text-slate-300 mt-2">R$</span>
-                  <span className="text-7xl font-black text-slate-800 tracking-tighter leading-none">19</span>
+                  <span className="text-7xl font-black text-slate-800 tracking-tighter leading-none">9</span>
                   <div className="flex flex-col items-start">
                     <span className="text-2xl font-black text-slate-800 mt-1">,90</span>
                   </div>
