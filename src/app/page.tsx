@@ -152,12 +152,12 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing / Offer Section - Focused on Painel Gigante + Bonus */}
-      <section className="py-24 px-6 bg-slate-50 relative overflow-hidden">
+      <section className="py-24 px-6 bg-slate-50 relative">
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
-          {/* Main Offer Card */}
-          <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden">
+          {/* Main Offer Card - Removed overflow-hidden to show the label */}
+          <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100">
             {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
               PAINEL GIGANTE + KIT BRINDES
