@@ -190,10 +190,10 @@ export default function LandingPage() {
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
                 </h2>
 
-                {/* Bonus Image Placeholder */}
+                {/* Bonus Image */}
                 <div className="relative w-full aspect-video mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                   <Image 
-                    src="/brindes.png" 
+                    src="/bonus.png" 
                     alt="Kit Brindes Festa Junina Completo" 
                     fill 
                     className="object-contain"
