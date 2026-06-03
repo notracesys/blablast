@@ -1,3 +1,46 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-panel",
+      "description": "Festa Junina Giant Panel Mockup",
+      "imageUrl": "https://picsum.photos/seed/junina1/1200/800",
+      "imageHint": "festa junina party decoration"
+    },
+    {
+      "id": "preview-comparison",
+      "description": "Panel compared to person height",
+      "imageUrl": "https://picsum.photos/seed/junina2/800/600",
+      "imageHint": "giant wall poster"
+    },
+    {
+      "id": "step-1",
+      "description": "Buying digital product",
+      "imageUrl": "https://picsum.photos/seed/buy/400/300",
+      "imageHint": "digital purchase icon"
+    },
+    {
+      "id": "step-2",
+      "description": "Downloading file",
+      "imageUrl": "https://picsum.photos/seed/download/400/300",
+      "imageHint": "download cloud"
+    },
+    {
+      "id": "step-3",
+      "description": "Printing sheets",
+      "imageUrl": "https://picsum.photos/seed/print/400/300",
+      "imageHint": "printer paper"
+    },
+    {
+      "id": "step-4",
+      "description": "Mounting on wall",
+      "imageUrl": "https://picsum.photos/seed/mount/400/300",
+      "imageHint": "wall montage"
+    },
+    {
+      "id": "step-5",
+      "description": "Party celebration",
+      "imageUrl": "https://picsum.photos/seed/party/400/300",
+      "imageHint": "celebration people"
+    }
+  ]
 }
