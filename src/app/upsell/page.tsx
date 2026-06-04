@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { DecorativeFlags } from '@/components/landing/DecorativeFlags';
 
 export default function UpsellPage() {
   const kitItems = [
@@ -28,35 +27,30 @@ export default function UpsellPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden pb-20">
-      <DecorativeFlags />
-      
-      {/* Progress Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-secondary/20 py-4 px-6 sticky top-0 z-50">
-        <div className="max-w-xl mx-auto space-y-3">
-          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-500">
-            <span>Pedido Iniciado</span>
-            <span className="text-orange-500">90% Concluído</span>
+      {/* Barra de Progresso Minimalista */}
+      <div className="bg-white/90 backdrop-blur-md border-b border-slate-100 py-3 px-6 sticky top-0 z-50">
+        <div className="max-w-xl mx-auto flex items-center gap-4">
+          <div className="flex-1">
+            <Progress value={90} className="h-1.5 bg-slate-100" />
           </div>
-          <Progress value={90} className="h-2 bg-slate-100" />
-          <p className="text-center text-[11px] font-bold text-primary animate-pulse">
-            ⚠️ NÃO FECHE ESTA PÁGINA! VOCÊ TEM UMA OFERTA ÚNICA.
-          </p>
+          <span className="text-[10px] font-black text-orange-500 whitespace-nowrap uppercase tracking-tighter">
+            90% CONCLUÍDO
+          </span>
         </div>
       </div>
 
-      <section className="pt-10 pb-12 px-6">
+      <section className="pt-12 pb-12 px-6">
         <div className="max-w-xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 text-orange-600 font-black text-[10px] mb-6 uppercase tracking-wider">
-            <Sparkles className="w-3 h-3 fill-current" /> OPORTUNIDADE ÚNICA
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 text-green-700 font-black text-[10px] mb-6 uppercase tracking-wider">
+            <CheckCircle2 className="w-3 h-3" /> PAINEL GARANTIDO!
           </div>
           
           <h1 className="text-3xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight">
-            Seu painel já está garantido. <br/>
-            <span className="text-primary">Agora complete sua decoração!</span>
+            Agora complete sua decoração!
           </h1>
 
           <p className="text-sm text-slate-600 mb-10 leading-relaxed font-medium">
-            Complete sua festa com mais de 100 arquivos prontos para imprimir e transforme seu Arraiá em um evento profissional.
+            Transforme seu Arraiá com mais de 100 arquivos prontos para imprimir.
           </p>
 
           {/* Upsell Product Card */}
@@ -70,6 +64,7 @@ export default function UpsellPage() {
                   alt="Kit Festa Junina Completa" 
                   fill
                   className="object-contain p-4"
+                  priority
                 />
                 <div className="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full font-black text-[10px] shadow-lg animate-bounce">
                   +100 ARQUIVOS
@@ -106,7 +101,7 @@ export default function UpsellPage() {
                 SIM! QUERO A FESTA COMPLETA <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               
-              <button className="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors">
+              <button className="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors py-2">
                 Não, obrigado. Quero apenas o painel.
               </button>
             </div>
