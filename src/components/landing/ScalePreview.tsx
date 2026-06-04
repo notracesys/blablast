@@ -23,8 +23,8 @@ export function ScalePreview() {
           </div>
 
           {/* The Person (mulher.png) - Scaled relative to 2.5m height */}
-          {/* Ajustado para ~58% da altura para fazer o painel parecer mais alto e imponente */}
-          <div className="relative z-20 w-[40%] h-[58%] mb-[-2px]">
+          {/* Ajustado para ~48% da altura para fazer o painel parecer ainda mais alto e imponente */}
+          <div className="relative z-20 w-[35%] h-[48%] mb-6">
              <Image
               src="/mulher.png"
               alt="Comparativo Humano Real"
