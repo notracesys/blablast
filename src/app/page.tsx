@@ -192,7 +192,7 @@ export default function LandingPage() {
                 {/* Bonus Image */}
                 <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                   <Image 
-                    src="/bonus.png" 
+                    src="/kit.png" 
                     alt="Kit Brindes Festa Junina Completo" 
                     width={800}
                     height={600}
@@ -221,8 +221,8 @@ export default function LandingPage() {
               </div>
 
               {/* Action Button */}
-              <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                QUERO MEU PAINEL
+              <Button asChild className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
+                <a href="#oferta" className="flex items-center justify-center w-full h-full">QUERO MEU PAINEL</a>
               </Button>
               
               <div className="mt-6 flex flex-col items-center gap-2 opacity-50">

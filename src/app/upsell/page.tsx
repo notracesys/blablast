@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -60,7 +61,7 @@ export default function UpsellPage() {
             <div className="p-8">
               <div className="relative w-full aspect-square mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                 <Image 
-                  src="/bonus.png" 
+                  src="/kit.png" 
                   alt="Kit Festa Junina Completa" 
                   fill
                   className="object-contain p-4"

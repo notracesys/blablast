@@ -41,6 +41,12 @@
       "description": "Party celebration",
       "imageUrl": "https://picsum.photos/seed/party/400/300",
       "imageHint": "celebration people"
+    },
+    {
+      "id": "kit-completo",
+      "description": "Kit Festa Junina Completo",
+      "imageUrl": "/kit.png",
+      "imageHint": "party kit"
     }
   ]
 }
