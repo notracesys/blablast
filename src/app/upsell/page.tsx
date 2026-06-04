@@ -1,8 +1,8 @@
-
 'use client';
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { 
   CheckCircle2, 
   ArrowRight, 
@@ -112,9 +112,12 @@ export default function UpsellPage() {
                 </a>
               </Button>
               
-              <button className="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors py-2">
+              <Link 
+                href="/downsell"
+                className="block text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors py-2"
+              >
                 Não, obrigado. Quero apenas o painel.
-              </button>
+              </Link>
             </div>
           </div>
 
