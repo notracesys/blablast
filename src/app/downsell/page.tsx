@@ -7,7 +7,6 @@ import {
   ArrowRight, 
   AlertTriangle,
   ShieldCheck,
-  Package,
   PackageCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -99,7 +98,7 @@ export default function DownsellPage() {
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Oferta Especial de Despedida</p>
                 <div className="flex items-start justify-center gap-0.5">
                   <span className="text-xl font-black text-slate-300 mt-2">R$</span>
-                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">9</span>
+                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">7</span>
                   <div className="flex flex-col items-start">
                     <span className="text-xl font-black text-slate-800 mt-1">,90</span>
                   </div>
@@ -107,7 +106,7 @@ export default function DownsellPage() {
               </div>
 
               <Button asChild className="w-full h-20 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black text-sm shadow-[0_15px_35px_rgba(249,115,22,0.3)] hover:scale-[1.02] active:scale-95 transition-all mb-4">
-                <a href="https://pay.kirvano.com/7ba0e371-4ae2-4ed9-8f69-593150cbd551" className="flex items-center justify-center w-full h-full uppercase">
+                <a href="https://pay.kirvano.com/1c1540b5-4b70-401d-9e56-83ffb5eef988" className="flex items-center justify-center w-full h-full uppercase">
                   SIM! QUERO O KIT COMPLETO <ArrowRight className="ml-2 w-4 h-4" />
                 </a>
               </Button>
