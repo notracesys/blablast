@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -96,7 +95,7 @@ export default function UpsellPage() {
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">De <span className="line-through">R$ 47,00</span> por apenas</p>
                 <div className="flex items-start justify-center gap-0.5">
                   <span className="text-xl font-black text-slate-300 mt-2">R$</span>
-                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">19</span>
+                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">14</span>
                   <div className="flex flex-col items-start">
                     <span className="text-xl font-black text-slate-800 mt-1">,90</span>
                   </div>
