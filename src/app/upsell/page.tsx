@@ -6,7 +6,6 @@ import {
   CheckCircle2, 
   ArrowRight, 
   Gift, 
-  Sparkles, 
   ShieldCheck,
   PackageCheck
 } from 'lucide-react';
@@ -46,11 +45,12 @@ export default function UpsellPage() {
           </div>
           
           <h1 className="text-3xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight">
-            Agora complete sua decoração!
+            Do que adianta ter o painel e não ter o restante das decorações?
           </h1>
 
           <p className="text-sm text-slate-600 mb-10 leading-relaxed font-medium">
-            Transforme seu Arraiá com mais de 100 arquivos prontos para imprimir.
+            Sua parede está pronta, mas sua festa ainda está incompleta. <br/>
+            Complete seu Arraiá agora com mais de 100 arquivos.
           </p>
 
           {/* Upsell Product Card */}
