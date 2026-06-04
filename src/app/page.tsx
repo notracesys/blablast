@@ -13,7 +13,8 @@ import {
   Star,
   Gift,
   PartyPopper,
-  Utensils
+  Utensils,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,18 +32,12 @@ export default function LandingPage() {
   ];
 
   const bonuses = [
-    "🎁 BÔNUS: E-book +100 Receitas Juninas",
-    "Caixas para Pipoca, Milho e Cachorro-Quente",
-    "Sacolinhas Surpresa",
-    "Convites Personalizados",
-    "Bandeirinhas Decorativas",
-    "Forminhas para Doces",
-    "Toppers e Tags Personalizadas",
-    "Cones para Guloseimas",
-    "Marmitinhas Personalizadas",
-    "Rótulos Decorativos",
-    "Moldes Especiais para Festa Junina",
-    "Arquivos Prontos para Imprimir 🌽🎉🔥"
+    "🎁 BÔNUS EXCLUSIVO: E-book +100 Receitas Juninas",
+    "Doces tradicionais, Salgados e Bebidas típicas",
+    "Receitas de família testadas e aprovadas",
+    "Dicas para preparar em grande quantidade",
+    "Acesso vitalício ao material digital",
+    "Arquivo pronto para ler no celular ou imprimir 🌽🎉🔥"
   ];
 
   return (
@@ -139,7 +134,7 @@ export default function LandingPage() {
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100">
             {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
-              PAINEL GIGANTE + SUPER KIT BÔNUS
+              PAINEL GIGANTE + BÔNUS ESPECIAL
             </div>
             
             <div className="pt-16 pb-12 px-8">
@@ -161,23 +156,20 @@ export default function LandingPage() {
               {/* BONUS SECTION */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em] rounded-full">
-                  <PartyPopper className="w-3.5 h-3.5" /> O MAIS COMPLETO DO MERCADO
+                  <Utensils className="w-3.5 h-3.5" /> O ARRAIÁ MAIS SABOROSO
                 </div>
                 
                 <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-8">
-                  COMPRANDO AINDA HOJE <br/>
-                  <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ RECEBE:</span>
+                  COMPRANDO AGORA <br/>
+                  <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ GANHA:</span>
                 </h2>
 
-                {/* Bonus Image */}
-                <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
-                  <Image 
-                    src="/kit.png" 
-                    alt="Kit Brindes Festa Junina Completo" 
-                    width={800}
-                    height={600}
-                    className="w-full h-auto object-contain"
-                  />
+                {/* Bonus Image - Simplified to represent Recipes/Food */}
+                <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50 aspect-video flex items-center justify-center p-8">
+                  <div className="flex flex-col items-center gap-3 text-primary">
+                    <BookOpen className="w-16 h-16" />
+                    <p className="font-black text-sm uppercase tracking-widest">+100 RECEITAS</p>
+                  </div>
                 </div>
               </div>
 
@@ -185,7 +177,7 @@ export default function LandingPage() {
               <div className="space-y-6 mb-12">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
                   <Gift className="w-4 h-4 text-green-600" />
-                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 TUDO ISSO INCLUSO:</span>
+                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 BÔNUS INCLUSO:</span>
                 </div>
                 
                 <div className="space-y-3">
@@ -225,21 +217,5 @@ export default function LandingPage() {
         </p>
       </footer>
     </div>
-  );
-}
-
-function BenefitCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
-  return (
-    <Card className="border-none shadow-md bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-      <CardContent className="p-6 flex items-start gap-5">
-        <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 shadow-inner">
-          {icon}
-        </div>
-        <div className="space-y-1.5">
-          <h3 className="font-bold text-slate-800 text-sm tracking-tight">{title}</h3>
-          <p className="text-slate-500 text-[11px] leading-relaxed font-medium">{desc}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
