@@ -20,7 +20,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DecorativeFlags } from '@/components/landing/DecorativeFlags';
 import { ScalePreview } from '@/components/landing/ScalePreview';
 import { UrgencyTimer } from '@/components/landing/UrgencyTimer';
-import { AIPlannerAssistant } from '@/components/landing/AIPlannerAssistant';
 
 export default function LandingPage() {
   const steps = [
@@ -128,17 +127,6 @@ export default function LandingPage() {
             title="Preço Imbatível"
             desc="Menos de 10% do valor de um painel de lona tradicional."
           />
-        </div>
-      </section>
-
-      {/* AI Assistant Section */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-black text-primary tracking-tight">BÔNUS EXCLUSIVO: Planejador IA</h2>
-            <p className="text-slate-500 text-sm mt-2">Nossa inteligência artificial cria seu plano de festa personalizado em segundos.</p>
-          </div>
-          <AIPlannerAssistant />
         </div>
       </section>
 
