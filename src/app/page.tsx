@@ -19,7 +19,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DecorativeFlags } from '@/components/landing/DecorativeFlags';
 import { ScalePreview } from '@/components/landing/ScalePreview';
 import { UrgencyTimer } from '@/components/landing/UrgencyTimer';
-import { FloatingWhatsApp } from '@/components/landing/FloatingWhatsApp';
 
 export default function LandingPage() {
   const steps = [
@@ -243,8 +242,6 @@ export default function LandingPage() {
           Todos os direitos reservados
         </p>
       </footer>
-
-      <FloatingWhatsApp />
     </div>
   );
 }
