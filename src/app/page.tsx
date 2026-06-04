@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Image from 'next/image';
 import { 
@@ -13,7 +14,8 @@ import {
   Gift,
   PartyPopper,
   Utensils,
-  BookOpen
+  BookOpen,
+  Heart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -205,6 +207,56 @@ export default function LandingPage() {
                   <ShieldCheck className="w-4 h-4" />
                   <span className="text-[10px] font-bold uppercase tracking-widest">Compra 100% Segura</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col items-center text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary font-black text-[10px] mb-4 uppercase tracking-wider">
+              <Heart className="w-3 h-3 fill-current" /> O QUE DIZEM NOSSAS CLIENTES
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">O Arraiá Delas Foi Inesquecível! 😍</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Feedback 1 */}
+            <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div className="flex gap-1 mb-6 text-secondary">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+              </div>
+              <p className="text-sm text-slate-700 font-bold italic mb-8 leading-relaxed">
+                "Simplesmente perfeito! Cada impressão segue o tamanho perfeitamente indicado na imagem."
+              </p>
+              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-white">
+                <Image 
+                  src="/ref1.jpg" 
+                  alt="Feedback Cliente 1 - Painel Festa Junina" 
+                  fill 
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Feedback 2 */}
+            <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-md">
+              <div className="flex gap-1 mb-6 text-secondary">
+                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+              </div>
+              <p className="text-sm text-slate-700 font-bold italic mb-8 leading-relaxed">
+                "Ameii esse painel! Se estiverem com dúvidas se cabe todo mundo na foto, podem comprar sem medo, coube minha família inteira sem cobrir o nome 😂"
+              </p>
+              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-white">
+                <Image 
+                  src="/ref2.jpg" 
+                  alt="Feedback Cliente 2 - Painel Festa Junina" 
+                  fill 
+                  className="object-cover"
+                />
               </div>
             </div>
           </div>

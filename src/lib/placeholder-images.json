@@ -59,6 +59,18 @@
       "description": "E-book +100 Receitas Juninas",
       "imageUrl": "/receitas.png",
       "imageHint": "brazilian food recipes"
+    },
+    {
+      "id": "feedback-1",
+      "description": "Foto de cliente usando o painel",
+      "imageUrl": "/ref1.jpg",
+      "imageHint": "happy customer"
+    },
+    {
+      "id": "feedback-2",
+      "description": "Foto de família no painel gigante",
+      "imageUrl": "/ref2.jpg",
+      "imageHint": "family celebration"
     }
   ]
 }
