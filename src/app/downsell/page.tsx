@@ -1,22 +1,28 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { 
   CheckCircle2, 
   ArrowRight, 
   AlertTriangle,
   ShieldCheck,
-  Package
+  Package,
+  PackageCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
 export default function DownsellPage() {
-  const essentialItems = [
-    "Bandeirinhas Prontas",
+  const kitItems = [
+    "Convites Personalizados",
+    "Bandeirinhas Decorativas",
     "Toppers para Doces",
-    "Tags e Rótulos",
-    "Convite Digital"
+    "Caixas de Pipoca",
+    "Sacolinhas Surpresa",
+    "Plaquinhas para Fotos",
+    "Forminhas Especiais",
+    "Tags e Rótulos"
   ];
 
   return (
@@ -44,7 +50,8 @@ export default function DownsellPage() {
           </h1>
 
           <p className="text-sm text-slate-600 mb-10 leading-relaxed font-medium">
-            Então pelo menos garanta as bandeirinhas, toppers e tags para não deixar sua festa sem decoração.
+            Então pelo menos garanta as decorações essenciais para não deixar sua festa sem nada. <br/>
+            Sua chance de ter o kit completo por um preço simbólico.
           </p>
 
           {/* Downsell Product Card */}
@@ -52,18 +59,39 @@ export default function DownsellPage() {
             <div className="absolute top-0 left-0 w-full h-2 bg-orange-500" />
             
             <div className="p-8">
+              {/* Imagem do Kit2 */}
+              <div className="relative w-full mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
+                <Image 
+                  src="/kit2.png" 
+                  alt="Kit Festa Junina Completa Downsell" 
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto object-cover"
+                  priority
+                />
+                <div className="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full font-black text-[10px] shadow-lg animate-bounce">
+                  SUPER OFERTA
+                </div>
+              </div>
+
               <h2 className="text-xl font-black text-slate-800 mb-6 flex items-center justify-center gap-2">
-                <Package className="w-6 h-6 text-primary" />
-                KIT MINI DECORAÇÃO
+                <PackageCheck className="w-6 h-6 text-primary" />
+                KIT DECORAÇÃO COMPLETO
               </h2>
 
-              <div className="grid grid-cols-1 gap-3 mb-8">
-                {essentialItems.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-xs font-bold text-slate-700">{item}</span>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {kitItems.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-700 text-left leading-tight">{item}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mb-8">
+                <p className="text-2xl font-black text-primary tracking-tighter italic">
+                  E MUITO MAIS! 🌽🔥🎉
+                </p>
               </div>
 
               {/* Price Tag */}
@@ -80,7 +108,7 @@ export default function DownsellPage() {
 
               <Button asChild className="w-full h-20 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-black text-sm shadow-[0_15px_35px_rgba(249,115,22,0.3)] hover:scale-[1.02] active:scale-95 transition-all mb-4">
                 <a href="https://pay.kirvano.com/7ba0e371-4ae2-4ed9-8f69-593150cbd551" className="flex items-center justify-center w-full h-full uppercase">
-                  SIM! QUERO O KIT ESSENCIAL <ArrowRight className="ml-2 w-4 h-4" />
+                  SIM! QUERO O KIT COMPLETO <ArrowRight className="ml-2 w-4 h-4" />
                 </a>
               </Button>
               

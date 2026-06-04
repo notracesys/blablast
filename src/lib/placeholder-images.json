@@ -49,6 +49,12 @@
       "imageHint": "party kit"
     },
     {
+      "id": "kit-downsell",
+      "description": "Kit Festa Junina Downsell",
+      "imageUrl": "/kit2.png",
+      "imageHint": "party kit"
+    },
+    {
       "id": "bonus-receitas",
       "description": "E-book +100 Receitas Juninas",
       "imageUrl": "/receitas.png",
