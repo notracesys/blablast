@@ -98,7 +98,7 @@ export default function DownsellPage() {
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Oferta Especial de Despedida</p>
                 <div className="flex items-start justify-center gap-0.5">
                   <span className="text-xl font-black text-slate-300 mt-2">R$</span>
-                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">7</span>
+                  <span className="text-6xl font-black text-slate-800 tracking-tighter leading-none">9</span>
                   <div className="flex flex-col items-start">
                     <span className="text-xl font-black text-slate-800 mt-1">,90</span>
                   </div>
