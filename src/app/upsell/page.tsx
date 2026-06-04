@@ -59,12 +59,14 @@ export default function UpsellPage() {
             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary to-orange-500" />
             
             <div className="p-8">
-              <div className="relative w-full aspect-square mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
+              {/* Imagem aumentada e adaptável */}
+              <div className="relative w-full mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50">
                 <Image 
                   src="/kit.png" 
                   alt="Kit Festa Junina Completa" 
-                  fill
-                  className="object-contain p-4"
+                  width={1200}
+                  height={800}
+                  className="w-full h-auto object-cover"
                   priority
                 />
                 <div className="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full font-black text-[10px] shadow-lg animate-bounce">
