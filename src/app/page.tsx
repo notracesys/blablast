@@ -84,8 +84,8 @@ export default function LandingPage() {
           </p>
 
           <div className="w-full max-w-xs flex flex-col gap-5">
-            <Button size="lg" className="w-full h-16 text-lg font-black bg-primary hover:bg-primary/90 shadow-[0_12px_35px_rgba(215,38,56,0.35)] transition-all active:scale-95 rounded-2xl text-white">
-              QUERO MEU PAINEL AGORA
+            <Button asChild size="lg" className="w-full h-16 text-lg font-black bg-primary hover:bg-primary/90 shadow-[0_12px_35px_rgba(215,38,56,0.35)] transition-all active:scale-95 rounded-2xl text-white cursor-pointer">
+              <a href="#oferta">QUERO MEU PAINEL AGORA</a>
             </Button>
             <div className="flex items-center justify-center gap-5 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-green-500" /> PDF Imediato</span>
@@ -152,7 +152,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing / Offer Section - Focused on Painel Gigante + Bonus */}
-      <section className="py-24 px-6 bg-slate-50 relative">
+      <section id="oferta" className="py-24 px-6 bg-slate-50 relative scroll-mt-10">
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
