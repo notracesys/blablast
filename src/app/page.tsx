@@ -36,9 +36,23 @@ export default function LandingPage() {
     "🎁 BÔNUS EXCLUSIVO: E-book +100 Receitas Juninas",
     "Doces tradicionais, Salgados e Bebidas típicas",
     "Receitas de família testadas e aprovadas",
-    "Dicas para preparar em grande quantidade",
     "Acesso vitalício ao material digital",
     "Arquivo pronto para ler no celular ou imprimir 🌽🎉🔥"
+  ];
+
+  const testimonials = [
+    {
+      name: "Ana Paula Silva",
+      role: "Mãe Festeira",
+      image: "/ref1.jpg",
+      text: "Simplesmente perfeito! Cada impressão segue o tamanho perfeitamente indicado na imagem. Ficou lindo na sala!"
+    },
+    {
+      name: "Mariana Costa",
+      role: "Decoradora",
+      image: "/ref2.jpg",
+      text: "Ameii esse painel! Se estiverem com dúvidas se cabe todo mundo na foto, podem comprar sem medo, coube minha família inteira sem cobrir o nome 😂"
+    }
   ];
 
   return (
@@ -131,15 +145,12 @@ export default function LandingPage() {
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
         <div className="max-w-md mx-auto relative">
-          {/* Main Offer Card */}
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100">
-            {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
               PAINEL GIGANTE + BÔNUS ESPECIAL
             </div>
             
             <div className="pt-16 pb-12 px-8">
-              {/* Price Display */}
               <div className="text-center mb-8">
                 <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Acesso Vitalício por apenas</p>
                 <div className="flex items-start justify-center gap-0.5">
@@ -151,10 +162,8 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Dotted Separator */}
               <div className="w-full h-px bg-transparent border-b-2 border-dashed border-slate-100 mb-8" />
 
-              {/* BONUS SECTION */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em] rounded-full">
                   <Utensils className="w-3.5 h-3.5" /> O ARRAIÁ MAIS SABOROSO
@@ -165,7 +174,6 @@ export default function LandingPage() {
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ GANHA:</span>
                 </h2>
 
-                {/* Bonus Image */}
                 <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-white aspect-[4/3]">
                   <Image 
                     src="/receitas.png" 
@@ -176,7 +184,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Bonus Highlight Section */}
               <div className="space-y-6 mb-12">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
                   <Gift className="w-4 h-4 text-green-600" />
@@ -197,7 +204,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Action Button */}
               <Button asChild className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
                 <a href="https://pay.kirvano.com/bc0d5a4b-f3e7-4499-82cd-e1a4069de172" className="flex items-center justify-center w-full h-full uppercase">Quero Meu Painel</a>
               </Button>
@@ -213,7 +219,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section - Profile Style */}
       <section className="py-20 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col items-center text-center mb-12">
@@ -224,46 +230,34 @@ export default function LandingPage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Feedback 1 */}
-            <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-md">
-              <div className="flex gap-1 mb-6 text-secondary">
-                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+            {testimonials.map((testimonial, idx) => (
+              <div key={idx} className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-md">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/20 shrink-0">
+                    <Image 
+                      src={testimonial.image} 
+                      alt={testimonial.name} 
+                      fill 
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800 text-sm leading-none">{testimonial.name}</h4>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">{testimonial.role}</p>
+                    <div className="flex gap-0.5 mt-2 text-secondary">
+                      {[...Array(5)].map((_, i) => <Star key={i} className="w-3 h-3 fill-current" />)}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-600 font-medium italic leading-relaxed">
+                  "{testimonial.text}"
+                </p>
               </div>
-              <p className="text-sm text-slate-700 font-bold italic mb-8 leading-relaxed">
-                "Simplesmente perfeito! Cada impressão segue o tamanho perfeitamente indicado na imagem."
-              </p>
-              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-white">
-                <Image 
-                  src="/ref1.jpg" 
-                  alt="Feedback Cliente 1 - Painel Festa Junina" 
-                  fill 
-                  className="object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Feedback 2 */}
-            <div className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100 shadow-sm transition-all hover:shadow-md">
-              <div className="flex gap-1 mb-6 text-secondary">
-                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-              </div>
-              <p className="text-sm text-slate-700 font-bold italic mb-8 leading-relaxed">
-                "Ameii esse painel! Se estiverem com dúvidas se cabe todo mundo na foto, podem comprar sem medo, coube minha família inteira sem cobrir o nome 😂"
-              </p>
-              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden shadow-lg border border-white">
-                <Image 
-                  src="/ref2.jpg" 
-                  alt="Feedback Cliente 2 - Painel Festa Junina" 
-                  fill 
-                  className="object-cover"
-                />
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 px-6 border-t border-slate-100 bg-white text-center">
         <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">
           Todos os direitos reservados
