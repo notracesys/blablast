@@ -76,13 +76,19 @@ export default function UpsellPage() {
                 O QUE VOCÊ VAI RECEBER:
               </h2>
 
-              <div className="grid grid-cols-2 gap-3 mb-10">
+              <div className="grid grid-cols-2 gap-3 mb-6">
                 {kitItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
                     <span className="text-[10px] font-bold text-slate-700 text-left leading-tight">{item}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mb-10 animate-pulse">
+                <p className="text-3xl font-black text-primary tracking-tighter italic">
+                  E MUITO MAIS! 🌽🔥🎉
+                </p>
               </div>
 
               {/* Price Tag */}
