@@ -103,8 +103,8 @@ export default function UpsellPage() {
                 </div>
               </div>
 
-              <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(34,197,94,0.3)] hover:scale-[1.02] active:scale-95 transition-all mb-4">
-                SIM! QUERO A FESTA COMPLETA <ArrowRight className="ml-2 w-5 h-5" />
+              <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-sm shadow-[0_15px_35px_rgba(34,197,94,0.3)] hover:scale-[1.02] active:scale-95 transition-all mb-4">
+                SIM! QUERO A FESTA COMPLETA <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
               
               <button className="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors py-2">
