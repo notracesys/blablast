@@ -47,6 +47,12 @@
       "description": "Kit Festa Junina Completo",
       "imageUrl": "/kit.png",
       "imageHint": "party kit"
+    },
+    {
+      "id": "bonus-receitas",
+      "description": "E-book +100 Receitas Juninas",
+      "imageUrl": "/receitas.png",
+      "imageHint": "brazilian food recipes"
     }
   ]
 }

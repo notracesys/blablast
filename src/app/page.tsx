@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Image from 'next/image';
 import { 
@@ -80,7 +79,7 @@ export default function LandingPage() {
 
           <div className="w-full max-w-xs flex flex-col gap-5">
             <Button asChild size="lg" className="w-full h-16 text-lg font-black bg-primary hover:bg-primary/90 shadow-[0_12px_35px_rgba(215,38,56,0.35)] transition-all active:scale-95 rounded-2xl text-white cursor-pointer">
-              <a href="#oferta">QUERO MEU PAINEL AGORA</a>
+              <a href="#oferta">QUERO MEU PAINEL</a>
             </Button>
             <div className="flex items-center justify-center gap-5 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
               <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-green-500" /> PDF Imediato</span>
@@ -164,12 +163,14 @@ export default function LandingPage() {
                   <span className="text-primary underline decoration-wavy decoration-secondary/40">VOCÊ GANHA:</span>
                 </h2>
 
-                {/* Bonus Image - Simplified to represent Recipes/Food */}
-                <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-slate-50 aspect-video flex items-center justify-center p-8">
-                  <div className="flex flex-col items-center gap-3 text-primary">
-                    <BookOpen className="w-16 h-16" />
-                    <p className="font-black text-sm uppercase tracking-widest">+100 RECEITAS</p>
-                  </div>
+                {/* Bonus Image */}
+                <div className="relative w-full mb-4 rounded-2xl overflow-hidden shadow-lg border border-slate-100 bg-white aspect-[4/3]">
+                  <Image 
+                    src="/receitas.png" 
+                    alt="Bônus: 100 Receitas Juninas" 
+                    fill 
+                    className="object-cover"
+                  />
                 </div>
               </div>
 
