@@ -223,7 +223,7 @@ export default function LandingPage() {
 
               {/* Action Button */}
               <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                QUERO MEU PAINEL + KIT COMPLETO
+                QUERO MEU PAINEL
               </Button>
               
               <div className="mt-6 flex flex-col items-center gap-2 opacity-50">
