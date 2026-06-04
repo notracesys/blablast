@@ -109,27 +109,6 @@ export default function LandingPage() {
         <ScalePreview />
       </section>
 
-      {/* Benefits Grid */}
-      <section className="py-16 px-6 bg-secondary/5">
-        <div className="grid grid-cols-1 gap-5 max-w-sm mx-auto">
-          <BenefitCard 
-            icon={<Layout className="w-7 h-7 text-primary" />}
-            title="Cenário Imponente"
-            desc="3 metros de largura. Ocupa a parede inteira do seu evento."
-          />
-          <BenefitCard 
-            icon={<Printer className="w-7 h-7 text-accent" />}
-            title="Impressão Caseira"
-            desc="Fatiado em folhas A4. Imprima e monte como um quebra-cabeça."
-          />
-          <BenefitCard 
-            icon={<ShieldCheck className="w-7 h-7 text-green-600" />}
-            title="Preço Imbatível"
-            desc="Menos de 10% do valor de um painel de lona tradicional."
-          />
-        </div>
-      </section>
-
       {/* Steps Section */}
       <section className="py-20 px-6 bg-secondary/5">
         <div className="text-center mb-12">
