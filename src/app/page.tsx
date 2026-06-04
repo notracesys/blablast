@@ -12,13 +12,15 @@ import {
   Layout, 
   Star,
   Gift,
-  PartyPopper
+  PartyPopper,
+  Utensils
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { DecorativeFlags } from '@/components/landing/DecorativeFlags';
 import { ScalePreview } from '@/components/landing/ScalePreview';
 import { UrgencyTimer } from '@/components/landing/UrgencyTimer';
+import { AIPlannerAssistant } from '@/components/landing/AIPlannerAssistant';
 
 export default function LandingPage() {
   const steps = [
@@ -30,6 +32,7 @@ export default function LandingPage() {
   ];
 
   const bonuses = [
+    "🎁 BÔNUS: E-book +100 Receitas Juninas",
     "Caixas para Pipoca, Milho e Cachorro-Quente",
     "Sacolinhas Surpresa",
     "Convites Personalizados",
@@ -40,8 +43,7 @@ export default function LandingPage() {
     "Marmitinhas Personalizadas",
     "Rótulos Decorativos",
     "Moldes Especiais para Festa Junina",
-    "Arquivos Prontos para Imprimir",
-    "E Muito Mais! 🌽🎉🔥"
+    "Arquivos Prontos para Imprimir 🌽🎉🔥"
   ];
 
   return (
@@ -129,13 +131,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Steps Section */}
+      {/* AI Assistant Section */}
       <section className="py-20 px-6 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl font-black text-primary tracking-tight">BÔNUS EXCLUSIVO: Planejador IA</h2>
+            <p className="text-slate-500 text-sm mt-2">Nossa inteligência artificial cria seu plano de festa personalizado em segundos.</p>
+          </div>
+          <AIPlannerAssistant />
+        </div>
+      </section>
+
+      {/* Steps Section */}
+      <section className="py-20 px-6 bg-secondary/5">
         <div className="text-center mb-12">
           <h2 className="text-2xl font-black text-primary tracking-tight">Como funciona?</h2>
         </div>
         <div className="space-y-12 max-w-[280px] mx-auto relative">
-          <div className="absolute left-6 top-0 w-[2px] h-full bg-slate-100 z-0" />
+          <div className="absolute left-6 top-0 w-[2px] h-full bg-slate-200 z-0" />
           {steps.map((step, idx) => (
             <div key={idx} className="flex items-center gap-8 relative z-10">
               <div className="w-12 h-12 rounded-2xl bg-white border-2 border-primary/20 flex items-center justify-center shadow-lg shrink-0">
@@ -150,7 +163,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing / Offer Section - Focused on Painel Gigante + Bonus */}
+      {/* Pricing / Offer Section */}
       <section id="oferta" className="py-24 px-6 bg-slate-50 relative scroll-mt-10">
         <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent" />
         
@@ -159,7 +172,7 @@ export default function LandingPage() {
           <div className="relative bg-white rounded-[2.5rem] shadow-[0_30px_70px_rgba(0,0,0,0.12)] border border-slate-100">
             {/* Gradient Top Label */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-orange-500 text-white px-8 py-2 rounded-full font-black text-xs shadow-xl z-20 whitespace-nowrap">
-              PAINEL GIGANTE + KIT BRINDES
+              PAINEL GIGANTE + SUPER KIT BÔNUS
             </div>
             
             <div className="pt-16 pb-12 px-8">
@@ -181,7 +194,7 @@ export default function LandingPage() {
               {/* BONUS SECTION */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary font-black text-[10px] mb-6 uppercase tracking-[0.2em] rounded-full">
-                  <PartyPopper className="w-3.5 h-3.5" /> EXCLUSIVO
+                  <PartyPopper className="w-3.5 h-3.5" /> O MAIS COMPLETO DO MERCADO
                 </div>
                 
                 <h2 className="text-3xl font-black text-slate-900 leading-[1] tracking-tighter mb-8">
@@ -205,7 +218,7 @@ export default function LandingPage() {
               <div className="space-y-6 mb-12">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-xl border border-green-100 w-fit mx-auto mb-6">
                   <Gift className="w-4 h-4 text-green-600" />
-                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 KIT FESTA COMPLETO INCLUSO:</span>
+                  <span className="text-[10px] font-black text-green-700 uppercase tracking-widest">🎁 TUDO ISSO INCLUSO:</span>
                 </div>
                 
                 <div className="space-y-3">
@@ -214,7 +227,9 @@ export default function LandingPage() {
                       <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center shrink-0 mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
                       </div>
-                      <span className="text-slate-600 text-xs font-semibold leading-tight">{item}</span>
+                      <span className={`text-xs font-semibold leading-tight ${item.includes('BÔNUS') ? 'text-primary font-black' : 'text-slate-600'}`}>
+                        {item}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -222,7 +237,7 @@ export default function LandingPage() {
 
               {/* Action Button */}
               <Button asChild className="w-full h-16 rounded-2xl bg-gradient-to-r from-primary to-orange-600 text-white font-black text-lg shadow-[0_15px_35px_rgba(215,38,56,0.3)] hover:scale-[1.02] active:scale-95 transition-all">
-                <a href="#oferta" className="flex items-center justify-center w-full h-full">QUERO MEU PAINEL</a>
+                <a href="#oferta" className="flex items-center justify-center w-full h-full uppercase">Quero Meu Painel</a>
               </Button>
               
               <div className="mt-6 flex flex-col items-center gap-2 opacity-50">
