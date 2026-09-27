@@ -12,7 +12,6 @@ export default function GamePage() {
   const [showGameOver, setShowGameOver] = useState(false);
   const [showDemoWithdraw, setShowDemoWithdraw] = useState(false);
   
-  // Estados reativos da lógica de negócio informada
   const [linesCompleted, setLinesCompleted] = useState(0);
   const [currentScore, setCurrentScore] = useState(0);
 
@@ -193,9 +192,9 @@ export default function GamePage() {
       ctx.scale(scale, scale);
 
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.8), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 4;
       ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
@@ -648,7 +647,6 @@ export default function GamePage() {
     }
 
     function updateUI() {
-      // Atualizações de UI geridas por estado reativo do React
     }
 
     function resizeCanvas() {
@@ -657,9 +655,9 @@ export default function GamePage() {
       if (!container) return;
 
       const containerRect = container.getBoundingClientRect();
-      const availableSize = Math.min(containerRect.width || 320, containerRect.height || 320);
+      const availableSize = Math.min(containerRect.width || 300, containerRect.height || 300);
       let cellSize = Math.floor(availableSize / BOARD_SIZE);
-      if (cellSize < 20) cellSize = 20;
+      if (cellSize < 18) cellSize = 18;
       CELL_SIZE = cellSize;
 
       const canvasSize = cellSize * BOARD_SIZE;
@@ -699,7 +697,6 @@ export default function GamePage() {
     window.addEventListener('resize', resizeCanvas);
     generateShapes(PIECE_SLOTS);
     
-    // Configura os escutadores globais de mouse/toque
     const handleMove = (e: MouseEvent) => { if (gameState.dragging) onDragMove(e.clientX, e.clientY); };
     const handleUp = (e: MouseEvent) => { if (gameState.dragging) { onDragEnd(e.clientX, e.clientY); e.preventDefault(); } };
     const handleTouchMove = (e: TouchEvent) => { if (gameState.dragging && e.touches.length === 1) { onDragMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); } };
@@ -741,7 +738,6 @@ export default function GamePage() {
     if (btn) (btn as HTMLButtonElement).click();
   };
 
-  // Cálculos reativos da regra informada pelo usuário
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
   const realEarnings = isTargetAchieved ? FINAL_PRIZE : 0;
@@ -751,161 +747,140 @@ export default function GamePage() {
   return (
     <div 
       ref={containerRef} 
-      className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 relative" 
+      className="w-full h-screen text-white select-none flex flex-col justify-between p-3 relative overflow-hidden" 
       style={{ backgroundImage: "url('/fundo1.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
       onClick={() => GameAudio.unlock()} 
       onTouchStart={() => GameAudio.unlock()}
     >
-      {/* Camada para escurecer e desfocar levemente o fundo1.png */}
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[6px] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[7px] pointer-events-none z-0"></div>
       
-      <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
-        {/* HEADER PREMIUM COM LOGO CENTRALIZADA NO TOPO */}
-        <header className="w-full grid grid-cols-3 items-center h-14 relative z-20">
-          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white justify-self-start">
-            <ArrowLeft className="w-5 h-5" />
+      <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative overflow-hidden">
+        {/* HEADER COMPACTO SEM ROLAGEM */}
+        <header className="w-full grid grid-cols-3 items-center h-10 relative z-20 shrink-0">
+          <Link href="/" className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white justify-self-start">
+            <ArrowLeft className="w-4 h-4" />
           </Link>
           
           <div className="flex items-center justify-center justify-self-center">
             <Image 
               src="/blockcash.png" 
               alt="Block Cash Logo" 
-              width={110} 
-              height={36} 
-              className="object-contain filter drop-shadow-[0_2px_8px_rgba(38,217,255,0.4)]"
+              width={90} 
+              height={30} 
+              className="object-contain filter drop-shadow-[0_2px_6px_rgba(38,217,255,0.4)]"
               priority
             />
           </div>
 
           <div className="justify-self-end">
-            <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
+            <span className="px-1.5 py-0.5 rounded border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[8px] font-black tracking-wider uppercase">
               TESTE
             </span>
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-4 flex-1 justify-center my-auto">
-          {/* SEÇÃO DA ENTRADA E PREMIO MAXIMO REESTILIZADOS */}
-          <section className="grid grid-cols-2 gap-3">
-            <article className="p-3.5 rounded-2xl border border-white/5 bg-gradient-to-b from-slate-900/60 to-slate-950/80 backdrop-blur-md flex flex-col gap-1 shadow-lg">
-              <span className="text-[9px] text-white/40 uppercase font-black tracking-widest">Entrada fixa</span>
-              <strong className="text-lg font-black text-white/95">R$ {BET_AMOUNT},00</strong>
-            </article>
-
-            <article className="p-3.5 rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-yellow-950/40 to-slate-950/80 backdrop-blur-md flex flex-col gap-1 shadow-lg">
-              <span className="text-[9px] text-yellow-400/60 uppercase font-black tracking-widest flex items-center gap-1">
-                <Target className="w-3 h-3 text-yellow-400" /> Meta do Jogo
-              </span>
-              <strong className="text-lg font-black text-yellow-400">4 Linhas Extintas</strong>
-            </article>
-          </section>
-
-          {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO DESTAQUE TOTAL (VERDE) */}
-          <section className="text-center p-4 flex flex-col items-center rounded-2xl">
-            <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">
-              {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
-            </small>
-            
-            {/* VALOR DESTAQUE BEM GRANDE COR VERDE */}
-            <strong className="text-6xl font-[1000] text-emerald-400 tracking-tight mb-2 drop-shadow-[0_2px_25px_rgba(52,245,154,0.4)]">
-              R$ {currentPotentialPrize},00
-            </strong>
-
-            <div className="text-[11px] font-bold text-white/70 mb-4 space-y-0.5">
-              <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas</div>
-              {!isTargetAchieved && (
-                <div className="text-[10px] text-amber-400/90 font-medium">
-                  Complete {TARGET_LINES} linhas para liberar <span className="font-bold">R$ {FINAL_PRIZE},00</span>
-                </div>
-              )}
-              {isTargetAchieved && (
-                <div className="text-[10px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center animate-bounce mt-1">
-                  <Award className="w-3.5 h-3.5 text-emerald-400" /> Lucro Líquido Garantido: R$ {netProfit},00
-                </div>
-              )}
-            </div>
-
-            {/* BARRA DE PROGRESSO DE ACORDO COM AS LINHAS */}
-            <div className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px] mb-2">
-              <div 
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)] transition-all duration-300"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
-
-            {/* BOTÃO DE RESGATAR COMPATÍVEL COM O MODO DEMO */}
-            {isTargetAchieved && (
-              <button 
-                onClick={() => {
-                  GameAudio.play('swtch');
-                  setShowDemoWithdraw(true);
-                }}
-                className="w-full mt-2 h-12 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-sm tracking-wide uppercase shadow-[0_0_20px_rgba(52,245,154,0.4)] hover:opacity-95 active:scale-95 transition-transform flex items-center justify-center gap-2"
-              >
-                <Wallet className="w-4 h-4 text-slate-950" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
-              </button>
-            )}
-          </section>
-
-          {/* TABLEIRO DO JOGO */}
-          <section className="w-full aspect-square p-2 bg-slate-900/30 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center shadow-2xl">
-            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
-              <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
-            </div>
-          </section>
-
-          {/* SLOTS DAS PEÇAS */}
-          <section className="grid grid-cols-3 gap-2.5" id="shapesList" aria-label="Peças disponíveis"></section>
+        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA */}
+        <section className="text-center p-2 flex flex-col items-center rounded-xl shrink-0 my-1 bg-slate-900/20 border border-white/5">
+          <small className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-0.5">
+            {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
+          </small>
           
-          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto text-center mt-1">
-            <Info className="w-3.5 h-3.5 text-white/30 shrink-0" />
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Arraste uma peça para o tabuleiro e complete linhas completas.</p>
+          <strong className="text-4xl font-[1000] text-emerald-400 tracking-tight drop-shadow-[0_2px_15px_rgba(52,245,154,0.4)]">
+            R$ {currentPotentialPrize},00
+          </strong>
+
+          <div className="text-[10px] font-bold text-white/70 mt-1 space-y-0.5">
+            <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas completas</div>
+            {!isTargetAchieved && (
+              <div className="text-[9px] text-amber-400/90 font-medium">
+                Custo de Entrada: R$ 10,00 • Complete 4 linhas para liberar <span className="font-bold">R$ {FINAL_PRIZE},00</span>
+              </div>
+            )}
+            {isTargetAchieved && (
+              <div className="text-[9px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center animate-bounce">
+                <Award className="w-3 h-3 text-emerald-400" /> Lucro Líquido: R$ {netProfit},00 Garantido
+              </div>
+            )}
           </div>
-        </main>
+
+          <div className="h-1 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px] mt-1.5">
+            <div 
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)] transition-all duration-300"
+              style={{ width: `${progressPercentage}%` }}
+            ></div>
+          </div>
+
+          {isTargetAchieved && (
+            <button 
+              onClick={() => {
+                GameAudio.play('swtch');
+                setShowDemoWithdraw(true);
+              }}
+              className="w-full mt-2 h-9 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_15px_rgba(52,245,154,0.4)] flex items-center justify-center gap-1.5"
+            >
+              <Wallet className="w-3.5 h-3.5 text-slate-950" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
+            </button>
+          )}
+        </section>
+
+        {/* TABLEIRO DO JOGO ADAPTÁVEL */}
+        <section className="w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden my-auto max-w-[340px] mx-auto">
+          <div className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
+            <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
+          </div>
+        </section>
+
+        {/* SLOTS DAS PEÇAS COMPACTAS */}
+        <section className="grid grid-cols-3 gap-2 mt-2 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
+        
+        <div className="flex items-center justify-center gap-1.5 text-center mt-1 shrink-0">
+          <Info className="w-3 h-3 text-white/30 shrink-0" />
+          <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças para completar linhas completas.</p>
+        </div>
       </div>
 
-      {/* BOTÃO DE VOLUME FLUTUANTE EXCLUSIVO NO CANTO INFERIOR DIREITO */}
+      {/* CONTROLE DE VOLUME FLUTUANTE */}
       <button 
         onClick={toggleSound} 
-        className="absolute bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center border border-white/10 bg-slate-900/90 backdrop-blur-md text-white shadow-2xl z-[5000] active:scale-95 transition-transform"
+        className="absolute bottom-4 right-4 w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-slate-900/90 backdrop-blur-md text-white shadow-xl z-[5000] active:scale-95 transition-transform"
         aria-label="Alternar som"
       >
-        {isMutedState ? <VolumeX className="w-5.5 h-5.5 opacity-50" /> : <Volume2 className="w-5.5 h-5.5" />}
+        {isMutedState ? <VolumeX className="w-4 h-4 opacity-50" /> : <Volume2 className="w-4 h-4" />}
       </button>
 
-      {/* MODAL DE EXPLICAÇÃO DO RESGATE NO MODO TESTE */}
+      {/* MODAL MODO TESTE */}
       <div className={`modal-overlay fixed inset-0 ${showDemoWithdraw ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[4000]`}>
-        <div className="modal-content w-full max-w-xs p-6 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
-          <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
-            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+        <div className="modal-content w-full max-w-xs p-5 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
+          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           </div>
-          <h2 className="text-xl font-black text-white uppercase tracking-wide mb-2">Objetivo Concluído!</h2>
-          <p className="text-white/70 text-xs mb-4 leading-relaxed">
+          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Objetivo Concluído!</h2>
+          <p className="text-white/70 text-xs mb-3">
             Parabéns! Você alcançou a meta e acumulou <span className="text-emerald-400 font-bold">R$ {FINAL_PRIZE},00</span>.
           </p>
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-white/5 text-[11px] text-white/50 text-left mb-5 leading-normal">
+          <div className="p-2.5 bg-slate-950/60 rounded-xl border border-white/5 text-[10px] text-white/50 text-left mb-4">
             ⚠️ <span className="text-white font-semibold">Aviso de Modo Teste:</span> Como você está jogando a versão de demonstração gratuita, o saldo gerado é fictício. Crie sua conta real agora para faturar de verdade!
           </div>
 
-          <Link href="/" className="w-full h-11 rounded-lg font-bold text-sm bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center transition-transform active:scale-95 shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-3">
+          <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2">
             CRIAR CONTA REAL & SACAR
           </Link>
           <button 
             onClick={() => setShowDemoWithdraw(false)} 
-            className="w-full h-10 rounded-lg text-xs font-semibold border border-white/10 text-white/60 hover:text-white"
+            className="w-full h-9 rounded-lg text-[11px] font-semibold border border-white/10 text-white/60 hover:text-white"
           >
             Continuar Testando
           </button>
         </div>
       </div>
 
-      {/* MODAL DE FIM DE JOGO */}
+      {/* MODAL GAME OVER */}
       <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[3000]`} id="gameOverModal">
-        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl animate-in scale-in duration-200">
-          <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-4 font-medium">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+        <div className="modal-content w-full max-w-xs p-5 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
+          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
+          <p className="text-white/60 text-xs mb-3">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
           
-          <div className="my-4 p-3 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1.5">
+          <div className="my-3 p-2.5 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1">
             <div className="flex justify-between">
               <span className="text-white/50">Linhas feitas:</span>
               <span className="font-bold text-white">{linesCompleted} / 4</span>
@@ -917,23 +892,23 @@ export default function GamePage() {
               </span>
             </div>
             <div className="h-px bg-white/5 my-1" />
-            <div className="flex justify-between text-[13px]">
+            <div className="flex justify-between text-xs">
               <span className="font-bold text-white/70">Prêmio Resgatado:</span>
               <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-red-400'}`}>
                 R$ {realEarnings},00
               </span>
             </div>
             {!isTargetAchieved && (
-              <p className="text-[9px] text-red-400/80 leading-tight mt-1">
+              <p className="text-[9px] text-red-400/80 leading-tight mt-0.5">
                 *O valor em formação foi perdido por não completar a meta de 4 linhas.
               </p>
             )}
           </div>
 
-          <button id="restartBtn" onClick={handleManualRestart} className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)] active:scale-95">
+          <button id="restartBtn" onClick={handleManualRestart} className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]">
             Jogar de novo
           </button>
-          <Link href="/" className="w-full h-11 rounded-lg font-medium text-xs flex items-center justify-center border border-white/10 text-white hover:bg-white/5 transition-colors">
+          <Link href="/" className="w-full h-10 rounded-lg font-medium text-[11px] flex items-center justify-center border border-white/10 text-white">
             Voltar para o início
           </Link>
         </div>
