@@ -2,13 +2,22 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Volume2, VolumeX, Info } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, HelpCircle } from 'lucide-react';
 import { GameAudio } from './audios';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
+  
+  // Estados reativos da lógica de negócio informada
+  const [linesCompleted, setLinesCompleted] = useState(0);
+  const [currentScore, setCurrentScore] = useState(0);
+
+  const TARGET_LINES = 4;
+  const BET_AMOUNT = 10;
+  const VALUE_PER_LINE = 5;
+  const FINAL_PRIZE = 20;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -21,9 +30,6 @@ export default function GamePage() {
     const PREVIEW_CELL_SIZE = 20;
     const PREVIEW_MAX_SIZE = 76;
     const PIECE_SLOTS = 3;
-    const BET_AMOUNT = 10;
-    const MAX_WIN_AMOUNT = 50;
-    const SCORE_TO_BRL_DIVISOR = 100;
 
     const SHAPE_DEFINITIONS = [
       { matrix: [[1]], complexity: 0 },
@@ -50,30 +56,12 @@ export default function GamePage() {
       { matrix: [[1, 1, 1], [0, 0, 1]], complexity: 3 },
       { matrix: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], complexity: 4 },
       { matrix: [[1, 0, 1], [1, 1, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1], [1, 0, 1]], complexity: 4 },
-      { matrix: [[1, 1, 0], [0, 1, 1], [0, 1, 0]], complexity: 4 },
-      { matrix: [[0, 1, 1], [1, 1, 0], [0, 1, 0]], complexity: 4 },
-      { matrix: [[1, 1], [1, 1], [1, 0]], complexity: 4 },
-      { matrix: [[1, 1], [1, 1], [0, 1]], complexity: 4 },
-      { matrix: [[1, 0, 0], [1, 1, 0], [0, 1, 1]], complexity: 4 },
-      { matrix: [[0, 0, 1], [0, 1, 1], [1, 1, 0]], complexity: 4 },
-      { matrix: [[1, 1, 1, 1], [0, 0, 1, 0]], complexity: 4 },
-      { matrix: [[0, 0, 1, 0], [1, 1, 1, 1]], complexity: 4 },
-      { matrix: [[0, 1, 1], [1, 1, 0], [1, 0, 0]], complexity: 4 },
-      { matrix: [[1, 1, 0], [0, 1, 1], [0, 0, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1], [1, 0, 0], [1, 1, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1], [0, 0, 1], [1, 1, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1, 1], [0, 0, 0, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1, 1], [1, 0, 0, 0]], complexity: 4 },
-      { matrix: [[1, 0, 0, 0], [1, 1, 1, 1]], complexity: 4 },
-      { matrix: [[0, 0, 0, 1], [1, 1, 1, 1]], complexity: 4 }
+      { matrix: [[1, 1, 1], [1, 0, 1]], complexity: 4 }
     ];
 
     const COLOR_PALETTES = [
       { h: 208, s: 95, l: 56 }, { h: 128, s: 68, l: 48 }, { h: 276, s: 88, l: 60 },
-      { h: 45, s: 100, l: 55 }, { h: 2, s: 88, l: 56 }, { h: 190, s: 92, l: 50 },
-      { h: 330, s: 88, l: 60 }, { h: 24, s: 96, l: 55 }, { h: 158, s: 78, l: 44 },
-      { h: 250, s: 82, l: 62 }, { h: 98, s: 72, l: 48 }, { h: 348, s: 84, l: 62 }
+      { h: 45, s: 100, l: 55 }, { h: 190, s: 92, l: 50 }, { h: 24, s: 96, l: 55 }
     ];
 
     let CELL_SIZE = 36;
@@ -82,10 +70,8 @@ export default function GamePage() {
       shapes: [] as any[],
       score: 0,
       lines: 0,
-      level: 1,
       isPaused: false,
       isGameOver: false,
-      hintActive: false,
       dragging: null as any,
       clearingLines: {
         rows: [] as number[],
@@ -101,13 +87,6 @@ export default function GamePage() {
     let dragRafId: number | null = null;
     let pendingPointerX = 0;
     let pendingPointerY = 0;
-
-    function formatBRL(value: number) {
-      return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      }).format(value);
-    }
 
     function generateColor() {
       const c = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
@@ -171,13 +150,13 @@ export default function GamePage() {
       ctx.shadowBlur = 0;
 
       const gloss = ctx.createLinearGradient(x, y, x, y + size * 0.4);
-      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
       gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.fillStyle = gloss;
       ctx.fill();
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
       ctx.lineWidth = 1;
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.stroke();
@@ -189,7 +168,7 @@ export default function GamePage() {
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.fillStyle = gradient;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
       ctx.lineWidth = 1;
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.stroke();
@@ -197,7 +176,7 @@ export default function GamePage() {
 
     function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any) {
       const size = CELL_SIZE - 4;
-      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.15, color, 2);
+      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.15, color, 1);
     }
 
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
@@ -237,17 +216,6 @@ export default function GamePage() {
 
       const dynamicColor = progress < 0.35 ? { primary: '#ffffff', secondary: color.primary, tertiary: color.secondary } : color;
       paintTile(ctx, cellX, cellY, size, radius, dynamicColor, Math.max(0, 35 * (1 - progress)));
-
-      if (progress < 0.45) {
-        ctx.strokeStyle = `rgba(255, 255, 255, ${Math.max(0, 1 - progress * 2.2)})`;
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(-CELL_SIZE * 1.5, 0);
-        ctx.lineTo(CELL_SIZE * 1.5, 0);
-        ctx.moveTo(0, -CELL_SIZE * 1.5);
-        ctx.lineTo(0, CELL_SIZE * 1.5);
-        ctx.stroke();
-      }
 
       ctx.restore();
     }
@@ -347,8 +315,9 @@ export default function GamePage() {
             for (let row = 0; row < BOARD_SIZE; row++) gameState.board[row][col] = 0;
           });
           gameState.lines += clearedCount;
-          gameState.level = Math.floor(gameState.lines / 10) + 1;
           gameState.clearingLines.isAnimating = false;
+          
+          setLinesCompleted(gameState.lines);
           updateUI();
           render();
           checkGameOver();
@@ -376,8 +345,10 @@ export default function GamePage() {
       GameAudio.play('encaixe');
 
       const linesCleared = clearLines();
-      gameState.score += blocksPlaced * gameState.level * 10;
-      if (linesCleared > 0) gameState.score += linesCleared * gameState.level * 100;
+      gameState.score += blocksPlaced * 10;
+      if (linesCleared > 0) gameState.score += linesCleared * 100;
+      
+      setCurrentScore(gameState.score);
 
       if (gameState.shapes.length === 0) {
         generateShapes(PIECE_SLOTS);
@@ -672,19 +643,7 @@ export default function GamePage() {
     }
 
     function updateUI() {
-      const prizeEl = document.getElementById('prizeValue');
-      const barEl = document.getElementById('winProgressBar');
-      const prize = gameState.score / SCORE_TO_BRL_DIVISOR;
-
-      if (prizeEl) prizeEl.textContent = formatBRL(prize);
-
-      const progress = Math.min(100, (prize / MAX_WIN_AMOUNT) * 100);
-      if (barEl) barEl.style.width = progress.toFixed(2) + '%';
-
-      const betEl = document.getElementById('betValue');
-      const maxWinEl = document.getElementById('maxWinValue');
-      if (betEl) betEl.textContent = formatBRL(BET_AMOUNT);
-      if (maxWinEl) maxWinEl.textContent = formatBRL(MAX_WIN_AMOUNT);
+      // Atualizações de UI geridas por estado reativo do React
     }
 
     function resizeCanvas() {
@@ -718,43 +677,14 @@ export default function GamePage() {
       gameState.shapes = [];
       gameState.score = 0;
       gameState.lines = 0;
-      gameState.level = 1;
       gameState.isGameOver = false;
+      
+      setLinesCompleted(0);
+      setCurrentScore(0);
       setShowGameOver(false);
 
       generateShapes(PIECE_SLOTS);
-      updateUI();
       render();
-    }
-
-    function setupEventListeners() {
-      document.addEventListener('mousemove', (e) => {
-        if (gameState.dragging) onDragMove(e.clientX, e.clientY);
-      }, { passive: true });
-
-      document.addEventListener('mouseup', (e) => {
-        if (gameState.dragging) {
-          onDragEnd(e.clientX, e.clientY);
-          e.preventDefault();
-        }
-      });
-
-      document.addEventListener('touchmove', (e) => {
-        if (gameState.dragging && e.touches.length === 1) {
-          onDragMove(e.touches[0].clientX, e.touches[0].clientY);
-          e.preventDefault();
-        }
-      }, { passive: false });
-
-      document.addEventListener('touchend', (e) => {
-        if (gameState.dragging && e.changedTouches?.length > 0) {
-          onDragEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-          e.preventDefault();
-        }
-      }, { passive: false });
-
-      const restartBtn = document.getElementById('restartBtn');
-      if (restartBtn) restartBtn.onclick = restartGame;
     }
 
     boardCanvas = document.getElementById('gameBoard') as HTMLCanvasElement | null;
@@ -763,12 +693,30 @@ export default function GamePage() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     generateShapes(PIECE_SLOTS);
-    setupEventListeners();
+    
+    // Configura os escutadores globais de mouse/toque
+    const handleMove = (e: MouseEvent) => { if (gameState.dragging) onDragMove(e.clientX, e.clientY); };
+    const handleUp = (e: MouseEvent) => { if (gameState.dragging) { onDragEnd(e.clientX, e.clientY); e.preventDefault(); } };
+    const handleTouchMove = (e: TouchEvent) => { if (gameState.dragging && e.touches.length === 1) { onDragMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); } };
+    const handleTouchEnd = (e: TouchEvent) => { if (gameState.dragging && e.changedTouches?.length > 0) { onDragEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY); e.preventDefault(); } };
+
+    document.addEventListener('mousemove', handleMove, { passive: true });
+    document.addEventListener('mouseup', handleUp);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    const restartBtn = document.getElementById('restartBtn');
+    if (restartBtn) restartBtn.onclick = restartGame;
+
     updateUI();
     render();
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
       if (dragGhost) dragGhost.remove();
       GameAudio.stopMusic();
     };
@@ -784,21 +732,28 @@ export default function GamePage() {
 
   const handleManualRestart = () => {
     setShowGameOver(false);
-    const restartBtn = document.getElementById('restartBtn');
-    if (restartBtn) {
-      (restartBtn as HTMLButtonElement).click();
-    }
+    // Dispara o clique interno para resetar a mecânica nativa do canvas
+    const btn = document.getElementById('restartBtn');
+    if (btn) (btn as HTMLButtonElement).click();
   };
+
+  // Cálculos reativos da regra informada pelo usuário
+  const isTargetAchieved = linesCompleted >= TARGET_LINES;
+  const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
+  const realEarnings = isTargetAchieved ? FINAL_PRIZE : 0;
+  const netProfit = isTargetAchieved ? (FINAL_PRIZE - BET_AMOUNT) : 0;
+  const progressPercentage = Math.min(100, (linesCompleted / TARGET_LINES) * 100);
 
   return (
     <div 
       ref={containerRef} 
-      className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-cover bg-center bg-no-repeat relative" 
-      style={{ backgroundImage: "url('/fundo1.png')" }}
+      className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 relative" 
+      style={{ backgroundImage: "url('/fundo1.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
       onClick={() => GameAudio.unlock()} 
       onTouchStart={() => GameAudio.unlock()}
     >
-      <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[4px] pointer-events-none z-0"></div>
+      {/* Camada para escurecer e desfocar levemente o fundo1.png */}
+      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
         <header className="w-full flex items-center justify-between h-14">
@@ -806,7 +761,7 @@ export default function GamePage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           
-          <span className="text-base font-black tracking-widest text-white">
+          <span className="text-sm font-black tracking-widest text-white/90">
             BLOCK CASH
           </span>
 
@@ -821,49 +776,104 @@ export default function GamePage() {
         </header>
 
         <main className="w-full flex flex-col gap-4 flex-1 justify-center my-auto">
+          {/* DIVS BONITAS DA APOSTA E META */}
           <section className="grid grid-cols-2 gap-3">
-            <article className="p-3.5 rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
-              <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">Aposta demo</span>
-              <strong id="betValue" className="text-lg font-black text-white/95">R$ 10,00</strong>
+            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-sm flex flex-col gap-0.5">
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest">Entrada fixa</span>
+              <strong className="text-base font-black text-white/95">R$ {BET_AMOUNT},00</strong>
             </article>
 
-            <article className="p-3.5 rounded-2xl border border-yellow-500/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
-              <span className="text-[10px] text-yellow-400/50 uppercase font-black tracking-widest">Prêmio máximo</span>
-              <strong id="maxWinValue" className="text-lg font-black text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]">R$ 50,00</strong>
+            <article className="p-3 rounded-xl border border-amber-500/10 bg-slate-900/40 backdrop-blur-sm flex flex-col gap-0.5">
+              <span className="text-[9px] text-amber-400/50 uppercase font-bold tracking-widest flex items-center gap-1">
+                <Target className="w-3 h-3 text-amber-400" /> Meta do Jogo
+              </span>
+              <strong className="text-base font-black text-amber-400">4 Linhas Extintas</strong>
             </article>
           </section>
 
-          <section className="text-center p-2 flex flex-col items-center">
-            <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Você já ganhou</small>
-            <strong id="prizeValue" className="text-6xl font-[1000] text-emerald-400 tracking-tight mb-4 drop-shadow-[0_2px_25px_rgba(52,245,154,0.4)]">
-              R$ 0,00
+          {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO DESTAQUE TOTAL (VERDE) */}
+          <section className="text-center p-4 flex flex-col items-center rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-xs">
+            <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">
+              {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
+            </small>
+            
+            {/* VALOR DESTAQUE BEM GRANDE COR VERDE */}
+            <strong className="text-5xl font-[1000] text-emerald-400 tracking-tight mb-2 drop-shadow-[0_2px_20px_rgba(52,245,154,0.3)]">
+              R$ {currentPotentialPrize},00
             </strong>
-            <div id="winProgress" className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 shadow-inner">
-              <div id="winProgressB" className="h-full bg-slate-900/40 rounded-full">
-                <div id="winProgressBar" className="h-full w-0 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(52,245,154,0.6)] transition-all duration-300"></div>
-              </div>
+
+            <div className="text-[11px] font-bold text-white/70 mb-4 space-y-0.5">
+              <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas</div>
+              {!isTargetAchieved && (
+                <div className="text-[10px] text-amber-400/90 font-medium">
+                  Complete {TARGET_LINES} linhas para liberar <span className="font-bold">R$ {FINAL_PRIZE},00</span>
+                </div>
+              )}
+              {isTargetAchieved && (
+                <div className="text-[10px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center">
+                  <Award className="w-3.5 h-3.5 text-emerald-400" /> Lucro Líquido Garantido: R$ {netProfit},00
+                </div>
+              )}
+            </div>
+
+            {/* BARRA DE PROGRESSO DE ACORDO COM AS LINHAS */}
+            <div className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px]">
+              <div 
+                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)] transition-all duration-300"
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
             </div>
           </section>
 
+          {/* TABLEIRO DO JOGO */}
           <section className="w-full aspect-square p-2 bg-slate-900/30 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center shadow-2xl">
             <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
               <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
             </div>
           </section>
 
+          {/* SLOTS DAS PEÇAS */}
           <section className="grid grid-cols-3 gap-2.5" id="shapesList" aria-label="Peças disponíveis"></section>
           
           <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto text-center mt-1">
             <Info className="w-3.5 h-3.5 text-white/30 shrink-0" />
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Arraste uma peça para o tabuleiro e complete linhas.</p>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Arraste uma peça para o tabuleiro e complete linhas completas.</p>
           </div>
         </main>
       </div>
 
-      <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/85 backdrop-blur-md z-[3000]`} id="gameOverModal">
+      {/* MODAL DE FIM DE JOGO AJUSTADA ÀS REGRAS ESPECIFICADAS */}
+      <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[3000]`} id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl animate-in scale-in duration-200">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-5 font-medium">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+          <p className="text-white/60 text-xs mb-4 font-medium">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+          
+          {/* Resumo financeiro transparente com base nas regras fornecidas */}
+          <div className="my-4 p-3 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1.5">
+            <div className="flex justify-between">
+              <span className="text-white/50">Linhas feitas:</span>
+              <span className="font-bold text-white">{linesCompleted} / 4</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Status da meta:</span>
+              <span className={`font-bold ${isTargetAchieved ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {isTargetAchieved ? 'Concluída' : 'Não atingida'}
+              </span>
+            </div>
+            <div className="h-px bg-white/5 my-1" />
+            <div className="flex justify-between text-[13px]">
+              <span className="font-bold text-white/70">Prêmio Resgatado:</span>
+              <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-red-400'}`}>
+                R$ {realEarnings},00
+              </span>
+            </div>
+            {!isTargetAchieved && (
+              <p className="text-[9px] text-red-400/80 leading-tight mt-1">
+                *O valor em formação foi perdido por não completar a meta de 4 linhas.
+              </p>
+            )}
+          </div>
+
           <button id="restartBtn" onClick={handleManualRestart} className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)] active:scale-95">
             Jogar de novo
           </button>
