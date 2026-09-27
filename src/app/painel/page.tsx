@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, Coins, ArrowUpRight, X, Ticket } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -33,7 +33,7 @@ export default function PainelPage() {
     { val: 40, tag: 'ÓTIMO', color: 'bg-orange-500 text-white' },
     { val: 50, tag: 'EXCELENTE', color: 'bg-rose-500 text-white' },
     { val: 100, tag: 'SUPER', color: 'bg-purple-500 text-white' },
-    { val: 200, tag: 'SUPER', color: 'bg-fuchsia-500 text-white' },
+    { val: 200, py: 'SUPER', color: 'bg-fuchsia-500 text-white' },
   ];
 
   useEffect(() => {
@@ -276,17 +276,17 @@ export default function PainelPage() {
         </button>
       </nav>
 
-      {/* NOVO MODAL DE DEPÓSITO CUSTOMIZADO EXATAMENTE IGUAL À IMAGEM */}
+      {/* MODAL DE DEPÓSITO CUSTOMIZADO */}
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative animate-fade-in-up">
           
-          {/* Banner Superior */}
-          <div className="relative w-full aspect-[2.3/1] bg-slate-950">
+          {/* Banner Superior - Usando object-contain para exibir 100% da imagem */}
+          <div className="relative w-full aspect-[2.3/1] bg-slate-950/40 border-b border-white/5">
             <Image 
               src="/card1.webp" 
               alt="Quanto maior seu depósito maiores suas chances" 
               fill 
-              className="object-cover"
+              className="object-contain"
               priority
             />
             {/* Botão Fechar Vermelho Redondo */}
