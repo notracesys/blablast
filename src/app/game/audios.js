@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * @fileOverview Sistema de áudio centralizado para o jogo BlockCash.
- * Gerencia preload, execução de sons aleatórios e controle de mute.
- */
-
 const AUDIO_PATH = '/audio/';
 
 const soundMap = {
@@ -36,7 +31,7 @@ async function init() {
     muted = stored === 'false';
     masterGain.gain.value = muted ? 0 : 1;
   } catch (e) {
-    console.warn('Web Audio API não suportada neste navegador.', e);
+    console.warn(e);
   }
 }
 
@@ -47,12 +42,18 @@ async function getBuffer(filename) {
 
   try {
     const response = await fetch(url);
+    if (!response.ok) {
+      return null;
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      return null;
+    }
     const arrayBuffer = await response.arrayBuffer();
     const buffer = await audioContext.decodeAudioData(arrayBuffer);
     bufferCache[url] = buffer;
     return buffer;
   } catch (e) {
-    console.error('Erro ao carregar áudio:', url, e);
     return null;
   }
 }
@@ -71,7 +72,6 @@ export const GameAudio = {
     if (!audioContext) await init();
     if (muted || !audioContext) return;
 
-    // Mobile requer interação para iniciar/resumir o contexto
     if (audioContext.state === 'suspended') {
       await audioContext.resume();
     }
@@ -120,7 +120,6 @@ export const GameAudio = {
   },
 };
 
-// Expõe globalmente para scripts legados ou console
 if (typeof window !== 'undefined') {
   window.GameAudio = GameAudio;
 }
