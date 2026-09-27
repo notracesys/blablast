@@ -104,7 +104,6 @@ export default function GamePage() {
       }).format(value);
     }
 
-    // Unsplash search keyword hints helper
     function generateColor() {
       const c = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
       return {

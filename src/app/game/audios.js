@@ -31,7 +31,7 @@ async function init() {
     muted = stored === 'false';
     masterGain.gain.value = muted ? 0 : 1;
   } catch (e) {
-    // Web Audio context failed to load natively
+    // Falha silenciosa se o contexto não carregar
   }
 }
 
@@ -118,7 +118,3 @@ export const GameAudio = {
     }
   },
 };
-
-if (typeof window !== 'undefined') {
-  window.GameAudio = GameAudio;
-}
