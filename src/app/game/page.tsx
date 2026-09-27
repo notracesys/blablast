@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { ArrowLeft, Coins, Trophy, Info, Volume2, VolumeX } from 'lucide-react';
 import { GameAudio } from './audios';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMutedState, setIsMutedState] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     GameAudio.preload();
     GameAudio.playMusic();
+    setIsMutedState(GameAudio.isMuted());
 
     const BOARD_SIZE = 8;
     const PREVIEW_CELL_SIZE = 20;
@@ -105,7 +108,6 @@ export default function GamePage() {
       }).format(value);
     }
 
-    // Identificação dos pontos exatos de regras e desenho
     function generateColor() {
       const c = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
       return {
@@ -168,8 +170,8 @@ export default function GamePage() {
       ctx.shadowBlur = 0;
 
       const gloss = ctx.createLinearGradient(x, y, x, y + size * 0.55);
-      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.5)');
-      gloss.addColorStop(0.55, 'rgba(255, 255, 255, 0.07)');
+      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.6)');
+      gloss.addColorStop(0.55, 'rgba(255, 255, 255, 0.15)');
       gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.fillStyle = gloss;
@@ -177,24 +179,24 @@ export default function GamePage() {
 
       const shade = ctx.createLinearGradient(x, y + size * 0.6, x, y + size);
       shade.addColorStop(0, 'rgba(0, 0, 0, 0)');
-      shade.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+      shade.addColorStop(1, 'rgba(0, 0, 0, 0.35)');
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.fillStyle = shade;
       ctx.fill();
 
-      ctx.strokeStyle = color.primary;
-      ctx.lineWidth = Math.max(1, size * 0.05);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = Math.max(1, size * 0.04);
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.stroke();
     }
 
     function drawEmptyCell(ctx: CanvasRenderingContext2D, x: number, y: number, gradient: CanvasGradient) {
       const size = CELL_SIZE - 4;
-      const radius = CELL_SIZE * 0.24;
+      const radius = CELL_SIZE * 0.22;
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.fillStyle = gradient;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(41, 210, 255, 0.24)';
+      ctx.strokeStyle = 'rgba(35, 230, 255, 0.15)';
       ctx.lineWidth = 1;
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.stroke();
@@ -202,7 +204,7 @@ export default function GamePage() {
 
     function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any) {
       const size = CELL_SIZE - 4;
-      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.24, color, 8);
+      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.22, color, 12);
     }
 
     function drawShape(ctx: CanvasRenderingContext2D, matrix: number[][], color: any, offsetX: number, offsetY: number, size: number) {
@@ -211,14 +213,14 @@ export default function GamePage() {
       const cellSize = size / Math.max(rows, cols);
       const pad = Math.min(2, cellSize * 0.1);
       const boxSize = cellSize - pad * 2;
-      const radius = cellSize * 0.24;
+      const radius = cellSize * 0.22;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
           if (matrix[row][col] === 1) {
             const x = offsetX + col * cellSize + pad;
             const y = offsetY + row * cellSize + pad;
-            paintTile(ctx, x, y, boxSize, radius, color, 6);
+            paintTile(ctx, x, y, boxSize, radius, color, 10);
           }
         }
       }
@@ -239,7 +241,7 @@ export default function GamePage() {
       const cellX = -CELL_SIZE / 2 + 2;
       const cellY = -CELL_SIZE / 2 + 2;
       const cellSize = CELL_SIZE - 4;
-      const radius = CELL_SIZE * 0.24;
+      const radius = CELL_SIZE * 0.22;
       const gradient = ctx.createLinearGradient(cellX, cellY, cellX, cellY + cellSize);
       gradient.addColorStop(0, color.primary);
       gradient.addColorStop(0.5, color.secondary);
@@ -248,7 +250,7 @@ export default function GamePage() {
       ctx.fillStyle = gradient;
       ctx.fill();
 
-      ctx.strokeStyle = color.primary;
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2 + progress * 3;
       roundedRectPath(ctx, cellX, cellY, cellSize, cellSize, radius);
       ctx.stroke();
@@ -300,7 +302,6 @@ export default function GamePage() {
       return { rowsToClear, colsToClear };
     }
 
-    // PONTO EXATO: LIMPEZA DE LINHA / COLUNA
     function clearLines() {
       const { rowsToClear, colsToClear } = findLinesToClear();
       const clearedCount = rowsToClear.length + colsToClear.length;
@@ -347,7 +348,6 @@ export default function GamePage() {
       return clearedCount;
     }
 
-    // PONTO EXATO: ENCAIXE VALIDO
     function placeShape(shapeIndex: number, x: number, y: number) {
       const shape = gameState.shapes[shapeIndex] as any;
       if (!shape || !canPlaceShape(shape, x, y)) return;
@@ -379,7 +379,6 @@ export default function GamePage() {
       render();
     }
 
-    // PONTO EXATO: GAME OVER DETECTADO
     function checkGameOver() {
       if (gameState.shapes.length === 0) return;
 
@@ -416,18 +415,18 @@ export default function GamePage() {
       const canFit = inside ? canPlaceShape(shape, x, y) : false;
 
       const theme = canFit ? {
-        fillTop: 'rgba(156, 250, 196, 0.32)',
-        fillBottom: 'rgba(72, 220, 144, 0.22)',
-        edge: 'rgba(126, 246, 178, 0.88)'
+        fillTop: 'rgba(38, 217, 255, 0.25)',
+        fillBottom: 'rgba(53, 245, 154, 0.15)',
+        edge: '#35f59a'
       } : {
-        fillTop: 'rgba(255, 140, 134, 0.24)',
-        fillBottom: 'rgba(224, 74, 72, 0.18)',
-        edge: 'rgba(255, 124, 118, 0.82)'
+        fillTop: 'rgba(231, 59, 41, 0.35)',
+        fillBottom: 'rgba(169, 22, 25, 0.2)',
+        edge: '#e73b29'
       };
 
       const pad = 2;
       const size = CELL_SIZE - pad * 2;
-      const radius = CELL_SIZE * 0.24;
+      const radius = CELL_SIZE * 0.22;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -447,7 +446,7 @@ export default function GamePage() {
           boardCtx.fill();
 
           boardCtx.strokeStyle = theme.edge;
-          boardCtx.lineWidth = 1.5;
+          boardCtx.lineWidth = 2;
           roundedRectPath(boardCtx, cellX + pad, cellY + pad, size, size, radius);
           boardCtx.stroke();
         }
@@ -457,13 +456,13 @@ export default function GamePage() {
     function render() {
       if (!boardCtx || !boardCanvas) return;
 
-      boardCtx.fillStyle = '#020916';
+      boardCtx.fillStyle = '#020b1e';
       boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
 
       const emptyTileGradient = boardCtx.createLinearGradient(0, 0, 0, CELL_SIZE - 4);
-      emptyTileGradient.addColorStop(0, 'rgba(18, 72, 133, 0.98)');
-      emptyTileGradient.addColorStop(0.48, 'rgba(9, 43, 88, 0.98)');
-      emptyTileGradient.addColorStop(1, 'rgba(3, 18, 42, 0.99)');
+      emptyTileGradient.addColorStop(0, '#071d3a');
+      emptyTileGradient.addColorStop(0.5, '#041024');
+      emptyTileGradient.addColorStop(1, '#020712');
 
       for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
@@ -494,20 +493,26 @@ export default function GamePage() {
       if (!shapesList) return;
       shapesList.innerHTML = '';
 
+      const slotColors = [
+        'border-[#ff2a85] shadow-[0_0_15px_rgba(255,42,133,0.4)]',
+        'border-[#8b2aff] shadow-[0_0_15px_rgba(139,42,255,0.4)]',
+        'border-[#2ae6ff] shadow-[0_0_15px_rgba(42,230,255,0.4)]'
+      ];
+
       for (let index = 0; index < PIECE_SLOTS; index++) {
         const shape = gameState.shapes[index] as any;
         const shapeItem = document.createElement('div');
-        shapeItem.className = 'shape-item';
+        shapeItem.className = `shape-item border-2 rounded-2xl p-2 bg-[#04142e]/90 aspect-square flex items-center justify-center cursor-grab select-none relative overflow-hidden transition-all duration-200 hover:scale-105 ${slotColors[index % slotColors.length]}`;
         shapeItem.dataset.shapeIndex = String(index);
 
         if (!shape) {
-          shapeItem.classList.add('shape-item--empty');
+          shapeItem.classList.add('opacity-25');
           shapesList.appendChild(shapeItem);
           continue;
         }
 
         const canvas = document.createElement('canvas');
-        canvas.className = 'shape-canvas';
+        canvas.className = 'shape-canvas pointer-events-none max-w-[85%] max-h-[85%]';
         const matrix = shape.matrix;
         const cols = matrix[0].length;
         const rows = matrix.length;
@@ -527,7 +532,6 @@ export default function GamePage() {
       }
     }
 
-    // PONTO EXATO: INICIO DO DRAG
     function setupDragAndDrop(shapeItem: HTMLDivElement, shape: any, shapeIndex: number) {
       function startDrag(clientX: number, clientY: number) {
         if (gameState.isPaused || gameState.isGameOver) return;
@@ -536,7 +540,7 @@ export default function GamePage() {
         GameAudio.play('selection');
         
         gameState.dragging = { shape, shapeIndex, shapeItem };
-        shapeItem.classList.add('dragging');
+        shapeItem.classList.add('opacity-40');
         createDragGhost(shape);
         updateDragGhost(clientX, clientY);
       }
@@ -562,7 +566,7 @@ export default function GamePage() {
       
       dragGhost = document.createElement('div');
       dragGhost.className = 'drag-ghost';
-      dragGhost.style.cssText = 'display:block;position:fixed;left:0;top:0;pointer-events:none;z-index:1000;opacity:0.8;will-change:transform;';
+      dragGhost.style.cssText = 'display:block;position:fixed;left:0;top:0;pointer-events:none;z-index:2000;opacity:0.9;will-change:transform;';
 
       const canvas = document.createElement('canvas');
       const matrix = shape.matrix;
@@ -624,7 +628,6 @@ export default function GamePage() {
       }
     }
 
-    // PONTO EXATO: FIM DO DRAG (E ENCAIXE INVALIDO SE NAO FIT)
     function onDragEnd(clientX: number, clientY: number) {
       if (!gameState.dragging || !boardCanvas) return;
       if (dragRafId != null) {
@@ -649,7 +652,7 @@ export default function GamePage() {
         GameAudio.play('broken');
       }
 
-      if (gameState.dragging.shapeItem) gameState.dragging.shapeItem.classList.remove('dragging');
+      if (gameState.dragging.shapeItem) gameState.dragging.shapeItem.classList.remove('opacity-40');
       if (dragGhost) {
         dragGhost.remove();
         dragGhost = null;
@@ -661,14 +664,12 @@ export default function GamePage() {
     function updateUI() {
       const prizeEl = document.getElementById('prizeValue');
       const barEl = document.getElementById('winProgressBar');
-      const trackEl = document.getElementById('winProgress');
       const prize = gameState.score / SCORE_TO_BRL_DIVISOR;
 
       if (prizeEl) prizeEl.textContent = formatBRL(prize);
 
       const progress = Math.min(100, (prize / MAX_WIN_AMOUNT) * 100);
       if (barEl) barEl.style.width = progress.toFixed(2) + '%';
-      if (trackEl) trackEl.setAttribute('aria-valuenow', String(Math.floor(progress)));
 
       const betEl = document.getElementById('betValue');
       const maxWinEl = document.getElementById('maxWinValue');
@@ -745,22 +746,6 @@ export default function GamePage() {
 
       const restartBtn = document.getElementById('restartBtn');
       if (restartBtn) restartBtn.onclick = restartGame;
-
-      const soundBtn = document.getElementById('soundBtn');
-      if (soundBtn) {
-        let soundEnabled = !GameAudio.isMuted();
-        soundBtn.setAttribute('aria-pressed', String(soundEnabled));
-        soundBtn.classList.toggle('is-muted', !soundEnabled);
-        
-        soundBtn.onclick = () => {
-          GameAudio.unlock();
-          const newState = !GameAudio.isMuted();
-          GameAudio.setMuted(newState);
-          soundBtn.setAttribute('aria-pressed', String(!newState));
-          soundBtn.classList.toggle('is-muted', newState);
-          GameAudio.play('swtch');
-        };
-      }
     }
 
     boardCanvas = document.getElementById('gameBoard') as HTMLCanvasElement | null;
@@ -780,303 +765,123 @@ export default function GamePage() {
     };
   }, []);
 
+  const toggleSound = () => {
+    GameAudio.unlock();
+    const currentMute = GameAudio.isMuted();
+    GameAudio.setMuted(!currentMute);
+    setIsMutedState(!currentMute);
+    GameAudio.play('swtch');
+  };
+
   return (
-    <div ref={containerRef} className="gameplay-page w-full min-h-screen text-white select-none relative overflow-x-hidden flex flex-col justify-between" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
+    <div ref={containerRef} className="gameplay-page w-full min-h-screen text-white select-none relative overflow-x-hidden flex flex-col justify-between p-3 pb-6 bg-[#020714]" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
       <style dangerouslySetInnerHTML={{ __html: `
         .gameplay-page {
-          background-color: #020817;
-          background:
-            radial-gradient(circle at 50% 8%, rgba(0, 213, 255, .34), transparent 23rem),
-            radial-gradient(circle at 12% 72%, rgba(38, 255, 113, .2), transparent 16rem),
-            radial-gradient(circle at 90% 73%, rgba(0, 119, 255, .24), transparent 18rem),
-            linear-gradient(rgba(0, 23, 67, .5), rgba(0, 7, 24, .72));
-          font-family: Inter, system-ui, -apple-system, sans-serif;
-        }
-        .game-shell {
-          width: min(430px, calc(100vw - 24px));
-          margin: auto;
-          padding: 12px 0 max(24px, env(safe-area-inset-bottom));
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .game-head {
-          height: 56px;
-          display: grid;
-          grid-template-columns: 42px 1fr auto;
-          align-items: center;
-          gap: 10px;
-        }
-        .back {
-          width: 38px;
-          height: 38px;
-          display: grid;
-          place-items: center;
-          border: 2px solid rgba(35, 230, 255, .88);
-          border-radius: 12px;
-          background: radial-gradient(circle at 50% 25%, #0b3e75, #02122f);
-          color: #9af9ff;
-          text-decoration: none;
-          font-size: 1.3rem;
-          box-shadow: inset 0 1px rgba(255, 255, 255, .22), 0 0 14px rgba(35, 230, 255, .42);
-        }
-        .game-head img {
-          width: 105px;
-          margin: auto;
-          filter: drop-shadow(0 0 12px rgba(0, 222, 255, .58)) drop-shadow(0 6px 10px rgba(0, 5, 20, .72));
-        }
-        .demo {
-          padding: 6px 9px;
-          border: 1px solid rgba(35, 230, 255, .58);
-          border-radius: 99px;
-          background: linear-gradient(145deg, rgba(4, 38, 83, .92), rgba(1, 15, 42, .96));
-          color: #9af9ff;
-          font-size: .65rem;
-          font-weight: 900;
-          text-transform: uppercase;
-          box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 0 11px rgba(35, 230, 255, .18);
-        }
-        .stake-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 9px;
-        }
-        .stake-row article {
-          position: relative;
-          overflow: hidden;
-          padding: 11px 12px;
-          border: 2px solid rgba(35, 230, 255, .84);
-          background:
-            radial-gradient(circle at 20% 0, rgba(8, 125, 255, .36), transparent 55%),
-            linear-gradient(145deg, rgba(4, 40, 91, .98), rgba(1, 12, 39, .99));
-          border-radius: 15px;
-          box-shadow: inset 0 1px rgba(255, 255, 255, .2), inset 0 -8px 18px rgba(0, 0, 20, .42), 0 0 15px rgba(35, 230, 255, .34), 0 9px 20px rgba(0, 4, 20, .45);
-        }
-        .stake-row article:nth-child(2) {
-          border-color: rgba(55, 250, 164, .82);
-          background:
-            radial-gradient(circle at 20% 0, rgba(27, 230, 105, .26), transparent 55%),
-            linear-gradient(145deg, rgba(2, 54, 78, .98), rgba(1, 15, 41, .99));
-          box-shadow: inset 0 1px rgba(255, 255, 255, .2), inset 0 -8px 18px rgba(0, 0, 20, .42), 0 0 15px rgba(46, 255, 157, .3), 0 9px 20px rgba(0, 4, 20, .45);
-        }
-        .stake-row small, .prize small {
-          display: block;
-          margin-bottom: 3px;
-          color: #cbe7f8;
-          font-size: .63rem;
-          font-weight: 800;
-          text-transform: uppercase;
-        }
-        .stake-row strong {
-          color: #f8fbff;
-          font-size: 1rem;
-          text-shadow: 0 0 12px rgba(35, 230, 255, .35);
-        }
-        .stake-row article:nth-child(2) strong {
-          color: #c8ff6b;
-          text-shadow: 0 0 12px rgba(83, 242, 95, .38);
-        }
-        .prize {
-          text-align: center;
-          padding: 2px 0;
-        }
-        .prize strong {
-          display: block;
-          margin: 1px 0 8px;
-          font-size: 1.9rem;
-          line-height: 1;
-          background: linear-gradient(180deg, #ffffff 5%, #8efcff 38%, #4fff61 68%, #baff49 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          filter: drop-shadow(0 0 12px rgba(49, 238, 255, .34));
-        }
-        #winProgress {
-          height: 11px;
-          border: 2px solid #23e6ff;
-          background: #021329;
-          border-radius: 99px;
-          overflow: hidden;
-          box-shadow: inset 0 2px 5px rgba(0, 0, 0, .82), 0 0 12px rgba(35, 230, 255, .52);
-        }
-        #winProgressBar {
-          display: block;
-          width: 0%;
-          height: 100%;
-          background: linear-gradient(90deg, #28d548, #8cff62, #d3ff59);
-          box-shadow: 0 0 12px rgba(74, 255, 95, .85);
-          transition: width 0.2s ease;
+          background-color: #020714;
+          background-image:
+            radial-gradient(circle at 50% 10%, rgba(35, 230, 255, 0.18), transparent 28rem),
+            radial-gradient(circle at 10% 75%, rgba(139, 42, 255, 0.12), transparent 22rem),
+            radial-gradient(circle at 90% 75%, rgba(53, 245, 154, 0.12), transparent 22rem);
         }
         .boardWrap {
-          width: 100%;
-          aspect-ratio: 1;
-          padding: 9px;
-          border: 3px solid #23e6ff;
-          border-radius: 24px;
-          background: linear-gradient(145deg, #07517d, #04183e 46%, #03222e);
-          box-shadow: inset 0 0 0 2px rgba(130, 250, 255, .42), inset 0 0 30px rgba(0, 110, 255, .32), 0 0 18px rgba(35, 230, 255, .76), 0 0 42px rgba(24, 255, 164, .24), 0 18px 38px rgba(0, 3, 18, .68);
-          animation: cyanBreath 3.2s ease-in-out infinite;
+          border: 4px solid #23e6ff;
+          box-shadow: 
+            0 0 25px rgba(35, 230, 255, 0.6),
+            inset 0 0 20px rgba(35, 230, 255, 0.3);
         }
-        @keyframes cyanBreath {
-          0%, 100% { box-shadow: inset 0 0 0 2px rgba(130, 250, 255, .42), inset 0 0 30px rgba(0, 110, 255, .32), 0 0 16px rgba(35, 230, 255, .62), 0 0 38px rgba(24, 255, 164, .2), 0 18px 38px rgba(0, 3, 18, .68); }
-          50% { box-shadow: inset 0 0 0 2px rgba(130, 250, 255, .58), inset 0 0 34px rgba(0, 110, 255, .4), 0 0 23px rgba(35, 230, 255, .82), 0 0 48px rgba(24, 255, 164, .28), 0 18px 38px rgba(0, 3, 18, .68); }
+        .shake {
+          animation: shakeAnim 0.4s ease-in-out;
         }
-        .boardGrid {
-          width: 100%;
-          height: 100%;
-          display: grid;
-          place-items: center;
-          padding: 7px;
-          border: 2px solid rgba(44, 228, 255, .74);
-          border-radius: 17px;
-          background: radial-gradient(circle at 50% 0, #103d72, #020817 72%);
-          overflow: hidden;
-          box-shadow: inset 0 0 32px rgba(0, 0, 15, .9), 0 0 10px rgba(35, 230, 255, .24);
+        @keyframes shakeAnim {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-4px); }
+          40%, 80% { transform: translateX(4px); }
         }
-        .boardGrid canvas {
-          display: block;
-          border-radius: 10px;
-        }
-        .pieces {
-          display: flex;
-          gap: 9px;
-        }
-        .shape-item {
-          flex: 1;
-          aspect-ratio: 1;
-          display: grid;
-          place-items: center;
-          border: 2px solid rgba(63, 243, 255, .9);
-          border-radius: 17px;
-          background: radial-gradient(circle at 50% 20%, rgba(5, 111, 184, .5), transparent 62%), linear-gradient(145deg, #061c43, #02091e);
-          box-shadow: inset 0 0 22px rgba(0, 8, 30, .88), inset 0 1px rgba(255, 255, 255, .16), 0 0 13px rgba(35, 230, 255, .55), 0 0 24px rgba(46, 255, 145, .16);
-          touch-action: none;
-          cursor: grab;
-        }
-        .shape-item:hover { border-color: #a2fbff; }
-        .shape-item canvas {
-          max-width: 84%;
-          max-height: 84%;
-          pointer-events: none;
-        }
-        .shape-item.dragging { opacity: .4; }
-        .shape-item--empty { opacity: .35; }
-        .help {
-          margin: 0;
-          text-align: center;
-          color: #c6e7f3;
-          font-size: .74rem;
-          text-shadow: 0 1px 4px #00142b;
-        }
-        .sound {
-          position: fixed;
-          right: 14px;
-          bottom: 14px;
-          width: 42px;
-          height: 42px;
-          border: 2px solid #23e6ff;
-          border-radius: 50%;
-          background: radial-gradient(circle at 50% 25%, #0b4b85, #021431 70%);
-          color: #fff;
-          font-size: 1.2rem;
-          box-shadow: inset 0 1px rgba(255, 255, 255, .2), 0 0 16px rgba(35, 230, 255, .62);
-          z-index: 99;
-          cursor: pointer;
-        }
-        .sound.is-muted {
-            opacity: 0.5;
-            filter: grayscale(1);
-        }
-        .modal-overlay {
-          position: fixed;
-          inset: 0;
-          display: none;
-          place-items: center;
-          padding: 22px;
-          background: rgba(0, 6, 25, .86);
-          backdrop-filter: blur(7px);
-          z-index: 2000;
-        }
-        .modal-overlay.show { display: grid; }
-        .modal-content {
-          width: min(320px, 100%);
-          padding: 25px;
-          text-align: center;
-          border: 2px solid #23e6ff;
-          border-radius: 22px;
-          background: linear-gradient(145deg, #07386a, #020b25);
-          box-shadow: 0 0 24px rgba(35, 230, 255, .45);
-        }
-        .modal-content h2 { margin: 0 0 8px; color: #9af9ff; }
-        .modal-content p { color: #b9d8ed; }
-        .modal-content button, .modal-content a {
-          width: 100%;
-          min-height: 44px;
-          display: grid;
-          place-items: center;
-          margin-top: 9px;
-          border-radius: 12px;
-          font: inherit;
-          font-weight: 900;
-          text-decoration: none;
-          cursor: pointer;
-        }
-        .modal-content button {
-          border: 0;
-          background: linear-gradient(180deg, #8dff73, #26cf53);
-          color: #022215;
-        }
-        .modal-content a {
-          border: 1px solid rgba(35, 230, 255, .48);
-          color: #fff;
+        .custom-pill {
+          background: rgba(4, 20, 48, 0.85);
+          border: 1px solid rgba(35, 230, 255, 0.3);
+          backdrop-filter: blur(10px);
         }
       ` }} />
 
-      <main className="game-shell">
-        <header className="game-head">
-          <Link href="/" className="back" aria-label="Voltar para a página inicial">←</Link>
-          <img src="/blockcash.png" alt="BlockCash" />
-          <span className="demo">Modo teste</span>
-        </header>
-
-        <section className="stake-row" aria-label="Informações demonstrativas">
-          <article>
-            <small>Aposta demo</small>
-            <strong id="betValue">R$ 10,00</strong>
-          </article>
-          <article>
-            <small>Prêmio máximo</small>
-            <strong id="maxWinValue">R$ 50,00</strong>
-          </article>
-        </section>
-
-        <section className="prize">
-          <small>Progresso da partida</small>
-          <strong id="prizeValue">R$ 0,00</strong>
-          <div id="winProgress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}>
-            <i id="winProgressBar"></i>
-          </div>
-        </section>
-
-        <section className="boardWrap">
-          <div className="boardGrid">
-            <canvas id="gameBoard" aria-label="Tabuleiro 8 por 8"></canvas>
-          </div>
-        </section>
-
-        <section className="pieces" id="shapesList" aria-label="Peças disponíveis"></section>
+      <header className="w-full flex items-center justify-between h-14 px-1 max-w-[430px] mx-auto">
+        <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-[#23e6ff]/70 bg-[#04142e] text-[#9af9ff] shadow-[0_0_12px_rgba(35,230,255,0.3)] hover:brightness-110 active:scale-95 transition-all">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
         
-        <p className="help">Arraste uma peça para o tabuleiro e complete linhas.</p>
+        <div className="flex items-center gap-1">
+          <span className="text-xl font-[1000] tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#23e6ff] via-[#ffffff] to-[#53f25f] uppercase drop-shadow-[0_2px_8px_rgba(35,230,255,0.4)]">
+            BLOCK CASH
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-[#23e6ff]/30 bg-[#04142e] text-[#9af9ff]">
+            {isMutedState ? <VolumeX className="w-5 h-5 opacity-60" /> : <Volume2 className="w-5 h-5" />}
+          </button>
+          <span className="px-3 py-1.5 rounded-full border-2 border-[#23e6ff]/60 bg-gradient-to-r from-[#042653] to-[#010f2a] text-[#9af9ff] text-[11px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(35,230,255,0.2)]">
+            MODO TESTE
+          </span>
+        </div>
+      </header>
+
+      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-4 px-1">
+        <section className="grid grid-cols-2 gap-3">
+          <article className="relative overflow-hidden p-3 rounded-2xl border-2 border-[#23e6ff] bg-gradient-to-b from-[#04285b] to-[#010c27] shadow-[0_4px_15px_rgba(35,230,255,0.25)] flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#23e6ff]/10 flex items-center justify-center text-[#23e6ff]">
+              <Coins className="w-5 h-5" />
+            </div>
+            <div>
+              <small className="block text-[9px] font-bold text-[#cbe7f8] uppercase tracking-wider leading-none mb-1">Aposta demo</small>
+              <strong id="betValue" className="text-base font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">R$ 10,00</strong>
+            </div>
+          </article>
+
+          <article className="relative overflow-hidden p-3 rounded-2xl border-2 border-[#53f25f] bg-gradient-to-b from-[#02364e] to-[#010f29] shadow-[0_4px_15px_rgba(83,242,95,0.25)] flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#53f25f]/10 flex items-center justify-center text-[#c8ff6b]">
+              <Trophy className="w-5 h-5" />
+            </div>
+            <div>
+              <small className="block text-[9px] font-bold text-[#cbe7f8] uppercase tracking-wider leading-none mb-1">Prêmio máximo</small>
+              <strong id="maxWinValue" className="text-base font-black text-[#c8ff6b] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">R$ 50,00</strong>
+            </div>
+          </article>
+        </section>
+
+        <section className="text-center py-1">
+          <small className="block text-[11px] font-black uppercase text-[#cbe7f8] tracking-widest mb-1">Progresso da partida</small>
+          <strong id="prizeValue" className="block text-4xl font-[1000] leading-none mb-3 tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-[#ffffff] via-[#8efcff] to-[#4fff61] filter drop-shadow-[0_0_15px_rgba(83,242,95,0.5)]">
+            R$ 0,00
+          </strong>
+          <div id="winProgress" className="h-3 w-full bg-[#021329] border-2 border-[#23e6ff] rounded-full p-[2px] overflow-hidden shadow-[inset_0_2px_5px_rgba(0,0,0,0.8),0_0_12px_rgba(35,230,255,0.4)]">
+            <div id="winProgressBar" className="h-full w-0 bg-gradient-to-r from-[#28d548] via-[#8cff62] to-[#d3ff59] rounded-full shadow-[0_0_10px_rgba(74,255,95,0.85)] transition-all duration-300"></div>
+          </div>
+        </section>
+
+        <section className="boardWrap w-full aspect-square p-2 bg-gradient-to-br from-[#07517d] via-[#04183e] to-[#020817] rounded-[2rem] flex items-center justify-center">
+          <div className="w-full h-full border-2 border-dashed border-[#23e6ff]/40 rounded-2xl overflow-hidden flex items-center justify-center bg-[#020b1e]">
+            <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-3 gap-3" id="shapesList" aria-label="Peças disponíveis"></section>
+        
+        <div className="custom-pill rounded-full py-2.5 px-4 flex items-center justify-center gap-2 max-w-[360px] mx-auto text-center shadow-xl">
+          <Info className="w-4 h-4 text-[#23e6ff] shrink-0" />
+          <p className="text-[11px] font-bold text-[#c6e7f3] leading-none">Arraste uma peça para o tabuleiro e complete linhas.</p>
+        </div>
       </main>
 
-      <button className="sound" id="soundBtn" aria-label="Desativar som" aria-pressed="true">♪</button>
-
-      <div className="modal-overlay" id="gameOverModal">
-        <div className="modal-content">
-          <h2>Fim de jogo!</h2>
-          <p>Não há mais encaixes disponíveis.</p>
-          <button id="restartBtn">Jogar de novo</button>
-          <Link href="/">Voltar para a página</Link>
+      <div className="modal-overlay fixed inset-0 hidden place-items-center p-4 bg-black/85 backdrop-blur-md z-[3000]" id="gameOverModal">
+        <div className="modal-content w-full max-w-xs p-6 text-center border-2 border-[#23e6ff] rounded-3xl bg-gradient-to-b from-[#07386a] to-[#020b25] shadow-[0_0_30px_rgba(35,230,255,0.5)]">
+          <h2 className="text-2xl font-black text-[#9af9ff] uppercase tracking-wide mb-2">Fim de jogo!</h2>
+          <p className="text-[#b9d8ed] text-xs font-semibold mb-5">Não há mais encaixes disponíveis para as suas peças atuais.</p>
+          <button id="restartBtn" className="w-full h-12 rounded-xl font-black uppercase text-sm tracking-wider cursor-pointer border-0 bg-gradient-to-b from-[#8dff73] to-[#26cf53] text-[#022215] shadow-[0_4px_12px_rgba(38,207,83,0.4)] active:scale-95 transition-transform mb-3">
+            Jogar de novo
+          </button>
+          <Link href="/" className="w-full h-11 rounded-xl font-bold text-xs tracking-wider flex items-center justify-center border border-[#23e6ff]/40 text-white hover:bg-white/5 active:scale-95 transition-transform">
+            Voltar para a página inicial
+          </Link>
         </div>
       </div>
     </div>
