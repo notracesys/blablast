@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase/index';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Block Blast - Encaixe e Ganhe',
@@ -19,9 +21,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
       <body className="font-sans selection:bg-primary/30">
-        <div className="mobile-container bg-grid-pattern">
-          {children}
-        </div>
+        <FirebaseClientProvider>
+          <div className="mobile-container bg-grid-pattern">
+            {children}
+          </div>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );
