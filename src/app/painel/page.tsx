@@ -24,8 +24,27 @@ export default function PainelPage() {
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>('20');
   const [isDepositing, setIsDepositing] = useState<boolean>(false);
+  const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
 
   const presets = [5, 10, 20, 30, 50, 100];
+
+  // Efeito para oscilar a quantidade de jogadores online de 500 a 1500
+  useEffect(() => {
+    // Define um valor inicial seguro pós-hydration
+    setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
+
+    const interval = setInterval(() => {
+      setOnlinePlayers((current) => {
+        const change = Math.floor(Math.random() * 61) - 30; // Altera em até +/- 30 jogadores
+        let nextValue = current + change;
+        if (nextValue < 500) nextValue = 500 + Math.floor(Math.random() * 20);
+        if (nextValue > 1500) nextValue = 1500 - Math.floor(Math.random() * 20);
+        return nextValue;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -159,7 +178,7 @@ export default function PainelPage() {
             <div className="relative w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-white/10">
               <Image 
                 src="/hero.webp" 
-                alt="Encaixe os blocos e ganhe" 
+                alt="Encaixe os blocks e ganhe" 
                 fill 
                 className="object-cover" 
                 priority 
@@ -167,7 +186,7 @@ export default function PainelPage() {
               />
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-[#35f59a] rounded-full pulse-dot"></span>
-                <span className="text-[9px] font-black text-white/90 uppercase tracking-wider">803 online</span>
+                <span className="text-[9px] font-black text-white/90 uppercase tracking-wider">{onlinePlayers} online</span>
               </div>
             </div>
 
