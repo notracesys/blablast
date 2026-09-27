@@ -33,7 +33,7 @@ export default function PainelPage() {
     { val: 40, tag: 'ÓTIMO', color: 'bg-orange-500 text-white' },
     { val: 50, tag: 'EXCELENTE', color: 'bg-rose-500 text-white' },
     { val: 100, tag: 'SUPER', color: 'bg-purple-500 text-white' },
-    { val: 200, py: 'SUPER', color: 'bg-fuchsia-500 text-white' },
+    { val: 200, tag: 'MÁXIMO', color: 'bg-fuchsia-500 text-white' },
   ];
 
   useEffect(() => {
@@ -188,7 +188,6 @@ export default function PainelPage() {
                 fill 
                 className="object-cover" 
                 priority 
-                data-ai-hint="game main banner"
               />
               <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-[#35f59a] rounded-full pulse-dot"></span>
@@ -278,21 +277,21 @@ export default function PainelPage() {
 
       {/* MODAL DE DEPÓSITO CUSTOMIZADO */}
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
-        <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative animate-fade-in-up">
+        <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative">
           
-          {/* Banner Superior - Usando object-contain para exibir 100% da imagem */}
-          <div className="relative w-full aspect-[2.3/1] bg-slate-950/40 border-b border-white/5">
+          {/* Banner com Proporção Perfeita (Aspect 2.7/1 baseado na imagem retangular widescreen original) */}
+          <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
               src="/card1.webp" 
               alt="Quanto maior seu depósito maiores suas chances" 
               fill 
-              className="object-contain"
+              className="object-cover"
               priority
             />
             {/* Botão Fechar Vermelho Redondo */}
             <button 
               onClick={() => setShowDepositModal(false)}
-              className="absolute top-3 right-3 w-6 h-6 rounded-full bg-red-600 flex items-center justify-center text-white shadow-md z-30 transition-transform active:scale-90"
+              className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#e73b29] flex items-center justify-center text-white shadow-md z-30 transition-transform active:scale-90"
             >
               <X className="w-3.5 h-3.5 stroke-[3]" />
             </button>
