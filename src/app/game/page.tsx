@@ -79,7 +79,7 @@ export default function GamePage() {
     let CELL_SIZE = 36;
     const gameState = {
       board: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0)),
-      shapes: [],
+      shapes: [] as any[],
       score: 0,
       lines: 0,
       level: 1,
@@ -208,12 +208,12 @@ export default function GamePage() {
       ctx.save();
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
 
-      const scale = progress < 0.25 ? 1 + progress * 2.2 : 1.55 * (1 - progress);
+      const scale = progress < 0.25 ? 1 + progress * 2.2 : Math.max(0, 1.55 * (1 - progress));
       ctx.scale(scale, scale);
 
       ctx.beginPath();
       ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(38, 217, 255, ${1 - progress})`;
+      ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
       ctx.lineWidth = 4;
       ctx.stroke();
 
@@ -392,22 +392,31 @@ export default function GamePage() {
     function checkGameOver() {
       if (gameState.shapes.length === 0) return;
 
+      let validMoveFound = false;
       for (let i = 0; i < gameState.shapes.length; i++) {
         const shape = gameState.shapes[i] as any;
         if (!shape) continue;
         for (let y = 0; y <= BOARD_SIZE - shape.matrix.length; y++) {
           for (let x = 0; x <= BOARD_SIZE - shape.matrix[0].length; x++) {
-            if (canPlaceShape(shape, x, y)) return;
+            if (canPlaceShape(shape, x, y)) {
+              validMoveFound = true;
+              break;
+            }
           }
+          if (validMoveFound) break;
         }
+        if (validMoveFound) break;
       }
-      gameState.isGameOver = true;
-      GameAudio.play('derrota');
-      setShowGameOver(true);
+
+      if (!validMoveFound) {
+        gameState.isGameOver = true;
+        GameAudio.play('derrota');
+        setShowGameOver(true);
+      }
     }
 
     function generateShapes(count: number) {
-      gameState.shapes = [] as any;
+      gameState.shapes = [] as any[];
       for (let i = 0; i < count; i++) {
         const def = SHAPE_DEFINITIONS[Math.floor(Math.random() * SHAPE_DEFINITIONS.length)];
         gameState.shapes.push({ id: i, matrix: def.matrix, color: generateColor() } as any);
@@ -811,50 +820,50 @@ export default function GamePage() {
           </div>
         </header>
 
-        <main className="w-full flex flex-col gap-3 flex-1 justify-center my-auto">
-          <section className="grid grid-cols-2 gap-2">
-            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/70 backdrop-blur-sm flex flex-col gap-0.5">
-              <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Aposta demo</span>
-              <strong id="betValue" className="text-base font-bold text-white">R$ 10,00</strong>
+        <main className="w-full flex flex-col gap-4 flex-1 justify-center my-auto">
+          <section className="grid grid-cols-2 gap-3">
+            <article className="p-3.5 rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
+              <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">Aposta demo</span>
+              <strong id="betValue" className="text-lg font-black text-white/95">R$ 10,00</strong>
             </article>
 
-            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/70 backdrop-blur-sm flex flex-col gap-0.5">
-              <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Prêmio máximo</span>
-              <strong id="maxWinValue" className="text-base font-bold text-cyan-400">R$ 50,00</strong>
+            <article className="p-3.5 rounded-2xl border border-cyan-500/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
+              <span className="text-[10px] text-cyan-400/50 uppercase font-black tracking-widest">Prêmio máximo</span>
+              <strong id="maxWinValue" className="text-lg font-black text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.2)]">R$ 50,00</strong>
             </article>
           </section>
 
-          <section className="text-center p-1 flex flex-col items-center">
-            <small className="text-[10px] font-black uppercase text-white/50 tracking-wider mb-1">Você já ganhou</small>
-            <strong id="prizeValue" className="text-5xl font-[1000] text-emerald-400 tracking-tight mb-3 drop-shadow-[0_2px_15px_rgba(52,245,154,0.3)]">
+          <section className="text-center p-2 flex flex-col items-center">
+            <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">Você já ganhou</small>
+            <strong id="prizeValue" className="text-6xl font-[1000] text-emerald-400 tracking-tight mb-4 drop-shadow-[0_2px_25px_rgba(52,245,154,0.4)]">
               R$ 0,00
             </strong>
-            <div id="winProgress" className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-white/5">
-              <div id="winProgressB" className="h-full bg-slate-800 rounded-full">
-                <div id="winProgressBar" className="h-full w-0 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)]"></div>
+            <div id="winProgress" className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 shadow-inner">
+              <div id="winProgressB" className="h-full bg-slate-900/40 rounded-full">
+                <div id="winProgressBar" className="h-full w-0 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_15px_rgba(52,245,154,0.6)] transition-all duration-300"></div>
               </div>
             </div>
           </section>
 
-          <section className="w-full aspect-square p-1.5 bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
-            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-slate-950/90">
+          <section className="w-full aspect-square p-2 bg-slate-900/30 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center shadow-2xl">
+            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
               <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
             </div>
           </section>
 
-          <section className="grid grid-cols-3 gap-2" id="shapesList" aria-label="Peças disponíveis"></section>
+          <section className="grid grid-cols-3 gap-2.5" id="shapesList" aria-label="Peças disponíveis"></section>
           
-          <div className="flex items-center justify-center gap-1.5 max-w-[360px] mx-auto text-center">
-            <Info className="w-3 h-3 text-white/30 shrink-0" />
-            <p className="text-[10px] text-white/40 font-medium">Arraste uma peça para o tabuleiro e complete linhas.</p>
+          <div className="flex items-center justify-center gap-2 max-w-[360px] mx-auto text-center mt-1">
+            <Info className="w-3.5 h-3.5 text-white/30 shrink-0" />
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Arraste uma peça para o tabuleiro e complete linhas.</p>
           </div>
         </main>
       </div>
 
-      <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/80 backdrop-blur-sm z-[3000]`} id="gameOverModal">
-        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
+      <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/85 backdrop-blur-md z-[3000]`} id="gameOverModal">
+        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl animate-in scale-in duration-200">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-5">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+          <p className="text-white/60 text-xs mb-5 font-medium">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
           <button id="restartBtn" onClick={handleManualRestart} className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)] active:scale-95">
             Jogar de novo
           </button>
