@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -36,7 +35,7 @@ export default function LandingPage() {
           <button className="text-[11px] font-bold text-white/70 uppercase tracking-wider hover:text-white transition-colors py-1.5 px-3 rounded-xl border border-white/10 bg-white/5">
             ENTRAR
           </button>
-          <Link href="/game">
+          <Link href="/register">
             <Button size="sm" className="bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white hover:opacity-90 px-3.5 h-8 font-black text-[11px] uppercase tracking-wider rounded-xl glow-purple border border-purple-400/20">
               CRIAR CONTA
             </Button>
@@ -69,6 +68,7 @@ export default function LandingPage() {
               fill 
               className="object-contain transition-transform duration-700 group-hover:scale-105"
               priority
+              data-ai-hint="game screen"
             />
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none flex flex-col justify-end p-6">
@@ -98,7 +98,7 @@ export default function LandingPage() {
             </Button>
           </Link>
 
-          <Link href="/game" className="block w-full">
+          <Link href="/register" className="block w-full">
             <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-base glow-purple transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide flex items-center justify-between px-5 border border-purple-400/30">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center font-black text-sm">
@@ -114,9 +114,9 @@ export default function LandingPage() {
           </Link>
 
           <div className="text-center pt-2">
-            <a href="#" className="text-white/50 hover:text-cyan-400 transition-colors text-[12px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
+            <Link href="/register" className="text-white/50 hover:text-cyan-400 transition-colors text-[12px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
               Já tenho conta <ChevronRight className="w-3.5 h-3.5" />
-            </a>
+            </Link>
           </div>
         </section>
 
@@ -181,6 +181,7 @@ export default function LandingPage() {
                     alt={step.title} 
                     fill 
                     className="object-contain opacity-95 group-hover:opacity-100 transition-opacity" 
+                    data-ai-hint="payment screen"
                   />
                   <div className="absolute top-3 left-3 w-7 h-7 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-xl border border-white/10">
                     {step.step}
@@ -264,7 +265,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <Link href="/game" className="block w-full">
+          <Link href="/register" className="block w-full">
             <Button className="w-full h-14 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-sm shadow-xl glow-green transition-all uppercase tracking-wider animate-shine">
               CRIAR CONTA GRÁTIS
             </Button>

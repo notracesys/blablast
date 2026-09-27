@@ -129,7 +129,7 @@ export default function GamePage() {
       ctx.moveTo(x + r, y);
       ctx.arcTo(x + w, y, x + w, y + h, r);
       ctx.arcTo(x + w, y + h, x, y + h, r);
-      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y + h, x, y + h, r);
       ctx.arcTo(x, y, x + w, y, r);
       ctx.closePath();
     }
@@ -748,7 +748,7 @@ export default function GamePage() {
               </div>
             )}
             {isTargetAchieved && (
-              <div className="text-[9px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center animate-bounce">
+              <div className="text-[9px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1.5 justify-center animate-bounce">
                 <Award className="w-3 h-3 text-emerald-400" /> Meta Concluída com Sucesso!
               </div>
             )}
@@ -811,7 +811,7 @@ export default function GamePage() {
             ⚠️ <span className="text-white font-semibold">Saldo Demonstrativo:</span> Como você está na versão de testes gratuita, este prêmio é apenas simulação. Deposite de verdade para resgatar PIX reais na sua conta bancária agora mesmo!
           </div>
 
-          <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2 uppercase tracking-wider">
+          <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2 uppercase tracking-wider">
             CRIAR CONTA REAL & FATURAR
           </Link>
           <button 
@@ -849,11 +849,11 @@ export default function GamePage() {
           </div>
 
           {isTargetAchieved ? (
-            <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
+            <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
               CRIAR CONTA REAL & SACAR
             </Link>
           ) : (
-            <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
+            <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
               JOGAR NA ARENA REAL
             </Link>
           )}
