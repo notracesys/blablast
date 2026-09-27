@@ -137,7 +137,6 @@ export default function PainelPage() {
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
 
-    // Uso de increment() para segurança máxima (operação atômica no servidor)
     updateDoc(userRef, { balance: increment(amount) })
       .then(() => {
         toast({
@@ -257,7 +256,6 @@ export default function PainelPage() {
     );
   }
 
-  // Expression: entryValue * 5 (meta de 5 linhas)
   const potentialWin = selectedValue * 5;
   const numWithdrawAmount = parseFloat(withdrawAmount) || 0;
   const netWithdrawAmount = Math.max(0, numWithdrawAmount - 3);
@@ -392,7 +390,6 @@ export default function PainelPage() {
       <div className={`fixed inset-0 ${showProfileModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[8000]`}>
         <div className="w-full max-w-[400px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300 max-h-[92vh]">
           
-          {/* Header */}
           <div className="flex items-center justify-between p-6 pb-2">
             <h2 className="text-2xl font-[1000] text-white uppercase tracking-tight">Perfil</h2>
             <button 
@@ -404,8 +401,6 @@ export default function PainelPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 space-y-4 pt-2 pb-4 scrollbar-hide">
-            
-            {/* Bloco de Informações do Usuário */}
             <div className="bg-slate-900/60 rounded-[2rem] p-5 border border-white/5 flex flex-col space-y-5">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full bg-[#4f46e5] flex items-center justify-center text-white text-xl font-black shadow-lg">
@@ -417,7 +412,6 @@ export default function PainelPage() {
                 </div>
               </div>
 
-              {/* Botão de Crédito de Teste */}
               <button 
                 onClick={handleTestCredit}
                 className="w-full h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-all"
@@ -426,7 +420,6 @@ export default function PainelPage() {
                 Creditar R$ 500 (Teste)
               </button>
 
-              {/* Link de Indicação Mini */}
               <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
                 <span className="text-white/20 text-[10px] truncate max-w-[140px] font-mono">{referralLink}</span>
                 <button 
@@ -439,7 +432,6 @@ export default function PainelPage() {
               </div>
             </div>
 
-            {/* Grid de Estatísticas 2x2 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
                 <strong className="text-2xl font-black text-white">0</strong>
@@ -459,9 +451,7 @@ export default function PainelPage() {
               </div>
             </div>
 
-            {/* Accordions */}
             <div className="space-y-2.5">
-              {/* Últimas Transações */}
               <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
                 <button 
                   onClick={() => setShowTransactions(!showTransactions)}
@@ -480,7 +470,6 @@ export default function PainelPage() {
                 )}
               </div>
 
-              {/* Histórico de Partidas */}
               <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
                 <button 
                   onClick={() => setShowHistory(!showHistory)}
@@ -499,7 +488,6 @@ export default function PainelPage() {
                 )}
               </div>
 
-              {/* Alterar Senha */}
               <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
                 <button 
                   onClick={() => setShowPassChange(!showPassChange)}
@@ -521,7 +509,6 @@ export default function PainelPage() {
               </div>
             </div>
 
-            {/* Logout */}
             <button 
               onClick={handleLogout}
               className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#5a1215] to-[#2e0809] border border-white/5 flex items-center justify-center gap-2 text-rose-500 font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] mt-2"
@@ -539,11 +526,12 @@ export default function PainelPage() {
           
           <div className="relative w-full aspect-[2.7/1] bg-slate-900/50">
             <Image 
-              src="/hero.webp" 
+              src="/indicar.webp" 
               alt="Indique e Ganhe" 
               fill 
               className="object-cover"
               priority
+              data-ai-hint="affiliate marketing banner"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0c0f17] via-transparent to-transparent"></div>
             <button 
@@ -562,7 +550,6 @@ export default function PainelPage() {
           </div>
 
           <div className="p-5 flex flex-col space-y-5">
-            {/* Bloco de Saldo de Comissões */}
             <div className="bg-[#35f59a] rounded-[2rem] p-5 flex flex-col space-y-4 shadow-[0_8px_25px_rgba(53,245,154,0.2)]">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
@@ -577,7 +564,6 @@ export default function PainelPage() {
               </button>
             </div>
 
-            {/* Seu Link Exclusivo */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.2em] pl-1">Seu Link Exclusivo</label>
               <div className="relative bg-slate-950/60 rounded-2xl border border-white/5 h-12 flex items-center px-4 overflow-hidden">
@@ -592,7 +578,6 @@ export default function PainelPage() {
               </button>
             </div>
 
-            {/* Resumo Consolidado de Indicações */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
                 <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Qtd de Indicados</span>
@@ -608,35 +593,28 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* MODAL DE SALDO INSUFICIENTE REFINADO */}
       <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-6 bg-black/90 backdrop-blur-sm z-[8000]`}>
         <div className="w-full max-w-[340px] border border-white/10 rounded-[2.5rem] bg-[#1a1d29] p-8 shadow-2xl text-center space-y-6 animate-in fade-in zoom-in duration-300">
-          
           <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-500 border border-amber-500/20">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          
           <div className="space-y-2">
             <h3 className="text-xl font-[1000] uppercase tracking-tighter text-white">Saldo Insuficiente</h3>
             <p className="text-white/40 text-[11px] font-bold leading-relaxed px-4">
               Você precisa de saldo para entrar nesta partida.
             </p>
           </div>
-
           <div className="bg-black/40 rounded-[1.5rem] p-5 border border-white/5 space-y-4 text-left">
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
               <span className="text-white/30">Seu Saldo:</span>
               <span className="text-[#ff4b72] text-sm">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</span>
             </div>
-            
             <div className="h-px bg-white/5 w-full" />
-            
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
               <span className="text-white/30">Custo de Entrada:</span>
               <span className="text-[#26d9ff] text-sm">R$ {selectedValue.toFixed(2).replace('.', ',')}</span>
             </div>
           </div>
-
           <div className="flex flex-col gap-3 pt-2">
             <button 
               onClick={() => {
@@ -657,10 +635,8 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* MODAL DE DEPÓSITO CUSTOMIZADO */}
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative">
-          
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
               src="/card1.webp" 
@@ -676,13 +652,11 @@ export default function PainelPage() {
               <X className="w-3.5 h-3.5 stroke-[3]" />
             </button>
           </div>
-
           <div className="p-5 flex flex-col space-y-4">
             <div>
               <label className="text-[11px] font-black uppercase text-white/40 tracking-wider block mb-3">
                 VALOR RÁPIDO (MÍNIMO R$ 20)
               </label>
-
               <div className="grid grid-cols-3 gap-x-2 gap-y-5 pt-2">
                 {depositPresets.map((item) => (
                   <button
@@ -703,7 +677,6 @@ export default function PainelPage() {
                 ))}
               </div>
             </div>
-
             <div className="space-y-1.5">
               <label className="text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
                 DIGITE O VALOR (MÍNIMO R$ 20,00)
@@ -719,7 +692,6 @@ export default function PainelPage() {
                 />
               </div>
             </div>
-
             <button 
               type="button" 
               className="flex items-center gap-1.5 text-[#ff4b72] text-[11px] font-bold uppercase tracking-wider self-start pl-1 py-1 hover:opacity-80"
@@ -727,7 +699,6 @@ export default function PainelPage() {
               <Ticket className="w-3.5 h-3.5 fill-current" />
               Tenho um cupom
             </button>
-
             <button 
               onClick={handleAddBalance} 
               disabled={isDepositing}
@@ -736,15 +707,11 @@ export default function PainelPage() {
               {isDepositing ? 'PROCESSANDO...' : 'Gerar QR Code PIX'}
             </button>
           </div>
-
         </div>
       </div>
 
-      {/* MODAL DE SAQUE CUSTOMIZADO */}
-      <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[5000]`}>
+      <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative pb-4">
-          
-          {/* Banner Superior */}
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
               src="/card4.webp" 
@@ -760,11 +727,7 @@ export default function PainelPage() {
               <X className="w-3.5 h-3.5 stroke-[3]" />
             </button>
           </div>
-
-          {/* Conteúdo Interno do Modal */}
           <div className="p-4 flex flex-col space-y-3.5">
-            
-            {/* Bloco de Saldo Disponível */}
             <div className="bg-[#182030] rounded-2xl p-4 flex items-center gap-4 border border-white/5">
               <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-[#35f59a] font-black text-sm shrink-0">
                 R$
@@ -774,8 +737,6 @@ export default function PainelPage() {
                 <strong className="text-xl font-black text-white">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</strong>
               </div>
             </div>
-
-            {/* Input de Valor */}
             <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
               <span className="text-white/40 text-xs font-bold mr-2">R$</span>
               <Input 
@@ -785,13 +746,9 @@ export default function PainelPage() {
                 className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-
-            {/* Texto de Saque Informativo */}
             <p className="text-[11px] text-white/60 px-1">
               Taxa de saque: R$ 3,00. Mínimo R$ 5,00. Você receberá na sua conta bancária: <span className="font-black text-white">R$ {netWithdrawAmount.toFixed(2).replace('.', ',')}</span>
             </p>
-
-            {/* Input Chave PIX */}
             <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
               <span className="text-white/40 text-xs font-black mr-3 uppercase tracking-wider text-cyan-400">PIX</span>
               <Input 
@@ -802,8 +759,6 @@ export default function PainelPage() {
                 className="bg-transparent border-0 h-full p-0 text-white font-medium text-xs placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-
-            {/* Input CPF */}
             <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
               <span className="text-white/40 text-xs font-black mr-3 uppercase tracking-wider text-cyan-400">CPF</span>
               <Input 
@@ -814,8 +769,6 @@ export default function PainelPage() {
                 className="bg-transparent border-0 h-full p-0 text-white font-medium text-xs placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
             </div>
-
-            {/* Alerta Vermelho de Saldo Insuficiente */}
             {isWithdrawInsufficient && (
               <div className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
                 <span className="text-[11px] font-bold text-rose-400">
@@ -823,16 +776,12 @@ export default function PainelPage() {
                 </span>
               </div>
             )}
-
-            {/* Caixa Amarela de Análise de Segurança */}
             <div className="w-full p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex gap-2 items-start text-left">
               <span className="text-amber-400 text-xs mt-0.5">⚠️</span>
               <p className="text-[10px] font-medium text-amber-400/90 leading-normal">
                 Saques passam por análise de segurança e são processados em até 24h úteis.
               </p>
             </div>
-
-            {/* Botão de Ação Verde Sólido */}
             <button 
               onClick={handleRequestWithdraw}
               disabled={isWithdrawing || isWithdrawInsufficient}
@@ -841,10 +790,8 @@ export default function PainelPage() {
               {isWithdrawing ? 'PROCESSANDO...' : 'Solicitar Saque'}
             </button>
           </div>
-
         </div>
       </div>
-
     </div>
   );
 }

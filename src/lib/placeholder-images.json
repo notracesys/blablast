@@ -29,6 +29,12 @@
       "description": "Saque PIX imediato",
       "imageUrl": "/card4.webp",
       "imageHint": "successful withdrawal"
+    },
+    {
+      "id": "affiliate-banner",
+      "description": "Banner da seção de indicações e afiliados",
+      "imageUrl": "/indicar.webp",
+      "imageHint": "affiliate marketing banner"
     }
   ]
 }
