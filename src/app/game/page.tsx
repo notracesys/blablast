@@ -10,7 +10,6 @@ export default function GamePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Preload do sistema de áudio
     GameAudio.preload();
 
     const BOARD_SIZE = 8;
@@ -105,6 +104,7 @@ export default function GamePage() {
       }).format(value);
     }
 
+    // Unsplash search keyword hints helper
     function generateColor() {
       const c = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
       return {
@@ -305,7 +305,6 @@ export default function GamePage() {
 
       if (clearedCount === 0) return 0;
 
-      // Som de limpeza de linha
       GameAudio.play('clear');
 
       gameState.clearingLines.rows = rowsToClear;
@@ -361,7 +360,6 @@ export default function GamePage() {
 
       gameState.shapes.splice(shapeIndex, 1);
       
-      // Som de encaixe válido
       GameAudio.play('encaixe');
 
       const linesCleared = clearLines();
@@ -391,7 +389,6 @@ export default function GamePage() {
       }
       gameState.isGameOver = true;
       
-      // Som de derrota
       GameAudio.play('derrota');
       
       document.getElementById('gameOverModal')?.classList.add('show');
@@ -530,9 +527,7 @@ export default function GamePage() {
       function startDrag(clientX: number, clientY: number) {
         if (gameState.isPaused || gameState.isGameOver) return;
         
-        // Desbloqueia áudio na primeira interação
         GameAudio.unlock();
-        // Som de seleção/pegar peça
         GameAudio.play('selection');
         
         gameState.dragging = { shape, shapeIndex, shapeItem };
@@ -645,7 +640,6 @@ export default function GamePage() {
       if (placeX >= 0 && placeY >= 0 && placeX <= BOARD_SIZE - shape.matrix[0].length && placeY <= BOARD_SIZE - shape.matrix.length && canPlaceShape(shape, placeX, placeY)) {
         placeShape(gameState.dragging.shapeIndex, placeX, placeY);
       } else {
-        // Som de falha ao tentar encaixar
         GameAudio.play('broken');
       }
 
@@ -696,9 +690,7 @@ export default function GamePage() {
     }
 
     function restartGame() {
-      // Desbloqueia áudio
       GameAudio.unlock();
-      // Som de transição
       GameAudio.play('swtch');
 
       if (dragGhost) {
@@ -760,7 +752,6 @@ export default function GamePage() {
           GameAudio.setMuted(newState);
           soundBtn.setAttribute('aria-pressed', String(!newState));
           soundBtn.classList.toggle('is-muted', newState);
-          // Som de transição ao clicar no botão
           GameAudio.play('swtch');
         };
       }

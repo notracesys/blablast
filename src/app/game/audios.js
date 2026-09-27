@@ -31,7 +31,7 @@ async function init() {
     muted = stored === 'false';
     masterGain.gain.value = muted ? 0 : 1;
   } catch (e) {
-    console.warn('Web Audio API not supported', e);
+    // Web Audio context failed to load natively
   }
 }
 
@@ -44,7 +44,6 @@ async function getBuffer(filename) {
     const response = await fetch(url);
     if (!response.ok) return null;
     
-    // Evita decodificar se for uma página HTML (como erro 404 padrão)
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('text/html')) return null;
 
