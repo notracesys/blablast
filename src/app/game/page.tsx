@@ -11,6 +11,7 @@ export default function GamePage() {
     if (typeof window === 'undefined') return;
 
     GameAudio.preload();
+    GameAudio.playMusic();
 
     const BOARD_SIZE = 8;
     const PREVIEW_CELL_SIZE = 20;
@@ -544,7 +545,7 @@ export default function GamePage() {
         if (e.touches.length !== 1) return;
         startDrag(e.touches[0].clientX, e.touches[0].clientY);
         e.preventDefault();
-      }, { passive: false });
+      });
     }
 
     function createDragGhost(shape: any) {
