@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { LogOut, Wallet, Plus, Coins, Play } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, Coins, ArrowUpRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -52,12 +52,6 @@ export default function PainelPage() {
     return () => unsubscribe();
   }, [user, authLoading, db, router]);
 
-  const handleSignOut = () => {
-    if (auth) {
-      auth.signOut().then(() => router.push('/'));
-    }
-  };
-
   const handleAddBalance = () => {
     if (!user || !db || !userData) return;
     const amount = parseFloat(depositAmount);
@@ -71,7 +65,7 @@ export default function PainelPage() {
       .then(() => {
         toast({
           title: "Saldo Adicionado!",
-          description: `R$ ${amount.toFixed(2)} creditados via PIX Simulado.`,
+          description: `R$ ${amount.toFixed(2)} creditados com sucesso.`,
         });
         setShowDepositModal(false);
         setIsDepositing(false);
@@ -118,104 +112,166 @@ export default function PainelPage() {
 
   if (authLoading || !userData) {
     return (
-      <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center p-4 text-white">
-        <div className="w-10 h-10 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/40">Carregando painel...</p>
+      <div className="min-h-screen bg-[#08090d] flex flex-col items-center justify-center p-4 text-white">
+        <div className="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/40">Carregando...</p>
       </div>
     );
   }
 
-  const minReward = selectedValue * 2;
+  const minReward = selectedValue * 5;
 
   return (
-    <div className="min-h-screen w-full bg-[#060a17] text-white flex flex-col p-4 relative overflow-hidden pb-10">
-      <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none z-0"></div>
-
-      <header className="w-full flex items-center justify-between h-14 border-b border-white/5 bg-[#0b1426]/60 backdrop-blur-md rounded-2xl px-4 mb-6 z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-[10px] font-black">
-            {userData.fullName?.substring(0,2).toUpperCase()}
+    <div className="min-h-screen w-full bg-[#08090d] text-white flex flex-col justify-between relative overflow-hidden pb-24">
+      <div className="w-full flex flex-col p-4 flex-1">
+        <header className="w-full flex items-center justify-between h-14 px-1 mb-4 z-10 shrink-0">
+          <div className="flex items-center">
+            <Image 
+              src="/blockcash.png" 
+              alt="Block Cash Logo" 
+              width={75} 
+              height={30} 
+              className="object-contain filter drop-shadow-[0_2px_8px_rgba(38,217,255,0.3)]"
+              priority
+            />
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-wider leading-none">{userData.fullName?.split(' ')[0]}</span>
-            <span className="text-[8px] font-bold text-emerald-400 mt-0.5">Arena Ativa</span>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <div className="bg-[#060a17] border border-white/5 rounded-xl px-2.5 py-1 flex items-center gap-2 shadow-inner">
-            <Wallet className="w-3 h-3 text-cyan-400" />
-            <span className="text-xs font-black text-emerald-400">R$ {(userData.balance || 0).toFixed(2)}</span>
-            <button onClick={() => setShowDepositModal(true)} className="w-5 h-5 rounded-md bg-cyan-400 flex items-center justify-center text-slate-950 ml-1">
-              <Plus className="w-3 h-3 stroke-[3]" />
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col text-right">
+              <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">SALDO</span>
+              <span className="text-sm font-black text-[#35f59a]">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</span>
+            </div>
+            
+            <button 
+              onClick={() => setShowDepositModal(true)}
+              className="relative w-8 h-8 rounded-full bg-[#7b61ff] flex items-center justify-center font-black text-xs text-white border border-white/10"
+            >
+              {userData.fullName?.substring(0,1).toUpperCase() || 'U'}
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#35f59a] flex items-center justify-center text-slate-950 font-extrabold text-[10px]">
+                +
+              </div>
             </button>
           </div>
-          <button onClick={handleSignOut} className="p-2 text-white/40 hover:text-red-400 rounded-xl border border-white/5">
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+        </header>
 
-      <main className="w-full max-w-[420px] mx-auto z-10">
-        <div className="w-full bg-[#0b1426] border border-white/10 rounded-[2.5rem] p-5 shadow-2xl flex flex-col gap-6">
-          <div className="relative w-full aspect-[1/0.9] bg-[#060a17] rounded-3xl border border-white/5 overflow-hidden">
-            <Image src="/hero.png" alt="Jogo Block Cash" fill className="object-cover" priority data-ai-hint="game hero" />
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot"></span>
-              <span className="text-[9px] font-black text-white/80 uppercase">883 JOGANDO AGORA</span>
+        <main className="w-full max-w-[400px] mx-auto z-10 flex-1 flex flex-col justify-center">
+          <div className="w-full bg-[#0d111c]/90 border border-white/5 rounded-[2rem] p-4 shadow-2xl space-y-4">
+            <div className="relative w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-white/10">
+              <Image 
+                src="/hero.webp" 
+                alt="Encaixe os blocos e ganhe" 
+                fill 
+                className="object-cover" 
+                priority 
+                data-ai-hint="game main banner"
+              />
+              <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-[#35f59a] rounded-full pulse-dot"></span>
+                <span className="text-[9px] font-black text-white/90 uppercase tracking-wider">803 online</span>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-3">
-            <label className="text-[10px] font-black uppercase text-white/30 tracking-widest pl-1">VALOR DE ENTRADA</label>
-            <div className="grid grid-cols-3 gap-2">
-              {presets.map((val) => (
-                <button
-                  key={val}
-                  onClick={() => setSelectedValue(val)}
-                  className={`h-11 rounded-xl font-black text-xs transition-all border ${
-                    selectedValue === val ? 'bg-white text-slate-950 border-cyan-400 shadow-[0_0_15px_rgba(38,217,255,0.2)]' : 'bg-[#060a17] text-white/60 border-white/5'
-                  }`}
-                >
-                  R$ {val}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-white/40 tracking-widest pl-0.5">VALOR DE ENTRADA</label>
+              <div className="grid grid-cols-3 gap-2">
+                {presets.map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => setSelectedValue(val)}
+                    className={`h-10 rounded-xl font-black text-xs transition-all border ${
+                      selectedValue === val 
+                        ? 'bg-[#e2f5ff] text-slate-950 border-cyan-400 shadow-[0_0_12px_rgba(38,217,255,0.25)]' 
+                        : 'bg-[#131926] text-white/70 border-white/5'
+                    }`}
+                  >
+                    R${val}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="w-full bg-[#060a17] rounded-2xl border border-cyan-500/20 p-4 text-center">
-            <span className="text-[9px] text-white/30 uppercase font-black tracking-widest block mb-1">Potencial de Ganho</span>
-            <strong className="text-2xl font-[1000] text-amber-400">R$ {minReward.toFixed(2).replace('.', ',')}</strong>
-          </div>
+            <div className="relative bg-[#131926] rounded-xl border border-white/5 h-12 flex items-center px-4">
+              <span className="text-white/40 text-xs font-bold mr-2">R$</span>
+              <Input 
+                type="number" 
+                value={selectedValue} 
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val)) setSelectedValue(val);
+                }} 
+                className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
 
-          <button onClick={handleStartGame} className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-[1000] text-base shadow-[0_0_20px_rgba(53,245,154,0.3)] uppercase tracking-wider flex items-center justify-center gap-2">
-            <Play className="w-4 h-4 fill-current" />
-            JOGAR AGORA
-          </button>
+            <div className="w-full bg-[#131926]/40 rounded-xl border border-white/5 py-3 text-center">
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest block mb-0.5">Recompensa mínima</span>
+              <strong className="text-lg font-black text-[#ffbd1c]">R$ {minReward.toFixed(2).replace('.', ',')}</strong>
+            </div>
+
+            <button 
+              onClick={handleStartGame} 
+              className="w-full h-12 rounded-2xl bg-[#35f59a] text-slate-950 font-black text-sm shadow-[0_4px_15px_rgba(53,245,154,0.3)] uppercase tracking-wide transition-all active:scale-[0.98]"
+            >
+              Jogar
+            </button>
+          </div>
+        </main>
+      </div>
+
+      <nav className="fixed bottom-0 max-w-[480px] w-full mx-auto left-0 right-0 z-40 bg-[#0c0f17] border-t border-white/5 h-20 px-2 flex items-center justify-around shadow-xl">
+        <button onClick={() => setShowDepositModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+          <Wallet className="w-4 h-4" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Depositar</span>
+        </button>
+
+        <button onClick={() => router.push('/game')} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+          <ArrowUpRight className="w-4 h-4" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Sacar</span>
+        </button>
+
+        <div className="flex flex-col items-center justify-center flex-1 -translate-y-2">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)]">
+            <Gamepad2 className="w-6 h-6 text-slate-950" />
+          </div>
+          <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
         </div>
-      </main>
+
+        <button onClick={() => router.push('/')} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+          <Users className="w-4 h-4" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Indicar</span>
+        </button>
+
+        <button onClick={() => {
+          if(auth) {
+            auth.signOut().then(() => router.push('/'));
+          }
+        }} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+          <User className="w-4 h-4" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
+        </button>
+      </nav>
 
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[5000]`}>
-        <div className="w-full max-w-xs p-6 border border-white/10 rounded-3xl bg-[#0b1426] shadow-2xl">
+        <div className="w-full max-w-xs p-6 border border-white/10 rounded-3xl bg-[#0d111c] shadow-2xl">
           <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
             <Coins className="w-5 h-5 text-cyan-400" />
           </div>
-          <h2 className="text-base font-black text-white uppercase text-center mb-1">Simular Depósito PIX</h2>
-          <p className="text-white/50 text-[10px] text-center mb-4">Adicione saldo fictício para testar a arena real.</p>
+          <h2 className="text-sm font-black text-white uppercase text-center mb-1">Simular Depósito PIX</h2>
+          <p className="text-white/50 text-[10px] text-center mb-4">Adicione saldo de demonstração para testar as entradas.</p>
           <div className="space-y-3 mb-4">
             <div className="flex gap-2">
               {['20', '50', '100'].map((val) => (
-                <button key={val} onClick={() => setDepositAmount(val)} className={`flex-1 h-9 rounded-xl text-[10px] font-black transition-all ${depositAmount === val ? 'bg-cyan-400 text-slate-950' : 'bg-[#060a17] text-white/60 border border-white/5'}`}>
+                <button key={val} onClick={() => setDepositAmount(val)} className={`flex-1 h-8 rounded-xl text-[10px] font-black transition-all ${depositAmount === val ? 'bg-cyan-400 text-slate-950' : 'bg-[#131926] text-white/60 border border-white/5'}`}>
                   + R${val}
                 </button>
               ))}
             </div>
-            <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} className="h-12 bg-[#060a17] border-white/5 rounded-xl text-center text-sm font-bold text-white" />
+            <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} className="h-10 bg-[#131926] border-white/5 rounded-xl text-center text-xs font-bold text-white focus-visible:ring-0 focus-visible:ring-offset-0" />
           </div>
-          <button onClick={handleAddBalance} disabled={isDepositing} className="w-full h-11 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-xs uppercase tracking-wider">
+          <button onClick={handleAddBalance} disabled={isDepositing} className="w-full h-10 rounded-xl bg-[#35f59a] text-slate-950 font-black text-xs uppercase tracking-wider">
             {isDepositing ? 'PROCESSANDO...' : 'CONFIRMAR DEPÓSITO'}
           </button>
-          <button onClick={() => setShowDepositModal(false)} className="w-full h-9 rounded-xl text-[10px] uppercase font-bold text-white/30 mt-2">FECHAR</button>
+          <button onClick={() => setShowDepositModal(false)} className="w-full h-8 rounded-xl text-[10px] uppercase font-bold text-white/30 mt-2">FECHAR</button>
         </div>
       </div>
     </div>
