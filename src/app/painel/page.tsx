@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -21,9 +21,14 @@ export default function PainelPage() {
   const [userData, setUserData] = useState<any>(null);
   const [selectedValue, setSelectedValue] = useState<number>(10);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false);
   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>('20');
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('30');
+  const [pixKey, setPixKey] = useState<string>('');
+  const [cpf, setCpf] = useState<string>('');
   const [isDepositing, setIsDepositing] = useState<boolean>(false);
+  const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
 
   const presets = [5, 10, 20, 30, 50, 100];
@@ -116,6 +121,61 @@ export default function PainelPage() {
       });
   };
 
+  const handleRequestWithdraw = () => {
+    if (!user || !db || !userData) return;
+
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount < 10) {
+      toast({
+        variant: "destructive",
+        title: "Valor inválido",
+        description: "O valor mínimo para saque é de R$ 10,00.",
+      });
+      return;
+    }
+
+    if ((userData.balance || 0) < amount) {
+      toast({
+        variant: "destructive",
+        title: "Saldo insuficiente",
+        description: "Você não possui saldo suficiente para este saque.",
+      });
+      return;
+    }
+
+    if (!pixKey || !cpf) {
+      toast({
+        variant: "destructive",
+        title: "Campos obrigatórios",
+        description: "Preencha a chave PIX e o CPF para continuar.",
+      });
+      return;
+    }
+
+    setIsWithdrawing(true);
+    const userRef = doc(db, 'users', user.uid);
+    const newBalance = userData.balance - amount;
+
+    updateDoc(userRef, { balance: newBalance })
+      .then(() => {
+        toast({
+          title: "Solicitação enviada!",
+          description: `Seu saque de R$ ${amount.toFixed(2)} foi enviado para análise política e de segurança.`,
+        });
+        setShowWithdrawModal(false);
+        setIsWithdrawing(false);
+      })
+      .catch(async (error) => {
+        setIsWithdrawing(false);
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'update',
+          requestResourceData: { balance: newBalance },
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
+  };
+
   const handleStartGame = () => {
     if (!userData || !user || !db) return;
     if ((userData.balance || 0) < selectedValue) {
@@ -150,6 +210,9 @@ export default function PainelPage() {
   }
 
   const minReward = selectedValue * 5;
+  const numWithdrawAmount = parseFloat(withdrawAmount) || 0;
+  const netWithdrawAmount = Math.max(0, numWithdrawAmount - 3);
+  const isWithdrawInsufficient = (userData.balance || 0) < numWithdrawAmount;
 
   return (
     <div className="min-h-screen w-full bg-[#08090d] text-white flex flex-col justify-between relative overflow-hidden pb-24">
@@ -253,13 +316,13 @@ export default function PainelPage() {
           <span className="text-[9px] font-bold uppercase tracking-wider">Depositar</span>
         </button>
 
-        <button onClick={() => router.push('/game')} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+        <button onClick={() => setShowWithdrawModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
           <ArrowUpRight className="w-4 h-4" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Sacar</span>
         </button>
 
         <div className="flex flex-col items-center justify-center flex-1 -translate-y-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)]">
+          <div onClick={() => router.push('/game')} className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)] cursor-pointer">
             <Gamepad2 className="w-6 h-6 text-slate-950" />
           </div>
           <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
@@ -408,6 +471,112 @@ export default function PainelPage() {
 
         </div>
       </div>
+
+      {/* MODAL DE SAQUE CUSTOMIZADO (IGUAL À IMAGEM DE REFERÊNCIA) */}
+      <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[5000]`}>
+        <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative pb-4">
+          
+          {/* Banner Superior */}
+          <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
+            <Image 
+              src="/card4.webp" 
+              alt="Saque Instantâneo R$" 
+              fill 
+              className="object-cover"
+              priority
+            />
+            <button 
+              onClick={() => setShowWithdrawModal(false)}
+              className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#e73b29] flex items-center justify-center text-white shadow-md z-30 transition-transform active:scale-90"
+            >
+              <X className="w-3.5 h-3.5 stroke-[3]" />
+            </button>
+          </div>
+
+          {/* Conteúdo Interno do Modal */}
+          <div className="p-4 flex flex-col space-y-3.5">
+            
+            {/* Bloco de Saldo Disponível */}
+            <div className="bg-[#182030] rounded-2xl p-4 flex items-center gap-4 border border-white/5">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-[#35f59a] font-black text-sm shrink-0">
+                R$
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">SALDO DISPONÍVEL</span>
+                <strong className="text-xl font-black text-white">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</strong>
+              </div>
+            </div>
+
+            {/* Input de Valor */}
+            <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
+              <span className="text-white/40 text-xs font-bold mr-2">R$</span>
+              <Input 
+                type="number" 
+                value={withdrawAmount} 
+                onChange={(e) => setWithdrawAmount(e.target.value)} 
+                className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+
+            {/* Texto de Taxa Informativo */}
+            <p className="text-[11px] text-white/60 px-1">
+              Taxa de saque: R$ 3,00. Você receberá na sua conta bancária: <span className="font-black text-white">R$ {netWithdrawAmount.toFixed(2).replace('.', ',')}</span>
+            </p>
+
+            {/* Input Chave PIX */}
+            <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
+              <span className="text-white/40 text-xs font-black mr-3 uppercase tracking-wider text-cyan-400">PIX</span>
+              <Input 
+                type="text" 
+                value={pixKey}
+                onChange={(e) => setPixKey(e.target.value)}
+                placeholder="Chave PIX (e-mail, telefone ou chave)" 
+                className="bg-transparent border-0 h-full p-0 text-white font-medium text-xs placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+
+            {/* Input CPF */}
+            <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
+              <span className="text-white/40 text-xs font-black mr-3 uppercase tracking-wider text-cyan-400">CPF</span>
+              <Input 
+                type="text" 
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                placeholder="CPF do titular (somente números)" 
+                className="bg-transparent border-0 h-full p-0 text-white font-medium text-xs placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+
+            {/* Alerta Vermelho de Saldo Insuficiente (Aparece condicionalmente conforme imagem) */}
+            {isWithdrawInsufficient && (
+              <div className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
+                <span className="text-[11px] font-bold text-rose-400">
+                  Saldo insuficiente para realizar este saque.
+                </span>
+              </div>
+            )}
+
+            {/* Caixa Amarela de Análise de Segurança */}
+            <div className="w-full p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 flex gap-2 items-start text-left">
+              <span className="text-amber-400 text-xs mt-0.5">⚠️</span>
+              <p className="text-[10px] font-medium text-amber-400/90 leading-normal">
+                Saques passam por análise de segurança e são processados em até 24h úteis.
+              </p>
+            </div>
+
+            {/* Botão de Ação Verde Sólido */}
+            <button 
+              onClick={handleRequestWithdraw}
+              disabled={isWithdrawing || isWithdrawInsufficient}
+              className="w-full h-12 rounded-2xl bg-[#00e26f] disabled:bg-[#00e26f]/20 disabled:text-slate-950/40 text-slate-950 font-black text-sm uppercase tracking-wider transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,226,111,0.25)] flex items-center justify-center mt-1"
+            >
+              {isWithdrawing ? 'PROCESSANDO...' : 'Solicitar Saque'}
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 }
