@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -67,7 +66,7 @@ export default function RegisterPage() {
         errorEmitter.emit('permission-error', permissionError);
       });
 
-      router.push('/game');
+      router.push('/painel');
     } catch (error: any) {
       toast({
         variant: "destructive",
