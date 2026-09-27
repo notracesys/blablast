@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Volume2, VolumeX, Info, Award, Loader2 } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, Award, Loader2, CheckCircle2 } from 'lucide-react';
 import { GameAudio } from './audios';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
@@ -28,6 +28,8 @@ function GameContent() {
   const TARGET_LINES = 5;
   const VALUE_PER_LINE = entryValue;
   const FINAL_PRIZE = entryValue * 5;
+
+  const isTargetAchieved = linesCompleted >= TARGET_LINES;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -327,7 +329,10 @@ function GameContent() {
           
           setLinesCompleted(gameState.lines);
           render();
-          checkGameOver();
+          
+          if (gameState.lines < TARGET_LINES) {
+            checkGameOver();
+          }
         }
       }
       animate(performance.now());
@@ -335,6 +340,8 @@ function GameContent() {
     }
 
     function placeShape(shapeIndex: number, x: number, y: number) {
+      if (gameState.lines >= TARGET_LINES) return;
+
       const shape = gameState.shapes[shapeIndex] as any;
       if (!shape || !canPlaceShape(shape, x, y)) return;
 
@@ -359,13 +366,13 @@ function GameContent() {
         generateShapes(PIECE_SLOTS);
       } else {
         renderShapes();
-        if (linesCleared === 0) checkGameOver();
+        if (linesCleared === 0 && gameState.lines < TARGET_LINES) checkGameOver();
       }
       render();
     }
 
     function checkGameOver() {
-      if (gameState.shapes.length === 0) return;
+      if (gameState.shapes.length === 0 || gameState.lines >= TARGET_LINES) return;
 
       let validMoveFound = false;
       for (let i = 0; i < gameState.shapes.length; i++) {
@@ -397,7 +404,7 @@ function GameContent() {
         gameState.shapes.push({ id: i, matrix: def.matrix, color: generateColor() } as any);
       }
       renderShapes();
-      checkGameOver();
+      if (gameState.lines < TARGET_LINES) checkGameOver();
     }
 
     function drawPlacementPreview(shape: any, x: number, y: number) {
@@ -519,7 +526,7 @@ function GameContent() {
 
     function setupDragAndDrop(shapeItem: HTMLDivElement, shape: any, shapeIndex: number) {
       function startDrag(clientX: number, clientY: number) {
-        if (gameState.isPaused || gameState.isGameOver) return;
+        if (gameState.isPaused || gameState.isGameOver || gameState.lines >= TARGET_LINES) return;
         
         GameAudio.unlock();
         GameAudio.play('selection');
@@ -586,7 +593,7 @@ function GameContent() {
     }
 
     function onDragMove(clientX: number, clientY: number) {
-      if (!gameState.dragging || !boardCanvas) return;
+      if (!gameState.dragging || !boardCanvas || gameState.lines >= TARGET_LINES) return;
       pendingPointerX = clientX;
       pendingPointerY = clientY;
 
@@ -618,6 +625,17 @@ function GameContent() {
       if (dragRafId != null) {
         cancelAnimationFrame(dragRafId);
         dragRafId = null;
+      }
+
+      if (gameState.lines >= TARGET_LINES) {
+        if (gameState.dragging.shapeItem) gameState.dragging.shapeItem.classList.remove('opacity-30');
+        if (dragGhost) {
+          dragGhost.remove();
+          dragGhost = null;
+        }
+        gameState.dragging = null;
+        render();
+        return;
       }
 
       const rect = boardCanvas.getBoundingClientRect();
@@ -732,7 +750,6 @@ function GameContent() {
     });
   };
 
-  const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
   const progressPercentage = Math.min(100, (linesCompleted / TARGET_LINES) * 100);
 
@@ -827,18 +844,27 @@ function GameContent() {
         </section>
 
         <div className="flex flex-col items-center justify-center flex-1 gap-2 my-auto">
-          <section className="w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden max-w-[340px] mx-auto">
+          <section className={`w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden max-w-[340px] mx-auto ${isTargetAchieved ? 'opacity-60 pointer-events-none' : ''}`}>
             <div className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
               <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
             </div>
           </section>
 
-          <section className="grid grid-cols-3 gap-2 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
+          <section className={`grid grid-cols-3 gap-2 shrink-0 max-w-[340px] mx-auto w-full ${isTargetAchieved ? 'opacity-40 pointer-events-none' : ''}`} id="shapesList" aria-label="Peças disponíveis"></section>
         </div>
         
         <div className="flex items-center justify-center gap-1.5 text-center mb-4 shrink-0">
-          <Info className="w-3 h-3 text-white/30 shrink-0" />
-          <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças estrategicamente para estourar as linhas.</p>
+          {isTargetAchieved ? (
+            <>
+              <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+              <p className="text-[9px] text-emerald-400 font-[1000] uppercase tracking-wider">Meta concluída! Seu prêmio já pode ser resgatado.</p>
+            </>
+          ) : (
+            <>
+              <Info className="w-3 h-3 text-white/30 shrink-0" />
+              <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças estrategicamente para estourar as linhas.</p>
+            </>
+          )}
         </div>
       </div>
 
