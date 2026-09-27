@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, CheckCircle2, Wallet } from 'lucide-react';
@@ -779,8 +780,8 @@ export default function GamePage() {
           </div>
         </header>
 
-        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA */}
-        <section className="text-center p-2 flex flex-col items-center rounded-xl shrink-0 my-1 bg-slate-900/20 border border-white/5">
+        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA - Ajustada para maior espaçamento da logo */}
+        <section className="text-center p-2 flex flex-col items-center rounded-xl shrink-0 mt-4 mb-1 bg-slate-900/20 border border-white/5">
           <small className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-0.5">
             {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
           </small>
