@@ -22,7 +22,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Estados de erros individuais abaixo dos inputs
   const [errors, setErrors] = useState({
     fullName: '',
     email: '',
@@ -60,7 +59,6 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!auth || !db) return;
 
-    // Resetar erros anteriores
     const currentErrors = {
       fullName: '',
       email: '',
@@ -125,13 +123,12 @@ export default function RegisterPage() {
       await setDoc(userRef, userData);
       router.push('/painel');
     } catch (error: any) {
-      let msg = "Erro ao efetuar o cadastro.";
       if (error.code === 'auth/email-already-in-use') {
         setErrors(prev => ({ ...prev, email: 'Este e-mail já está em uso por outro usuário.' }));
       } else if (error.code === 'auth/invalid-email') {
         setErrors(prev => ({ ...prev, email: 'Formato de e-mail inválido.' }));
       } else {
-        setErrors(prev => ({ ...prev, general: msg }));
+        setErrors(prev => ({ ...prev, general: 'Erro ao salvar dados no banco de dados. Certifique-se de que o Firestore está ativado.' }));
       }
     } finally {
       setLoading(false);
