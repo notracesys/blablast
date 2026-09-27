@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
-import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, increment } from 'firebase/firestore';
 import { 
   Wallet, 
   Users, 
@@ -19,8 +19,6 @@ import {
   ChevronUp, 
   Key, 
   LogOut,
-  History,
-  ArrowDownLeft,
   Coins
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -138,9 +136,9 @@ export default function PainelPage() {
 
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
-    const newBalance = (userData.balance || 0) + amount;
 
-    updateDoc(userRef, { balance: newBalance })
+    // Uso de increment() para segurança máxima (operação atômica no servidor)
+    updateDoc(userRef, { balance: increment(amount) })
       .then(() => {
         toast({
           title: "Saldo Adicionado!",
@@ -154,7 +152,7 @@ export default function PainelPage() {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'update',
-          requestResourceData: { balance: newBalance },
+          requestResourceData: { balance: 'increment_deposit' },
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -163,8 +161,7 @@ export default function PainelPage() {
   const handleTestCredit = () => {
     if (!user || !db || !userData) return;
     const userRef = doc(db, 'users', user.uid);
-    const newBalance = (userData.balance || 0) + 500;
-    updateDoc(userRef, { balance: newBalance });
+    updateDoc(userRef, { balance: increment(500) });
     toast({ title: "Crédito Realizado!", description: "R$ 500,00 adicionados para teste." });
   };
 
@@ -201,9 +198,8 @@ export default function PainelPage() {
 
     setIsWithdrawing(true);
     const userRef = doc(db, 'users', user.uid);
-    const newBalance = userData.balance - amount;
 
-    updateDoc(userRef, { balance: newBalance })
+    updateDoc(userRef, { balance: increment(-amount) })
       .then(() => {
         toast({
           title: "Solicitação enviada!",
@@ -217,7 +213,7 @@ export default function PainelPage() {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'update',
-          requestResourceData: { balance: newBalance },
+          requestResourceData: { balance: 'decrement_withdraw' },
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -231,9 +227,8 @@ export default function PainelPage() {
     }
 
     const userRef = doc(db, 'users', user.uid);
-    const newBalance = userData.balance - selectedValue;
 
-    updateDoc(userRef, { balance: newBalance })
+    updateDoc(userRef, { balance: increment(-selectedValue) })
       .then(() => {
         router.push(`/game?entry=${selectedValue}`);
       })
@@ -241,7 +236,7 @@ export default function PainelPage() {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'update',
-          requestResourceData: { balance: newBalance },
+          requestResourceData: { balance: 'decrement_start_game' },
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -853,4 +848,3 @@ export default function PainelPage() {
     </div>
   );
 }
-

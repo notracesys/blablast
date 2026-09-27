@@ -4,19 +4,24 @@ import React, { useEffect, useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Volume2, VolumeX, Info, Award, CheckCircle2, Wallet, Coins } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, Award, Loader2 } from 'lucide-react';
 import { GameAudio } from './audios';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 function GameContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  const db = useFirestore();
   
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
   const [linesCompleted, setLinesCompleted] = useState(0);
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   // Lógica dinâmica baseada na entrada: meta 5 linhas, cada linha vale 1x a entrada.
   const entryValue = parseFloat(searchParams.get('entry') || '10');
@@ -702,6 +707,31 @@ function GameContent() {
     router.push('/painel');
   };
 
+  const handleRedeem = () => {
+    if (!user || !db || isRedeeming) return;
+    setIsRedeeming(true);
+    GameAudio.play('swtch');
+
+    const userRef = doc(db, 'users', user.uid);
+    
+    // Incremento atômico para segurança máxima do saldo
+    updateDoc(userRef, {
+      balance: increment(FINAL_PRIZE)
+    })
+    .then(() => {
+      router.push('/painel');
+    })
+    .catch(async (serverError) => {
+      const permissionError = new FirestorePermissionError({
+        path: userRef.path,
+        operation: 'update',
+        requestResourceData: { balance: 'increment_prize' },
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+      setIsRedeeming(false);
+    });
+  };
+
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
   const progressPercentage = Math.min(100, (linesCompleted / TARGET_LINES) * 100);
@@ -775,10 +805,8 @@ function GameContent() {
 
           {isTargetAchieved && (
             <button 
-              onClick={() => {
-                GameAudio.play('swtch');
-                router.push('/painel');
-              }}
+              onClick={handleRedeem}
+              disabled={isRedeeming}
               className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-[1000] text-xs tracking-wide uppercase flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse shadow-[0_0_20px_rgba(234,179,8,0.5)] border border-amber-200/40"
               style={{
                 background: 'linear-gradient(180deg, #ffd95a 0%, #ffbf1f 50%, #f29a00 100%)',
@@ -787,7 +815,13 @@ function GameContent() {
               }}
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] animate-[shine_3s_infinite] pointer-events-none"></div>
-              Resgatar R$ {FINAL_PRIZE.toFixed(2).replace('.', ',')} via PIX
+              {isRedeeming ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> PROCESSANDO...
+                </div>
+              ) : (
+                `Resgatar R$ ${FINAL_PRIZE.toFixed(2).replace('.', ',')} via PIX`
+              )}
             </button>
           )}
         </section>
