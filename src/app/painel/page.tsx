@@ -20,7 +20,8 @@ import {
   Key, 
   LogOut,
   History,
-  ArrowDownLeft
+  ArrowDownLeft,
+  Coins
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -159,6 +160,14 @@ export default function PainelPage() {
       });
   };
 
+  const handleTestCredit = () => {
+    if (!user || !db || !userData) return;
+    const userRef = doc(db, 'users', user.uid);
+    const newBalance = (userData.balance || 0) + 500;
+    updateDoc(userRef, { balance: newBalance });
+    toast({ title: "Crédito Realizado!", description: "R$ 500,00 adicionados para teste." });
+  };
+
   const handleRequestWithdraw = () => {
     if (!user || !db || !userData) return;
 
@@ -226,7 +235,7 @@ export default function PainelPage() {
 
     updateDoc(userRef, { balance: newBalance })
       .then(() => {
-        router.push('/game');
+        router.push(`/game?entry=${selectedValue}`);
       })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
@@ -253,7 +262,8 @@ export default function PainelPage() {
     );
   }
 
-  const minReward = selectedValue * 5;
+  // Expression: entryValue * 5 (meta de 5 linhas)
+  const potentialWin = selectedValue * 5;
   const numWithdrawAmount = parseFloat(withdrawAmount) || 0;
   const netWithdrawAmount = Math.max(0, numWithdrawAmount - 3);
   const isWithdrawInsufficient = (userData.balance || 0) < numWithdrawAmount;
@@ -303,7 +313,7 @@ export default function PainelPage() {
           </button>
 
           <div className="flex flex-col items-center justify-center flex-1 -translate-y-2">
-            <div onClick={() => router.push('/game')} className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)] cursor-pointer">
+            <div onClick={handleStartGame} className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)] cursor-pointer">
               <Gamepad2 className="w-6 h-6 text-slate-950" />
             </div>
             <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
@@ -369,15 +379,15 @@ export default function PainelPage() {
             </div>
 
             <div className="w-full bg-[#131926]/40 rounded-xl border border-white/5 py-3 text-center">
-              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest block mb-0.5">Recompensa mínima</span>
-              <strong className="text-lg font-black text-[#ffbd1c]">R$ {minReward.toFixed(2).replace('.', ',')}</strong>
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest block mb-0.5">Prêmio Máximo (5 Meta)</span>
+              <strong className="text-lg font-black text-[#ffbd1c]">R$ {potentialWin.toFixed(2).replace('.', ',')}</strong>
             </div>
 
             <button 
               onClick={handleStartGame} 
               className="w-full h-12 rounded-2xl bg-[#35f59a] text-slate-950 font-black text-sm shadow-[0_4px_15px_rgba(53,245,154,0.3)] uppercase tracking-wide transition-all active:scale-[0.98]"
             >
-              Jogar
+              Iniciar Arena Real
             </button>
           </div>
         </main>
@@ -411,6 +421,15 @@ export default function PainelPage() {
                   <span className="text-white/40 text-xs font-medium">({userData.phone?.substring(0,2)}) {userData.phone?.substring(2,7)}-{userData.phone?.substring(7)}</span>
                 </div>
               </div>
+
+              {/* Botão de Crédito de Teste */}
+              <button 
+                onClick={handleTestCredit}
+                className="w-full h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-all"
+              >
+                <Coins className="w-3.5 h-3.5" />
+                Creditar R$ 500 (Teste)
+              </button>
 
               {/* Link de Indicação Mini */}
               <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
@@ -834,3 +853,4 @@ export default function PainelPage() {
     </div>
   );
 }
+

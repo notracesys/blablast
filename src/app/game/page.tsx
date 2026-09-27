@@ -1,25 +1,28 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Volume2, VolumeX, Info, Award, CheckCircle2, Wallet } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Volume2, VolumeX, Info, Award, CheckCircle2, Wallet, Coins } from 'lucide-react';
 import { GameAudio } from './audios';
 import { useUser } from '@/firebase';
 
-export default function GamePage() {
+function GameContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useUser();
+  
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
-  
   const [linesCompleted, setLinesCompleted] = useState(0);
 
-  const TARGET_LINES = 4;
-  const VALUE_PER_LINE = 5;
-  const FINAL_PRIZE = 20;
+  // Lógica dinâmica baseada na entrada: meta 5 linhas, cada linha vale 1x a entrada.
+  const entryValue = parseFloat(searchParams.get('entry') || '10');
+  const TARGET_LINES = 5;
+  const VALUE_PER_LINE = entryValue;
+  const FINAL_PRIZE = entryValue * 5;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -60,7 +63,8 @@ export default function GamePage() {
 
     const COLOR_PALETTES = [
       { h: 208, s: 95, l: 56 }, { h: 128, s: 68, l: 48 }, { h: 276, s: 88, l: 60 },
-      { h: 45, s: 100, l: 55 }, { h: 190, s: 92, l: 50 }, { h: 24, s: 96, l: 55 }
+      { h: 45, s: 100, l: 55 }, { h: 2, s: 88, l: 56 }, { h: 190, s: 92, l: 50 },
+      { h: 24, s: 96, l: 55 }
     ];
 
     let CELL_SIZE = 36;
@@ -695,7 +699,7 @@ export default function GamePage() {
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
     GameAudio.play('swtch');
-    router.push('/');
+    router.push('/painel');
   };
 
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
@@ -745,14 +749,14 @@ export default function GamePage() {
           </small>
           
           <strong className="text-4xl font-[1000] text-emerald-400 tracking-tight drop-shadow-[0_2px_15px_rgba(52,245,154,0.4)]">
-            R$ {currentPotentialPrize},00
+            R$ {currentPotentialPrize.toFixed(2).replace('.', ',')}
           </strong>
 
           <div className="text-[10px] font-bold text-white/70 mt-1 space-y-0.5">
-            <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas completas</div>
+            <div>Meta: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas</div>
             {!isTargetAchieved && (
               <div className="text-[9px] text-amber-400/90 font-medium">
-                Custo de Entrada da Arena Real • Lance blocos para atingir o objetivo
+                Cada linha vale <span className="font-bold text-white">R$ {VALUE_PER_LINE.toFixed(2).replace('.', ',')}</span> • Meta final: <span className="font-bold text-white">R$ {FINAL_PRIZE.toFixed(2).replace('.', ',')}</span>
               </div>
             )}
             {isTargetAchieved && (
@@ -775,13 +779,15 @@ export default function GamePage() {
                 GameAudio.play('swtch');
                 router.push('/painel');
               }}
-              className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_25px_rgba(234,179,8,0.6)] border border-amber-200/40 flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse"
+              className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-[1000] text-xs tracking-wide uppercase flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse shadow-[0_0_20px_rgba(234,179,8,0.5)] border border-amber-200/40"
               style={{
-                textShadow: '0 1px 2px rgba(255,255,255,0.3)',
-                boxShadow: '0 0 30px rgba(234,179,8,0.7), inset 0 2px 4px rgba(255,255,255,0.6)'
+                background: 'linear-gradient(180deg, #ffd95a 0%, #ffbf1f 50%, #f29a00 100%)',
+                boxShadow: '0 0 30px rgba(255, 217, 90, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.7)',
+                textShadow: '0 1px 1px rgba(255, 255, 255, 0.4)'
               }}
             >
-              Concluir Partida e Salvar Lucro
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] animate-[shine_3s_infinite] pointer-events-none"></div>
+              Resgatar R$ {FINAL_PRIZE.toFixed(2).replace('.', ',')} via PIX
             </button>
           )}
         </section>
@@ -818,7 +824,7 @@ export default function GamePage() {
           <div className="my-3 p-2.5 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1">
             <div className="flex justify-between">
               <span className="text-white/50">Linhas concluídas:</span>
-              <span className="font-bold text-white">{linesCompleted} / 4</span>
+              <span className="font-bold text-white">{linesCompleted} / {TARGET_LINES}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-white/50">Status:</span>
@@ -837,5 +843,18 @@ export default function GamePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GamePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#08090d] flex flex-col items-center justify-center p-4 text-white">
+        <div className="w-10 h-10 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/40">Iniciando Arena...</p>
+      </div>
+    }>
+      <GameContent />
+    </Suspense>
   );
 }
