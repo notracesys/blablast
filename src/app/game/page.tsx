@@ -656,27 +656,6 @@ export default function GamePage() {
       render();
     }
 
-    function restartGame() {
-      GameAudio.unlock();
-      GameAudio.play('swtch');
-
-      if (dragGhost) {
-        dragGhost.remove();
-        dragGhost = null;
-      }
-      gameState.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0));
-      gameState.shapes = [];
-      gameState.score = 0;
-      gameState.lines = 0;
-      gameState.isGameOver = false;
-      
-      setLinesCompleted(0);
-      setShowGameOver(false);
-
-      generateShapes(PIECE_SLOTS);
-      render();
-    }
-
     boardCanvas = document.getElementById('gameBoard') as HTMLCanvasElement | null;
     boardCtx = boardCanvas ? boardCanvas.getContext('2d') : null;
     
@@ -824,16 +803,16 @@ export default function GamePage() {
           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           </div>
-          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Objetivo Concluído!</h2>
+          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Você conquistou R$ {FINAL_PRIZE},00!</h2>
           <p className="text-white/70 text-xs mb-3">
-            Parabéns! Você alcançou a meta e acumulou <span className="text-emerald-400 font-bold">R$ {FINAL_PRIZE},00</span>.
+            No jogo real você já teria colocado esse dinheiro no bolso!
           </p>
           <div className="p-2.5 bg-slate-950/60 rounded-xl border border-white/5 text-[10px] text-white/50 text-left mb-4">
-            ⚠️ <span className="text-white font-semibold">Aviso de Modo Teste:</span> Como você está jogando a versão de demonstração gratuita, o saldo gerado é fictício. Crie sua conta real agora para faturar de verdade!
+            ⚠️ <span className="text-white font-semibold">Saldo Demonstrativo:</span> Como você está na versão de testes gratuita, este prêmio é apenas simulação. Deposite de verdade para resgatar PIX reais na sua conta bancária agora mesmo!
           </div>
 
-          <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2">
-            CRIAR CONTA REAL & SACAR
+          <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2 uppercase tracking-wider">
+            CRIAR CONTA REAL & FATURAR
           </Link>
           <button 
             onClick={() => setShowDemoWithdraw(false)} 
@@ -862,34 +841,35 @@ export default function GamePage() {
             </div>
             <div className="h-px bg-white/5 my-1" />
             <div className="flex justify-between text-xs">
-              <span className="font-bold text-white/70">Prêmio Ganho:</span>
-              <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-red-400'}`}>
-                R$ {realEarnings},00
+              <span className="font-bold text-white/70">Você poderia ter ganho:</span>
+              <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-amber-400'}`}>
+                R$ {isTargetAchieved ? FINAL_PRIZE : currentPotentialPrize},00
               </span>
             </div>
-            {!isTargetAchieved && (
-              <p className="text-[9px] text-red-400/80 leading-tight mt-0.5">
-                *O valor em formação foi perdido por não completar a meta de 4 linhas.
-              </p>
-            )}
           </div>
+
+          {isTargetAchieved ? (
+            <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
+              CRIAR CONTA REAL & SACAR
+            </Link>
+          ) : (
+            <Link href="/" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
+              JOGAR NA ARENA REAL
+            </Link>
+          )}
 
           <button 
             onClick={() => {
-              const btn = document.getElementById('restartBtn');
-              if (btn) (btn as any).click();
+              if (typeof window !== 'undefined') {
+                window.location.reload();
+              }
             }} 
-            className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]"
+            className="w-full h-10 rounded-lg font-bold text-xs bg-slate-800 text-white mb-2"
           >
-            Jogar de novo
+            Tentar de Novo (Demo)
           </button>
-          <Link href="/" className="w-full h-10 rounded-lg font-medium text-[11px] flex items-center justify-center border border-white/10 text-white">
-            Voltar para o início
-          </Link>
         </div>
       </div>
-      
-      <button id="restartBtn" className="hidden"></button>
     </div>
   );
 }
