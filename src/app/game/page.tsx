@@ -211,7 +211,7 @@ export default function GamePage() {
       ctx.scale(scale, scale);
 
       ctx.beginPath();
-      ctx.arc(0, 0, CELL_SIZE * progress * 2.6, 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${1 - progress})`;
       ctx.lineWidth = 4;
       ctx.stroke();
@@ -222,23 +222,23 @@ export default function GamePage() {
         const dist = CELL_SIZE * progress * 2.5;
         const px = Math.cos(angle) * dist;
         const py = Math.sin(angle) * dist;
-        const pSize = Math.max(1.5, 7 * (1 - progress));
+        const pSize = Math.max(0, 7 * (1 - progress));
         ctx.beginPath();
         ctx.arc(px, py, pSize, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      ctx.globalAlpha = 1 - progress;
+      ctx.globalAlpha = Math.max(0, 1 - progress);
       const cellX = -CELL_SIZE / 2 + 2;
       const cellY = -CELL_SIZE / 2 + 2;
       const size = CELL_SIZE - 4;
       const radius = CELL_SIZE * 0.15;
 
       const dynamicColor = progress < 0.35 ? { primary: '#ffffff', secondary: color.primary, tertiary: color.secondary } : color;
-      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, 35 * (1 - progress));
+      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, Math.max(0, 35 * (1 - progress)));
 
       if (progress < 0.45) {
-        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - progress * 2.2})`;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${Math.max(0, 1 - progress * 2.2)})`;
         ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.moveTo(-CELL_SIZE * 1.5, 0);
