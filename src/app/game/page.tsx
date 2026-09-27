@@ -180,7 +180,7 @@ export default function GamePage() {
     }
 
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
-      const shakeIntensity = Math.sin(progress * Math.PI * 12) * (1 - progress) * 25;
+      const shakeIntensity = Math.sin(progress * Math.PI * 14) * (1 - progress) * 22;
       const offsetX = (Math.random() - 0.5) * shakeIntensity;
       const offsetY = (Math.random() - 0.5) * shakeIntensity;
 
@@ -188,20 +188,20 @@ export default function GamePage() {
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
 
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 3.0), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 3.2), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 5;
+      ctx.lineWidth = 6;
       ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
       ctx.shadowColor = '#ffe778';
-      ctx.shadowBlur = 35;
+      ctx.shadowBlur = 40;
       for (let i = 0; i < 16; i++) {
-        const angle = (i * Math.PI) / 8 + progress * 6;
-        const dist = CELL_SIZE * progress * 3.8;
+        const angle = (i * Math.PI) / 8 + progress * 7;
+        const dist = CELL_SIZE * progress * 4.2;
         const px = Math.cos(angle) * dist;
         const py = Math.sin(angle) * dist;
-        const pSize = Math.max(0, 10 * (1 - progress));
+        const pSize = Math.max(0, 12 * (1 - progress));
         ctx.beginPath();
         ctx.arc(px, py, pSize, 0, Math.PI * 2);
         ctx.fill();
@@ -215,7 +215,7 @@ export default function GamePage() {
       const radius = CELL_SIZE * 0.15;
 
       const explosiveColor = { primary: '#ffffff', secondary: '#ffe477', tertiary: color.primary };
-      paintTile(ctx, cellX, cellY, size, radius, explosiveColor, Math.max(0, 60 * (1 - progress)));
+      paintTile(ctx, cellX, cellY, size, radius, explosiveColor, Math.max(0, 70 * (1 - progress)));
 
       ctx.restore();
     }
@@ -322,7 +322,7 @@ export default function GamePage() {
           checkGameOver();
         }
       }
-      requestAnimationFrame(animate);
+      animate(performance.now());
       return clearedCount;
     }
 
@@ -695,11 +695,6 @@ export default function GamePage() {
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
 
-    const restartBtn = document.getElementById('restartBtn');
-    if (restartBtn) restartBtn.onclick = restartGame;
-
-    render();
-
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       document.removeEventListener('mousemove', handleMove);
@@ -719,16 +714,9 @@ export default function GamePage() {
     GameAudio.play('swtch');
   };
 
-  const handleManualRestart = () => {
-    setShowGameOver(false);
-    const btn = document.getElementById('restartBtn');
-    if (btn) (btn as HTMLButtonElement).click();
-  };
-
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
   const realEarnings = isTargetAchieved ? FINAL_PRIZE : 0;
-  const netProfit = isTargetAchieved ? (FINAL_PRIZE - BET_AMOUNT) : 0;
   const progressPercentage = Math.min(100, (linesCompleted / TARGET_LINES) * 100);
 
   return (
@@ -742,13 +730,13 @@ export default function GamePage() {
       <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[7px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative overflow-hidden">
-        {/* HEADER COMPACTO SEM ROLAGEM */}
-        <header className="w-full grid grid-cols-3 items-center h-10 relative z-20 shrink-0">
-          <Link href="/" className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white justify-self-start">
+        {/* HEADER EXPLICITAMENTE SEPARADO E SEM SOBREPOSIÇÕES */}
+        <header className="w-full grid grid-cols-3 items-center h-10 relative z-20 shrink-0 px-1">
+          <Link href="/" className="w-8 h-8 rounded-lg border border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center text-white justify-self-start">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           
-          <div className="flex absolute left-1/2 -translate-x-1/2 top-0 h-10 items-center justify-center">
+          <div className="flex items-center justify-center justify-self-center">
             <Image 
               src="/blockcash.png" 
               alt="Block Cash Logo" 
@@ -759,14 +747,14 @@ export default function GamePage() {
             />
           </div>
 
-          <div className="justify-self-end">
-            <span className="px-1.5 py-0.5 rounded border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[8px] font-black tracking-wider uppercase">
+          <div className="justify-self-end flex items-center">
+            <span className="px-1.5 py-0.5 rounded border border-cyan-500/35 bg-cyan-950/60 text-cyan-400 text-[9px] font-black tracking-wider uppercase shadow-[0_0_8px_rgba(38,217,255,0.2)]">
               TESTE
             </span>
           </div>
         </header>
 
-        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA - Espaçamento otimizado com mt-7 */}
+        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA */}
         <section className="text-center flex flex-col items-center shrink-0 mt-7 mb-1">
           <small className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-0.5">
             {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
@@ -785,7 +773,7 @@ export default function GamePage() {
             )}
             {isTargetAchieved && (
               <div className="text-[9px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center animate-bounce">
-                <Award className="w-3 h-3 text-emerald-400" /> Lucro Líquido: R$ {netProfit},00 Garantido
+                <Award className="w-3 h-3 text-emerald-400" /> Meta Concluída com Sucesso!
               </div>
             )}
           </div>
@@ -803,7 +791,7 @@ export default function GamePage() {
                 GameAudio.play('swtch');
                 setShowDemoWithdraw(true);
               }}
-              className="w-full mt-2 h-9 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_15px_rgba(52,245,154,0.4)] flex items-center justify-center gap-1.5"
+              className="w-full mt-2 h-9 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_15px_rgba(52,245,154,0.4)] flex items-center justify-center gap-1.5 animate-pulse"
             >
               <Wallet className="w-3.5 h-3.5 text-slate-950" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
             </button>
@@ -817,8 +805,8 @@ export default function GamePage() {
           </div>
         </section>
 
-        {/* SLOTS DAS PEÇAS COMPACTAS */}
-        <section className="grid grid-cols-3 gap-2 mt-2 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
+        {/* SLOTS DAS PEÇAS COMPACTAS - APROXIMADAS DO TABLEIRO */}
+        <section className="grid grid-cols-3 gap-2 mt-0.5 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
         
         <div className="flex items-center justify-center gap-1.5 text-center mt-1 shrink-0">
           <Info className="w-3 h-3 text-white/30 shrink-0" />
@@ -880,7 +868,7 @@ export default function GamePage() {
             </div>
             <div className="h-px bg-white/5 my-1" />
             <div className="flex justify-between text-xs">
-              <span className="font-bold text-white/70">Prêmio Resgatado:</span>
+              <span className="font-bold text-white/70">Prêmio Ganho:</span>
               <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-red-400'}`}>
                 R$ {realEarnings},00
               </span>
@@ -892,7 +880,13 @@ export default function GamePage() {
             )}
           </div>
 
-          <button id="restartBtn" className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]">
+          <button 
+            onClick={() => {
+              const btn = document.getElementById('restartBtn');
+              if (btn) (btn as any).click();
+            }} 
+            className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]"
+          >
             Jogar de novo
           </button>
           <Link href="/" className="w-full h-10 rounded-lg font-medium text-[11px] flex items-center justify-center border border-white/10 text-white">
@@ -900,6 +894,9 @@ export default function GamePage() {
           </Link>
         </div>
       </div>
+      
+      {/* Botão oculto para suporte de clique legado de reset se necessário */}
+      <button id="restartBtn" className="hidden"></button>
     </div>
   );
 }
