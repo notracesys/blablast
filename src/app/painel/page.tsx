@@ -80,7 +80,14 @@ export default function PainelPage() {
   const handleAddBalance = () => {
     if (!user || !db || !userData) return;
     const amount = parseFloat(depositAmount);
-    if (isNaN(amount) || amount <= 0) return;
+    if (isNaN(amount) || amount < 20) {
+      toast({
+        variant: "destructive",
+        title: "Valor insuficiente",
+        description: "O valor mínimo para depósito é de R$ 20,00.",
+      });
+      return;
+    }
 
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
@@ -279,7 +286,7 @@ export default function PainelPage() {
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative">
           
-          {/* Banner com Proporção Perfeita (Aspect 2.7/1 baseado na imagem retangular widescreen original) */}
+          {/* Banner com Proporção Perfeita */}
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
               src="/card1.webp" 
@@ -301,7 +308,7 @@ export default function PainelPage() {
           <div className="p-5 flex flex-col space-y-4">
             <div>
               <label className="text-[11px] font-black uppercase text-white/40 tracking-wider block mb-3">
-                VALOR RÁPIDO
+                VALOR RÁPIDO (MÍNIMO R$ 20)
               </label>
 
               {/* Grid de valores rápidos com tags flutuantes */}
