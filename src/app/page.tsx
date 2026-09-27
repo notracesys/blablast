@@ -268,15 +268,14 @@ export default function LandingPage() {
 
       {/* 8) FOOTER */}
       <footer className="px-4 py-6 border-t border-white/5 space-y-3 text-center bg-black/20">
-        <div className="flex justify-center items-center gap-2 opacity-60">
+        <div className="flex justify-center items-center">
           <Image 
             src="/blockcash.png" 
             alt="Block Cash Logo" 
-            width={18} 
-            height={18} 
+            width={32} 
+            height={32} 
             className="object-contain"
           />
-          <span className="font-black tracking-tighter text-[11px] uppercase italic text-white">Block Cash</span>
         </div>
         
         <div className="space-y-1">
