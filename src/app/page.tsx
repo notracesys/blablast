@@ -57,7 +57,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          {/* CARD DO JOGO (HERO BANNER) - object-contain para não cortar */}
+          {/* CARD DO JOGO (HERO BANNER) */}
           <div className="relative w-full aspect-square bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
               src="/hero.webp" 
@@ -167,12 +167,12 @@ export default function LandingPage() {
               }
             ].map((step) => (
               <Card key={step.step} className="bg-[#0b1d3f]/40 border-white/5 overflow-hidden rounded-[1.5rem] group transition-all duration-300 hover:border-white/10">
-                <div className="relative aspect-video w-full bg-slate-950/80">
+                <div className="relative aspect-[2.4/1] w-full">
                   <Image 
                     src={step.img} 
                     alt={step.title} 
                     fill 
-                    className="object-contain opacity-80 group-hover:opacity-100 transition-opacity" 
+                    className="object-contain opacity-95 group-hover:opacity-100 transition-opacity" 
                   />
                   <div className="absolute top-3 left-3 w-7 h-7 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-xl border border-white/10">
                     {step.step}
@@ -261,7 +261,7 @@ export default function LandingPage() {
           </Button>
 
           <div className="text-[8px] text-white/30 uppercase tracking-widest font-bold">
-            Cadastro rápido • experiência demonstrativa
+            Cadastro rápido • experience demonstrativa
           </div>
         </section>
       </main>
