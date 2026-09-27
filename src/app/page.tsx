@@ -18,13 +18,13 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen text-white bg-[#06122b] selection:bg-cyan-500/30">
       {/* 1) HEADER FIXO PREMIUM COMPACTO */}
-      <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-16 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-20 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center">
           <Image 
             src="/blockcash.png" 
             alt="Block Cash Logo" 
-            width={42} 
-            height={42} 
+            width={64} 
+            height={64} 
             className="object-contain"
             priority
           />
@@ -40,7 +40,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-1 pt-24 px-4 pb-20 space-y-8 w-full">
+      <main className="flex-1 pt-28 px-4 pb-20 space-y-8 w-full">
         {/* 2) HERO SECTION */}
         <section className="text-center space-y-4">
           <div className="flex justify-center">
