@@ -11,6 +11,8 @@ import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
@@ -112,11 +114,9 @@ export default function RegisterPage() {
     setErrors(currentErrors);
 
     try {
-      // 1. Cria o usuário no Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. Salva os dados no Firestore Database
       const userRef = doc(db, 'users', user.uid);
       const userData = {
         fullName: nameTrimmed,
@@ -126,19 +126,31 @@ export default function RegisterPage() {
         createdAt: new Date().toISOString(),
       };
 
-      await setDoc(userRef, userData);
-      router.push('/painel');
+      setDoc(userRef, userData)
+        .then(() => {
+          router.push('/painel');
+        })
+        .catch(async (error: any) => {
+          setLoading(false);
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
+          setErrors(prev => ({ ...prev, general: 'Erro de permissão no Firestore. Verifique as Regras (Rules) no console.' }));
+        });
+
     } catch (error: any) {
+      setLoading(false);
       console.error("Erro no registro:", error);
       if (error.code === 'auth/email-already-in-use') {
         setErrors(prev => ({ ...prev, email: 'Este e-mail já está em uso por outro usuário.' }));
       } else if (error.code === 'auth/invalid-email') {
         setErrors(prev => ({ ...prev, email: 'Formato de e-mail inválido.' }));
       } else {
-        setErrors(prev => ({ ...prev, general: `Erro ao salvar dados: ${error.message}` }));
+        setErrors(prev => ({ ...prev, general: `Erro ao criar conta: ${error.message}` }));
       }
-    } finally {
-      setLoading(false);
     }
   };
 
