@@ -200,24 +200,54 @@ export default function GamePage() {
     }
 
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
-      const shakeIntensity = Math.sin(progress * Math.PI * 8) * (1 - progress) * 6;
+      const shakeIntensity = Math.sin(progress * Math.PI * 14) * (1 - progress) * 14;
       const offsetX = (Math.random() - 0.5) * shakeIntensity;
       const offsetY = (Math.random() - 0.5) * shakeIntensity;
-      const scale = 1 - progress * 0.4;
-      const opacity = 1 - progress;
 
       ctx.save();
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
-      ctx.scale(scale, scale);
-      ctx.globalAlpha = opacity;
 
+      const scale = progress < 0.25 ? 1 + progress * 2.2 : 1.55 * (1 - progress);
+      ctx.scale(scale, scale);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, CELL_SIZE * progress * 2.6, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(38, 217, 255, ${1 - progress})`;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.fillStyle = color.primary;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4 + progress * 3;
+        const dist = CELL_SIZE * progress * 2.5;
+        const px = Math.cos(angle) * dist;
+        const py = Math.sin(angle) * dist;
+        const pSize = Math.max(1.5, 7 * (1 - progress));
+        ctx.beginPath();
+        ctx.arc(px, py, pSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1 - progress;
       const cellX = -CELL_SIZE / 2 + 2;
       const cellY = -CELL_SIZE / 2 + 2;
       const size = CELL_SIZE - 4;
       const radius = CELL_SIZE * 0.15;
 
-      paintTile(ctx, cellX, cellY, size, radius, color, 12 * (1 - progress));
-      
+      const dynamicColor = progress < 0.35 ? { primary: '#ffffff', secondary: color.primary, tertiary: color.secondary } : color;
+      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, 35 * (1 - progress));
+
+      if (progress < 0.45) {
+        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - progress * 2.2})`;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(-CELL_SIZE * 1.5, 0);
+        ctx.lineTo(CELL_SIZE * 1.5, 0);
+        ctx.moveTo(0, -CELL_SIZE * 1.5);
+        ctx.lineTo(0, CELL_SIZE * 1.5);
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
 
@@ -298,7 +328,7 @@ export default function GamePage() {
       gameState.clearingLines.isAnimating = true;
       gameState.clearingLines.animationTime = 0;
 
-      const duration = 400;
+      const duration = 550;
       const startTime = performance.now();
 
       function animate(currentTime: number) {
