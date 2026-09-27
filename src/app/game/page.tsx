@@ -218,27 +218,6 @@ export default function GamePage() {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
-      const scale = 1 - progress * 0.5;
-      const opacity = 1 - progress;
-
-      ctx.save();
-      ctx.translate(x + CELL_SIZE / 2, y + CELL_SIZE / 2);
-      ctx.scale(scale, scale);
-      ctx.globalAlpha = opacity;
-
-      const cellX = -CELL_SIZE / 2 + 2;
-      const cellY = -CELL_SIZE / 2 + 2;
-      const cellSize = CELL_SIZE - 4;
-      const radius = CELL_SIZE * 0.2;
-      
-      roundedRectPath(ctx, cellX, cellY, cellSize, cellSize, radius);
-      ctx.fillStyle = color.primary;
-      ctx.fill();
-      ctx.restore();
-    }
-
     function canPlaceShape(shape: any, x: number, y: number) {
       const matrix = shape.matrix;
       const rows = matrix.length;
@@ -451,12 +430,7 @@ export default function GamePage() {
         for (let col = 0; col < BOARD_SIZE; col++) {
           const cell = gameState.board[row][col];
           if (cell !== 0 && cell !== null) {
-            const isClearing = gameState.clearingLines.rows.includes(row) || gameState.clearingLines.cols.includes(col);
-            if (isClearing && gameState.clearingLines.isAnimating) {
-              drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
-            } else {
-              drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
-            }
+            drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
           }
         }
       }
@@ -606,7 +580,7 @@ export default function GamePage() {
       const rect = boardCanvas.getBoundingClientRect();
       const actualCellSize = rect.width / BOARD_SIZE;
       const mouseX = clientX - rect.left;
-      const mouseY = clientY - rect.top;
+      const mouseY = clientY - top;
       const cellX = Math.floor(mouseX / actualCellSize);
       const cellY = Math.floor(mouseY / actualCellSize);
       const shape = gameState.dragging.shape;
@@ -741,62 +715,66 @@ export default function GamePage() {
   };
 
   return (
-    <div ref={containerRef} className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-[#050814] bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/fundo1.png')" }} onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
-      <header className="w-full flex items-center justify-between h-14 max-w-[430px] mx-auto">
-        <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        
-        <span className="text-base font-black tracking-widest text-white">
-          BLOCK CASH
-        </span>
-
-        <div className="flex items-center gap-2">
-          <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
-            {isMutedState ? <VolumeX className="w-5 h-5 opacity-50" /> : <Volume2 className="w-5 h-5" />}
-          </button>
-          <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
-            TESTE
+    <div ref={containerRef} className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-[#050814] bg-cover bg-center bg-no-repeat relative" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px] pointer-events-none z-0"></div>
+      
+      <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
+        <header className="w-full flex items-center justify-between h-14">
+          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          
+          <span className="text-base font-black tracking-widest text-white">
+            BLOCK CASH
           </span>
-        </div>
-      </header>
 
-      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-3 flex-1 justify-center">
-        <section className="grid grid-cols-2 gap-2">
-          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
-            <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Aposta demo</span>
-            <strong id="betValue" className="text-base font-bold text-white">R$ 10,00</strong>
-          </article>
-
-          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
-            <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Prêmio máximo</span>
-            <strong id="maxWinValue" className="text-base font-bold text-cyan-400">R$ 50,00</strong>
-          </article>
-        </section>
-
-        <section className="text-center bg-[#0f1322]/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
-          <small className="text-[9px] font-bold uppercase text-white/40 tracking-wider mb-0.5">Progresso da partida</small>
-          <strong id="prizeValue" className="text-2xl font-black text-white tracking-tight mb-2">
-            R$ 0,00
-          </strong>
-          <div id="winProgress" className="h-1.5 w-full bg-[#171c2c] rounded-full overflow-hidden">
-            <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full"></div>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
+              {isMutedState ? <VolumeX className="w-5 h-5 opacity-50" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+            <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
+              TESTE
+            </span>
           </div>
-        </section>
+        </header>
 
-        <section className="w-full aspect-square p-1.5 bg-[#0f1322]/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
-          <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1d]/90">
-            <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
+        <main className="w-full flex flex-col gap-3 flex-1 justify-center my-auto">
+          <section className="grid grid-cols-2 gap-2">
+            <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Aposta demo</span>
+              <strong id="betValue" className="text-base font-bold text-white">R$ 10,00</strong>
+            </article>
+
+            <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Prêmio máximo</span>
+              <strong id="maxWinValue" className="text-base font-bold text-cyan-400">R$ 50,00</strong>
+            </article>
+          </section>
+
+          <section className="text-center bg-[#0f1322]/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
+            <small className="text-[9px] font-bold uppercase text-white/40 tracking-wider mb-0.5">Progresso da partida</small>
+            <strong id="prizeValue" className="text-2xl font-black text-white tracking-tight mb-2">
+              R$ 0,00
+            </strong>
+            <div id="winProgress" className="h-1.5 w-full bg-[#171c2c] rounded-full overflow-hidden">
+              <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full"></div>
+            </div>
+          </section>
+
+          <section className="w-full aspect-square p-1.5 bg-[#0f1322]/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
+            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1d]/90">
+              <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-3 gap-2" id="shapesList" aria-label="Peças disponíveis"></section>
+          
+          <div className="flex items-center justify-center gap-1.5 max-w-[360px] mx-auto text-center">
+            <Info className="w-3 h-3 text-white/30 shrink-0" />
+            <p className="text-[10px] text-white/40 font-medium">Arraste uma peça para o tabuleiro e complete linhas.</p>
           </div>
-        </section>
-
-        <section className="grid grid-cols-3 gap-2" id="shapesList" aria-label="Peças disponíveis"></section>
-        
-        <div className="flex items-center justify-center gap-1.5 max-w-[360px] mx-auto text-center">
-          <Info className="w-3 h-3 text-white/30 shrink-0" />
-          <p className="text-[10px] text-white/40 font-medium">Arraste uma peça para o tabuleiro e complete linhas.</p>
-        </div>
-      </main>
+        </main>
+      </div>
 
       <div className="modal-overlay fixed inset-0 hidden place-items-center p-4 bg-black/80 backdrop-blur-sm z-[3000]" id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-[#0f1322]">
