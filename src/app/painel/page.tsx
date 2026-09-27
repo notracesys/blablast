@@ -433,45 +433,48 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* MODAL DE SALDO INSUFICIENTE */}
-      <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[6000]`}>
-        <div className="w-full max-w-[340px] border border-white/5 rounded-[2rem] bg-[#111622] p-6 shadow-2xl text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-400">
-            <AlertTriangle className="w-6 h-6" />
+      {/* MODAL DE SALDO INSUFICIENTE REFINADO */}
+      <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-6 bg-black/90 backdrop-blur-sm z-[8000]`}>
+        <div className="w-full max-w-[340px] border border-white/10 rounded-[2.5rem] bg-[#1a1d29] p-8 shadow-2xl text-center space-y-6 animate-in fade-in zoom-in duration-300">
+          
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-500 border border-amber-500/20">
+            <AlertTriangle className="w-8 h-8" />
           </div>
           
-          <div className="space-y-1">
-            <h3 className="text-base font-black uppercase tracking-wide text-white">Saldo Insuficiente</h3>
-            <p className="text-white/60 text-xs leading-relaxed">
+          <div className="space-y-2">
+            <h3 className="text-xl font-[1000] uppercase tracking-tighter text-white">Saldo Insuficiente</h3>
+            <p className="text-white/40 text-[11px] font-bold leading-relaxed px-4">
               Você precisa de saldo para entrar nesta partida.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-950/60 rounded-2xl border border-white/5 space-y-2 text-left">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-white/40 font-bold uppercase">Seu Saldo:</span>
-              <span className="text-rose-400 font-black">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</span>
+          <div className="bg-black/40 rounded-[1.5rem] p-5 border border-white/5 space-y-4 text-left">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+              <span className="text-white/30">Seu Saldo:</span>
+              <span className="text-[#ff4b72] text-sm">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</span>
             </div>
-            <div className="h-px bg-white/5" />
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-white/40 font-bold uppercase">Custo de Entrada:</span>
-              <span className="text-cyan-400 font-black">R$ {selectedValue.toFixed(2).replace('.', ',')}</span>
+            
+            <div className="h-px bg-white/5 w-full" />
+            
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+              <span className="text-white/30">Custo de Entrada:</span>
+              <span className="text-[#26d9ff] text-sm">R$ {selectedValue.toFixed(2).replace('.', ',')}</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 pt-2">
+          <div className="flex flex-col gap-3 pt-2">
             <button 
               onClick={() => {
                 setShowInsufficientBalanceModal(false);
                 setShowDepositModal(true);
               }}
-              className="w-full h-11 rounded-xl bg-[#35f59a] text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_4px_12px_rgba(53,245,154,0.2)]"
+              className="w-full h-14 rounded-2xl bg-[#35f59a] text-slate-950 font-[1000] text-sm uppercase tracking-wider shadow-[0_8px_20px_rgba(53,245,154,0.3)] transition-all active:scale-95"
             >
               Fazer Depósito
             </button>
             <button 
               onClick={() => setShowInsufficientBalanceModal(false)}
-              className="w-full h-11 rounded-xl bg-[#182030] text-white/60 font-black text-xs uppercase tracking-wider border border-white/5"
+              className="w-full h-14 rounded-2xl bg-white/5 text-white/40 font-[1000] text-sm uppercase tracking-wider transition-all hover:text-white active:scale-95"
             >
               Voltar
             </button>
