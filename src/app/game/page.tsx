@@ -767,9 +767,13 @@ export default function GamePage() {
                 GameAudio.play('swtch');
                 setShowDemoWithdraw(true);
               }}
-              className="w-full mt-2 h-9 rounded-lg bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_15px_rgba(52,245,154,0.4)] flex items-center justify-center gap-1.5 animate-pulse"
+              className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_25px_rgba(234,179,8,0.6)] border border-amber-200/40 flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:-translate-x-full before:animate-[shine_2s_infinite]"
+              style={{
+                textShadow: '0 1px 2px rgba(255,255,255,0.3)',
+                boxShadow: '0 0 30px rgba(234,179,8,0.7), inset 0 2px 4px rgba(255,255,255,0.6)'
+              }}
             >
-              <Wallet className="w-3.5 h-3.5 text-slate-950" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
+              <Wallet className="w-4 h-4 text-slate-950 stroke-[2.5]" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
             </button>
           )}
         </section>
@@ -848,11 +852,12 @@ export default function GamePage() {
             </div>
           </div>
 
-          {isTargetAchieved ? (
+          {isTargetAchieved && (
             <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
               CRIAR CONTA REAL & SACAR
             </Link>
-          ) : (
+          )}
+          {!isTargetAchieved && (
             <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
               JOGAR NA ARENA REAL
             </Link>
