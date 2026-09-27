@@ -3,11 +3,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, Volume2, VolumeX, Info, Award, CheckCircle2, Wallet } from 'lucide-react';
 import { GameAudio } from './audios';
+import { useUser } from '@/firebase';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { user } = useUser();
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
   const [showDemoWithdraw, setShowDemoWithdraw] = useState(false);
@@ -692,6 +696,16 @@ export default function GamePage() {
     GameAudio.play('swtch');
   };
 
+  const handleBackClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    GameAudio.play('swtch');
+    if (user) {
+      router.push('/painel');
+    } else {
+      router.push('/');
+    }
+  };
+
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
   const realEarnings = isTargetAchieved ? FINAL_PRIZE : 0;
@@ -709,9 +723,12 @@ export default function GamePage() {
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative overflow-hidden">
         <header className="w-full grid grid-cols-3 items-center h-10 relative z-20 shrink-0 px-1">
-          <Link href="/" className="w-8 h-8 rounded-lg border border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center text-white justify-self-start">
+          <button 
+            onClick={handleBackClick}
+            className="w-8 h-8 rounded-lg border border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center text-white justify-self-start"
+          >
             <ArrowLeft className="w-4 h-4" />
-          </Link>
+          </button>
           
           <div className="flex items-center justify-center justify-self-center">
             <Image 
@@ -726,7 +743,7 @@ export default function GamePage() {
 
           <div className="justify-self-end flex items-center">
             <span className="px-1.5 py-0.5 rounded border border-cyan-500/35 bg-cyan-950/60 text-cyan-400 text-[9px] font-black tracking-wider uppercase shadow-[0_0_8px_rgba(38,217,255,0.2)]">
-              TESTE
+              {user ? 'PARTIDA' : 'TESTE'}
             </span>
           </div>
         </header>
@@ -765,7 +782,11 @@ export default function GamePage() {
             <button 
               onClick={() => {
                 GameAudio.play('swtch');
-                setShowDemoWithdraw(true);
+                if (user) {
+                  router.push('/painel');
+                } else {
+                  setShowDemoWithdraw(true);
+                }
               }}
               className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_25px_rgba(234,179,8,0.6)] border border-amber-200/40 flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:-translate-x-full before:animate-[shine_2s_infinite]"
               style={{
@@ -773,7 +794,7 @@ export default function GamePage() {
                 boxShadow: '0 0 30px rgba(234,179,8,0.7), inset 0 2px 4px rgba(255,255,255,0.6)'
               }}
             >
-              <Wallet className="w-4 h-4 text-slate-950 stroke-[2.5]" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
+              <Wallet className="w-4 h-4 text-slate-950 stroke-[2.5]" /> {user ? 'Voltar ao Painel & Sacar' : `Resgatar R$ ${FINAL_PRIZE},00 via PI`}
             </button>
           )}
         </section>
@@ -852,15 +873,31 @@ export default function GamePage() {
             </div>
           </div>
 
-          {isTargetAchieved && (
+          {isTargetAchieved && !user && (
             <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
               CRIAR CONTA REAL & SACAR
             </Link>
           )}
-          {!isTargetAchieved && (
+          {isTargetAchieved && user && (
+            <button 
+              onClick={() => router.push('/painel')}
+              className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider"
+            >
+              VOLTAR AO PAINEL
+            </button>
+          )}
+          {!isTargetAchieved && !user && (
             <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
               JOGAR NA ARENA REAL
             </Link>
+          )}
+          {!isTargetAchieved && user && (
+            <button 
+              onClick={() => router.push('/painel')}
+              className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider"
+            >
+              VOLTAR AO PAINEL
+            </button>
           )}
 
           <button 
@@ -871,7 +908,7 @@ export default function GamePage() {
             }} 
             className="w-full h-10 rounded-lg font-bold text-xs bg-slate-800 text-white mb-2"
           >
-            Tentar de Novo (Demo)
+            Tentar de Novo
           </button>
         </div>
       </div>
