@@ -57,17 +57,17 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          {/* CARD DO JOGO (HERO BANNER) AJUSTADO PARA PROPORÇÃO DA SUA IMAGEM COMPLETA */}
+          {/* CARD DO JOGO (HERO BANNER) - object-contain para não cortar */}
           <div className="relative w-full aspect-square bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
               src="/hero.webp" 
               alt="Block Blast Game Screen" 
               fill 
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              className="object-contain transition-transform duration-700 group-hover:scale-105"
               priority
             />
             
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-6">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none flex flex-col justify-end p-6">
               <div className="bg-black/50 backdrop-blur-md self-start px-3 py-1 rounded-full border border-white/10">
                 <span className="text-[10px] text-white/70 uppercase tracking-widest font-bold">
                   Experiência visual demonstrativa
@@ -172,7 +172,7 @@ export default function LandingPage() {
                     src={step.img} 
                     alt={step.title} 
                     fill 
-                    className="object-cover opacity-70 group-hover:opacity-100 transition-opacity" 
+                    className="object-contain opacity-80 group-hover:opacity-100 transition-opacity" 
                   />
                   <div className="absolute top-3 left-3 w-7 h-7 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-xl border border-white/10">
                     {step.step}
