@@ -757,13 +757,13 @@ export default function GamePage() {
             </article>
           </section>
 
-          <section className="text-center bg-slate-900/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
-            <small className="text-[9px] font-bold uppercase text-white/40 tracking-wider mb-0.5">Progresso da partida</small>
-            <strong id="prizeValue" className="text-2xl font-black text-white tracking-tight mb-2">
+          <section className="text-center p-1 flex flex-col items-center">
+            <small className="text-[10px] font-black uppercase text-white/50 tracking-wider mb-1">Você já ganhou</small>
+            <strong id="prizeValue" className="text-5xl font-[1000] text-emerald-400 tracking-tight mb-3 drop-shadow-[0_2px_15px_rgba(52,245,154,0.3)]">
               R$ 0,00
             </strong>
-            <div id="winProgress" className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full"></div>
+            <div id="winProgress" className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-white/5">
+              <div id="winProgressBar" className="h-full w-0 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)]"></div>
             </div>
           </section>
 
@@ -786,7 +786,7 @@ export default function GamePage() {
         <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
           <p className="text-white/60 text-xs mb-5">Não há mais encaixes disponíveis para as peças atuais.</p>
-          <button id="restartBtn" className="w-full h-11 rounded-lg font-bold text-sm bg-cyan-400 text-slate-950 transition-transform mb-3">
+          <button id="restartBtn" className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)]">
             Jogar de novo
           </button>
           <Link href="/" className="w-full h-11 rounded-lg font-medium text-xs flex items-center justify-center border border-white/10 text-white">
