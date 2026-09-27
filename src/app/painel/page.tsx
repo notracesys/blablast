@@ -4,7 +4,24 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, Copy, Check } from 'lucide-react';
+import { 
+  Wallet, 
+  Users, 
+  User, 
+  Gamepad2, 
+  ArrowUpRight, 
+  X, 
+  Ticket, 
+  AlertTriangle, 
+  Copy, 
+  Check, 
+  ChevronDown, 
+  ChevronUp, 
+  Key, 
+  LogOut,
+  History,
+  ArrowDownLeft
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -24,6 +41,7 @@ export default function PainelPage() {
   const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false);
   const [showAffiliateModal, setShowAffiliateModal] = useState<boolean>(false);
   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   
   const [depositAmount, setDepositAmount] = useState<string>('20');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('30');
@@ -33,6 +51,11 @@ export default function PainelPage() {
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Accordion states for profile
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showPassChange, setShowPassChange] = useState(false);
 
   const presets = [5, 10, 20, 30, 50, 100];
 
@@ -215,6 +238,12 @@ export default function PainelPage() {
       });
   };
 
+  const handleLogout = () => {
+    if (auth) {
+      auth.signOut().then(() => router.push('/'));
+    }
+  };
+
   if (authLoading || !userData) {
     return (
       <div className="min-h-screen bg-[#08090d] flex flex-col items-center justify-center p-4 text-white">
@@ -251,7 +280,7 @@ export default function PainelPage() {
             </div>
             
             <button 
-              onClick={() => setShowDepositModal(true)}
+              onClick={() => setShowProfileModal(true)}
               className="relative w-8 h-8 rounded-full bg-[#7b61ff] flex items-center justify-center font-black text-xs text-white border border-white/10"
             >
               {userData.fullName?.substring(0,1).toUpperCase() || 'U'}
@@ -285,11 +314,7 @@ export default function PainelPage() {
             <span className="text-[9px] font-bold uppercase tracking-wider">Indicar</span>
           </button>
 
-          <button onClick={() => {
-            if(auth) {
-              auth.signOut().then(() => router.push('/'));
-            }
-          }} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+          <button onClick={() => setShowProfileModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
             <User className="w-4 h-4" />
             <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
           </button>
@@ -356,6 +381,142 @@ export default function PainelPage() {
             </button>
           </div>
         </main>
+      </div>
+
+      {/* MODAL DE PERFIL ESTILIZADO */}
+      <div className={`fixed inset-0 ${showProfileModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[8000]`}>
+        <div className="w-full max-w-[400px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300 max-h-[92vh]">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 pb-2">
+            <h2 className="text-2xl font-[1000] text-white uppercase tracking-tight">Perfil</h2>
+            <button 
+              onClick={() => setShowProfileModal(false)}
+              className="w-8 h-8 rounded-full bg-[#e73b29] flex items-center justify-center text-white shadow-lg z-30 transition-transform active:scale-90"
+            >
+              <X className="w-4 h-4 stroke-[3]" />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 space-y-4 pt-2 pb-4 scrollbar-hide">
+            
+            {/* Bloco de Informações do Usuário */}
+            <div className="bg-slate-900/60 rounded-[2rem] p-5 border border-white/5 flex flex-col space-y-5">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-[#4f46e5] flex items-center justify-center text-white text-xl font-black shadow-lg">
+                  {userData.fullName?.substring(0,1).toUpperCase()}
+                </div>
+                <div className="flex flex-col">
+                  <strong className="text-white text-lg font-black">{userData.fullName?.toLowerCase()}</strong>
+                  <span className="text-white/40 text-xs font-medium">({userData.phone?.substring(0,2)}) {userData.phone?.substring(2,7)}-{userData.phone?.substring(7)}</span>
+                </div>
+              </div>
+
+              {/* Link de Indicação Mini */}
+              <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
+                <span className="text-white/20 text-[10px] truncate max-w-[140px] font-mono">{referralLink}</span>
+                <button 
+                  onClick={handleCopyLink}
+                  className="bg-slate-800/80 text-white font-black text-[10px] px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-transform"
+                >
+                  {linkCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  Copiar link
+                </button>
+              </div>
+            </div>
+
+            {/* Grid de Estatísticas 2x2 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                <strong className="text-2xl font-black text-white">0</strong>
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Partidas</span>
+              </div>
+              <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                <strong className="text-2xl font-black text-white">0</strong>
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Resgates</span>
+              </div>
+              <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                <strong className="text-2xl font-black text-emerald-400">R$ 0,00</strong>
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Total ganho</span>
+              </div>
+              <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                <strong className="text-2xl font-black text-emerald-400">R$ 0,00</strong>
+                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Maior resgate</span>
+              </div>
+            </div>
+
+            {/* Accordions */}
+            <div className="space-y-2.5">
+              {/* Últimas Transações */}
+              <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
+                <button 
+                  onClick={() => setShowTransactions(!showTransactions)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Últimas Transações</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-wider">{showTransactions ? 'Ocultar' : 'Ver'}</span>
+                    {showTransactions ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
+                  </div>
+                </button>
+                {showTransactions && (
+                  <div className="px-4 pb-5 pt-1 text-center">
+                    <p className="text-white/20 text-[11px] font-medium italic">Nenhum depósito ou saque ainda.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Histórico de Partidas */}
+              <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
+                <button 
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Histórico de Partidas</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-wider">{showHistory ? 'Ocultar' : 'Ver'}</span>
+                    {showHistory ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
+                  </div>
+                </button>
+                {showHistory && (
+                  <div className="px-4 pb-5 pt-1 text-center">
+                    <p className="text-white/20 text-[11px] font-medium italic">Nenhuma partida ainda.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Alterar Senha */}
+              <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
+                <button 
+                  onClick={() => setShowPassChange(!showPassChange)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Key className="w-3.5 h-3.5 text-white/40" />
+                    <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Alterar Senha</span>
+                  </div>
+                  {showPassChange ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
+                </button>
+                {showPassChange && (
+                  <div className="px-4 pb-5 pt-2 space-y-3">
+                    <Input placeholder="Senha atual" type="password" className="h-10 bg-black/40 border-white/5 text-xs rounded-xl" />
+                    <Input placeholder="Nova senha" type="password" className="h-10 bg-black/40 border-white/5 text-xs rounded-xl" />
+                    <button className="w-full h-10 rounded-xl bg-white/5 text-white font-black text-[10px] uppercase tracking-widest">Salvar Nova Senha</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Logout */}
+            <button 
+              onClick={handleLogout}
+              className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#5a1215] to-[#2e0809] border border-white/5 flex items-center justify-center gap-2 text-rose-500 font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] mt-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Finalizar sessão
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* MODAL DE INDICAÇÕES (AFILIADOS) */}
