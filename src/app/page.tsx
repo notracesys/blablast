@@ -1,7 +1,9 @@
+
 'use client';
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { 
   Play, 
   Star,
@@ -34,9 +36,11 @@ export default function LandingPage() {
           <button className="text-[11px] font-bold text-white/70 uppercase tracking-wider hover:text-white transition-colors py-1.5 px-3 rounded-xl border border-white/10 bg-white/5">
             ENTRAR
           </button>
-          <Button size="sm" className="bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white hover:opacity-90 px-3.5 h-8 font-black text-[11px] uppercase tracking-wider rounded-xl glow-purple border border-purple-400/20">
-            CRIAR CONTA
-          </Button>
+          <Link href="/game">
+            <Button size="sm" className="bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white hover:opacity-90 px-3.5 h-8 font-black text-[11px] uppercase tracking-wider rounded-xl glow-purple border border-purple-400/20">
+              CRIAR CONTA
+            </Button>
+          </Link>
         </div>
       </header>
 
@@ -79,31 +83,35 @@ export default function LandingPage() {
 
         {/* 3) BOTÕES DE AÇÃO PRINCIPAIS */}
         <section className="space-y-3.5">
-          <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] hover:opacity-95 text-slate-950 font-black text-base glow-green transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide animate-shine flex items-center justify-between px-5 border border-emerald-300/30">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-slate-950/10 rounded-xl flex items-center justify-center">
-                <Play className="w-5 h-5 fill-current text-slate-950" />
+          <Link href="/game" className="block w-full">
+            <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] hover:opacity-95 text-slate-950 font-black text-base glow-green transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide animate-shine flex items-center justify-between px-5 border border-emerald-300/30">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-slate-950/10 rounded-xl flex items-center justify-center">
+                  <Play className="w-5 h-5 fill-current text-slate-950" />
+                </div>
+                <div className="text-left">
+                  <div className="font-black text-[15px] tracking-wide text-slate-950">JOGAR GRÁTIS</div>
+                  <div className="text-[10px] opacity-80 font-bold text-slate-900">Abrir modo demonstração</div>
+                </div>
               </div>
-              <div className="text-left">
-                <div className="font-black text-[15px] tracking-wide text-slate-950">JOGAR GRÁTIS</div>
-                <div className="text-[10px] opacity-80 font-bold text-slate-900">Abrir modo demonstração</div>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-slate-950" />
-          </Button>
+              <ChevronRight className="w-5 h-5 text-slate-950" />
+            </Button>
+          </Link>
 
-          <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-base glow-purple transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide flex items-center justify-between px-5 border border-purple-400/30">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center font-black text-sm">
-                +
+          <Link href="/game" className="block w-full">
+            <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-base glow-purple transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide flex items-center justify-between px-5 border border-purple-400/30">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center font-black text-sm">
+                  +
+                </div>
+                <div className="text-left">
+                  <div className="font-black text-[15px] tracking-wide">CRIAR CONTA</div>
+                  <div className="text-[10px] text-white/70 font-medium">Comece em poucos segundos</div>
+                </div>
               </div>
-              <div className="text-left">
-                <div className="font-black text-[15px] tracking-wide">CRIAR CONTA</div>
-                <div className="text-[10px] text-white/70 font-medium">Comece em poucos segundos</div>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-white/80" />
-          </Button>
+              <ChevronRight className="w-5 h-5 text-white/80" />
+            </Button>
+          </Link>
 
           <div className="text-center pt-2">
             <a href="#" className="text-white/50 hover:text-cyan-400 transition-colors text-[12px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
@@ -256,12 +264,14 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <Button className="w-full h-14 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-sm shadow-xl glow-green transition-all uppercase tracking-wider animate-shine">
-            CRIAR CONTA GRÁTIS
-          </Button>
+          <Link href="/game" className="block w-full">
+            <Button className="w-full h-14 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-sm shadow-xl glow-green transition-all uppercase tracking-wider animate-shine">
+              CRIAR CONTA GRÁTIS
+            </Button>
+          </Link>
 
           <div className="text-[8px] text-white/30 uppercase tracking-widest font-bold">
-            Cadastro rápido • experience demonstrativa
+            Cadastro rápido • experiência demonstrativa
           </div>
         </section>
       </main>
