@@ -8,6 +8,7 @@ import { GameAudio } from './audios';
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMutedState, setIsMutedState] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -393,6 +394,7 @@ export default function GamePage() {
 
       for (let i = 0; i < gameState.shapes.length; i++) {
         const shape = gameState.shapes[i] as any;
+        if (!shape) continue;
         for (let y = 0; y <= BOARD_SIZE - shape.matrix.length; y++) {
           for (let x = 0; x <= BOARD_SIZE - shape.matrix[0].length; x++) {
             if (canPlaceShape(shape, x, y)) return;
@@ -400,10 +402,8 @@ export default function GamePage() {
         }
       }
       gameState.isGameOver = true;
-      
       GameAudio.play('derrota');
-      
-      document.getElementById('gameOverModal')?.classList.add('show');
+      setShowGameOver(true);
     }
 
     function generateShapes(count: number) {
@@ -413,6 +413,7 @@ export default function GamePage() {
         gameState.shapes.push({ id: i, matrix: def.matrix, color: generateColor() } as any);
       }
       renderShapes();
+      checkGameOver();
     }
 
     function drawPlacementPreview(shape: any, x: number, y: number) {
@@ -710,10 +711,10 @@ export default function GamePage() {
       gameState.lines = 0;
       gameState.level = 1;
       gameState.isGameOver = false;
+      setShowGameOver(false);
 
       generateShapes(PIECE_SLOTS);
       updateUI();
-      document.getElementById('gameOverModal')?.classList.remove('show');
       render();
     }
 
@@ -772,6 +773,14 @@ export default function GamePage() {
     GameAudio.play('swtch');
   };
 
+  const handleManualRestart = () => {
+    setShowGameOver(false);
+    const restartBtn = document.getElementById('restartBtn');
+    if (restartBtn) {
+      (restartBtn as HTMLButtonElement).click();
+    }
+  };
+
   return (
     <div 
       ref={containerRef} 
@@ -821,7 +830,9 @@ export default function GamePage() {
               R$ 0,00
             </strong>
             <div id="winProgress" className="h-1.5 w-full bg-slate-800/80 rounded-full overflow-hidden border border-white/5">
-              <div id="winProgressBar" className="h-full w-0 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)]"></div>
+              <div id="winProgressB" className="h-full bg-slate-800 rounded-full">
+                <div id="winProgressBar" className="h-full w-0 bg-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)]"></div>
+              </div>
             </div>
           </section>
 
@@ -840,14 +851,14 @@ export default function GamePage() {
         </main>
       </div>
 
-      <div className="modal-overlay fixed inset-0 hidden place-items-center p-4 bg-black/80 backdrop-blur-sm z-[3000]" id="gameOverModal">
-        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900">
+      <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/80 backdrop-blur-sm z-[3000]`} id="gameOverModal">
+        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-5">Não há mais espaço para encaixar as peças atuais.</p>
-          <button id="restartBtn" className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)]">
+          <p className="text-white/60 text-xs mb-5">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+          <button id="restartBtn" onClick={handleManualRestart} className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)] active:scale-95">
             Jogar de novo
           </button>
-          <Link href="/" className="w-full h-11 rounded-lg font-medium text-xs flex items-center justify-center border border-white/10 text-white">
+          <Link href="/" className="w-full h-11 rounded-lg font-medium text-xs flex items-center justify-center border border-white/10 text-white hover:bg-white/5 transition-colors">
             Voltar para o início
           </Link>
         </div>
