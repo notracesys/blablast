@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, Copy, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -262,6 +262,39 @@ export default function PainelPage() {
           </div>
         </header>
 
+        <nav className="fixed bottom-0 max-w-[480px] w-full mx-auto left-0 right-0 z-40 bg-[#0c0f17] border-t border-white/5 h-20 px-2 flex items-center justify-around shadow-xl">
+          <button onClick={() => setShowDepositModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+            <Wallet className="w-4 h-4" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Depositar</span>
+          </button>
+
+          <button onClick={() => setShowWithdrawModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+            <ArrowUpRight className="w-4 h-4" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Sacar</span>
+          </button>
+
+          <div className="flex flex-col items-center justify-center flex-1 -translate-y-2">
+            <div onClick={() => router.push('/game')} className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)] cursor-pointer">
+              <Gamepad2 className="w-6 h-6 text-slate-950" />
+            </div>
+            <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
+          </div>
+
+          <button onClick={() => setShowAffiliateModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+            <Users className="w-4 h-4" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Indicar</span>
+          </button>
+
+          <button onClick={() => {
+            if(auth) {
+              auth.signOut().then(() => router.push('/'));
+            }
+          }} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+            <User className="w-4 h-4" />
+            <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
+          </button>
+        </nav>
+
         <main className="w-full max-w-[400px] mx-auto z-10 flex-1 flex flex-col justify-center">
           <div className="w-full bg-[#0d111c]/90 border border-white/5 rounded-[2rem] p-4 shadow-2xl space-y-4">
             <div className="relative w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-white/10">
@@ -325,39 +358,6 @@ export default function PainelPage() {
         </main>
       </div>
 
-      <nav className="fixed bottom-0 max-w-[480px] w-full mx-auto left-0 right-0 z-40 bg-[#0c0f17] border-t border-white/5 h-20 px-2 flex items-center justify-around shadow-xl">
-        <button onClick={() => setShowDepositModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
-          <Wallet className="w-4 h-4" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Depositar</span>
-        </button>
-
-        <button onClick={() => setShowWithdrawModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
-          <ArrowUpRight className="w-4 h-4" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Sacar</span>
-        </button>
-
-        <div className="flex flex-col items-center justify-center flex-1 -translate-y-2">
-          <div onClick={() => router.push('/game')} className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#35f59a] to-[#26d9ff] flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.45)] cursor-pointer">
-            <Gamepad2 className="w-6 h-6 text-slate-950" />
-          </div>
-          <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
-        </div>
-
-        <button onClick={() => setShowAffiliateModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
-          <Users className="w-4 h-4" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Indicar</span>
-        </button>
-
-        <button onClick={() => {
-          if(auth) {
-            auth.signOut().then(() => router.push('/'));
-          }
-        }} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
-          <User className="w-4 h-4" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
-        </button>
-      </nav>
-
       {/* MODAL DE INDICAÇÕES (AFILIADOS) */}
       <div className={`fixed inset-0 ${showAffiliateModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[7000]`}>
         <div className="w-full max-w-[390px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300">
@@ -395,11 +395,6 @@ export default function PainelPage() {
                   <strong className="text-2xl font-[1000] text-slate-950">R$ 0,00</strong>
                   <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">Total recebido: R$ 0,00</span>
                 </div>
-                <div className="text-right flex flex-col">
-                  <span className="text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Indicados</span>
-                  <strong className="text-2xl font-[1000] text-slate-950">0</strong>
-                  <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">No total</span>
-                </div>
               </div>
 
               <button className="w-full h-11 rounded-2xl bg-slate-950/10 border border-slate-950/10 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
@@ -422,32 +417,16 @@ export default function PainelPage() {
               </button>
             </div>
 
-            {/* Grade de Níveis */}
+            {/* Resumo Consolidado de Indicações */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
-                <span className="text-emerald-400 font-black text-base">N1</span>
-                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Diretos</span>
-                <div className="py-2">
-                  <strong className="text-xl font-black text-white block">0</strong>
-                  <span className="text-[8px] font-black text-white/20 uppercase">Indicados</span>
-                </div>
-                <div className="pt-1">
-                  <span className="text-amber-400 font-black text-xs">R$ 0,00</span>
-                  <span className="text-[8px] font-black text-white/20 uppercase block">Volume Depositado</span>
-                </div>
+                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Qtd de Indicados</span>
+                <strong className="text-2xl font-black text-white pt-1">0</strong>
               </div>
 
               <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
-                <span className="text-emerald-400 font-black text-base">N2</span>
-                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">2º Nível</span>
-                <div className="py-2">
-                  <strong className="text-xl font-black text-white block">0</strong>
-                  <span className="text-[8px] font-black text-white/20 uppercase">Indicados</span>
-                </div>
-                <div className="pt-1">
-                  <span className="text-amber-400 font-black text-xs">R$ 0,00</span>
-                  <span className="text-[8px] font-black text-white/20 uppercase block">Volume Depositado</span>
-                </div>
+                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Volume Depositado</span>
+                <strong className="text-2xl font-black text-amber-400 pt-1">R$ 0,00</strong>
               </div>
             </div>
           </div>
