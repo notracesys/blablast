@@ -34,6 +34,50 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!auth || !db) return;
 
+    // 1) Validação do Nome Completo (Nome + Sobrenome)
+    const nameTrimmed = fullName.trim();
+    const nameParts = nameTrimmed.split(/\s+/);
+    if (nameParts.length < 2 || nameParts[1].length < 2) {
+      toast({
+        variant: "destructive",
+        title: "Nome incompleto",
+        description: "Por favor, digite seu nome e pelo menos um sobrenome.",
+      });
+      return;
+    }
+
+    // 2) Validação de Email com domínio completo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        variant: "destructive",
+        title: "E-mail inválido",
+        description: "Insira um endereço de e-mail válido com um domínio (ex: @gmail.com).",
+      });
+      return;
+    }
+
+    // 3) Validação do Telefone (Apenas números, DDD de 2 dígitos + 8 ou 9 dígitos)
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      toast({
+        variant: "destructive",
+        title: "Telefone incorreto",
+        description: "Informe o telefone completo incluindo o DDD com 2 dígitos (ex: 11999998888).",
+      });
+      return;
+    }
+
+    // 4) Validação da Senha (+6 caracteres)
+    if (password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Senha fraca",
+        description: "Sua senha deve conter pelo menos 6 caracteres.",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
@@ -50,28 +94,35 @@ export default function RegisterPage() {
 
       const userRef = doc(db, 'users', user.uid);
       const userData = {
-        fullName,
-        phone,
+        fullName: nameTrimmed,
+        phone: cleanPhone,
         email,
         balance: 0,
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
       };
 
-      setDoc(userRef, userData).catch(async (error) => {
-        const permissionError = new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'create',
-          requestResourceData: userData,
+      setDoc(userRef, userData)
+        .then(() => {
+          router.push('/painel');
+        })
+        .catch((error) => {
+          const permissionError = new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'create',
+            requestResourceData: userData,
+          });
+          errorEmitter.emit('permission-error', permissionError);
         });
-        errorEmitter.emit('permission-error', permissionError);
-      });
 
-      router.push('/painel');
     } catch (error: any) {
+      let msg = "Não foi possível criar sua conta.";
+      if (error.code === 'auth/email-already-in-use') {
+        msg = "Este e-mail já está sendo utilizado por outra conta.";
+      }
       toast({
         variant: "destructive",
         title: "Erro no cadastro",
-        description: error.message || "Não foi possível criar sua conta.",
+        description: error.message || msg,
       });
     } finally {
       setLoading(false);
@@ -86,37 +137,37 @@ export default function RegisterPage() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-600/10 blur-[120px] rounded-full"></div>
 
       <main className="w-full max-w-[400px] z-10 flex flex-col items-center">
-        <div className="mb-8 relative animate-float">
+        <div className="mb-6 relative animate-float">
           <Image 
             src="/blockcash.png" 
             alt="Block Cash Logo" 
-            width={120} 
-            height={120} 
+            width={110} 
+            height={40} 
             className="object-contain filter drop-shadow-[0_0_15px_rgba(123,97,255,0.4)]"
             priority
           />
         </div>
 
-        <div className="w-full bg-[#0b1426] border border-white/5 rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+        <div className="w-full bg-[#0b1426] border border-white/5 rounded-[2rem] p-7 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
-          <div className="mb-8">
-            <h1 className="text-2xl font-[900] text-white tracking-tight leading-none mb-2">
+          <div className="mb-6">
+            <h1 className="text-xl font-[900] text-white tracking-tight leading-none mb-2 uppercase">
               Crie sua conta grátis
             </h1>
-            <p className="text-white/50 text-xs font-medium leading-relaxed">
-              Cadastre-se para montar, explodir linhas e ganhar dinheiro real.
+            <p className="text-white/50 text-[11px] font-medium leading-relaxed">
+              Insira dados válidos para garantir a segurança dos seus futuros resgates via PIX.
             </p>
           </div>
 
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={handleRegister} className="space-y-3.5">
             <div className="space-y-1.5">
               <Input 
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Nome completo" 
-                className="h-14 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none ring-0 focus-visible:ring-0"
+                placeholder="Nome completo (Nome e Sobrenome)" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
               />
             </div>
 
@@ -126,18 +177,19 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-mail" 
-                className="h-14 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none ring-0 focus-visible:ring-0"
+                placeholder="E-mail (exemplo@dominio.com)" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
               />
             </div>
 
             <div className="space-y-1.5">
               <Input 
                 required
+                type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Telefone (DDD)" 
-                className="h-14 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none ring-0 focus-visible:ring-0"
+                placeholder="Telefone celular com DDD (ex: 11999998888)" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
               />
             </div>
 
@@ -148,15 +200,15 @@ export default function RegisterPage() {
                   type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crie uma senha" 
-                  className="h-14 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none ring-0 focus-visible:ring-0"
+                  placeholder="Crie uma senha (mínimo 6 dígitos)" 
+                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40 transition-colors"
                 >
-                  {showPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -169,39 +221,39 @@ export default function RegisterPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirme sua senha" 
-                  className="h-14 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none ring-0 focus-visible:ring-0"
+                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
                 />
                 <button 
                   type="button"
                   onClick={() => setShowConfirmPass(!showConfirmPass)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40 transition-colors"
                 >
-                  {showConfirmPass ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
             <Button 
               disabled={loading}
-              className="w-full h-14 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-4 animate-shine border border-purple-400/20"
+              className="w-full h-12 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-3 border border-purple-400/20"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CRIAR CONTA'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONCLUIR CADASTRO'}
             </Button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-6 text-center">
             <p className="text-white/40 text-[11px] font-bold">
-              Já tem uma conta? <Link href="#" className="text-cyan-400 hover:text-cyan-300 transition-colors">Entrar</Link>
+              Já tem uma conta? <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition-colors">Voltar ao início</Link>
             </p>
           </div>
         </div>
       </main>
 
-      <div className="absolute bottom-0 w-full flex justify-center gap-1 opacity-60">
-        <div className="w-20 h-24 bg-purple-700/40 rounded-t-lg blur-[2px] translate-y-8"></div>
-        <div className="w-20 h-32 bg-blue-700/40 rounded-t-lg blur-[2px] translate-y-4"></div>
-        <div className="w-20 h-40 bg-cyan-700/40 rounded-t-lg blur-[2px]"></div>
-        <div className="w-20 h-28 bg-emerald-700/40 rounded-t-lg blur-[2px] translate-y-12"></div>
+      <div className="absolute bottom-0 w-full flex justify-center gap-1 opacity-20 pointer-events-none">
+        <div className="w-16 h-20 bg-purple-700/40 rounded-t-lg blur-[2px] translate-y-8"></div>
+        <div className="w-16 h-24 bg-blue-700/40 rounded-t-lg blur-[2px] translate-y-4"></div>
+        <div className="w-16 h-28 bg-cyan-700/40 rounded-t-lg blur-[2px]"></div>
+        <div className="w-16 h-24 bg-emerald-700/40 rounded-t-lg blur-[2px] translate-y-12"></div>
       </div>
     </div>
   );
