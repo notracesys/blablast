@@ -110,6 +110,14 @@ export const GameAudio = {
     bgMusic.play().catch(() => {});
   },
 
+  stopMusic() {
+    if (typeof window === 'undefined') return;
+    if (bgMusic) {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    }
+  },
+
   setMuted(val) {
     if (typeof window === 'undefined') return;
     muted = val;

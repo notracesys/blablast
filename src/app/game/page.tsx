@@ -105,6 +105,7 @@ export default function GamePage() {
       }).format(value);
     }
 
+    // Identificação dos pontos exatos de regras e desenho
     function generateColor() {
       const c = COLOR_PALETTES[Math.floor(Math.random() * COLOR_PALETTES.length)];
       return {
@@ -299,6 +300,7 @@ export default function GamePage() {
       return { rowsToClear, colsToClear };
     }
 
+    // PONTO EXATO: LIMPEZA DE LINHA / COLUNA
     function clearLines() {
       const { rowsToClear, colsToClear } = findLinesToClear();
       const clearedCount = rowsToClear.length + colsToClear.length;
@@ -345,6 +347,7 @@ export default function GamePage() {
       return clearedCount;
     }
 
+    // PONTO EXATO: ENCAIXE VALIDO
     function placeShape(shapeIndex: number, x: number, y: number) {
       const shape = gameState.shapes[shapeIndex] as any;
       if (!shape || !canPlaceShape(shape, x, y)) return;
@@ -376,6 +379,7 @@ export default function GamePage() {
       render();
     }
 
+    // PONTO EXATO: GAME OVER DETECTADO
     function checkGameOver() {
       if (gameState.shapes.length === 0) return;
 
@@ -523,6 +527,7 @@ export default function GamePage() {
       }
     }
 
+    // PONTO EXATO: INICIO DO DRAG
     function setupDragAndDrop(shapeItem: HTMLDivElement, shape: any, shapeIndex: number) {
       function startDrag(clientX: number, clientY: number) {
         if (gameState.isPaused || gameState.isGameOver) return;
@@ -619,6 +624,7 @@ export default function GamePage() {
       }
     }
 
+    // PONTO EXATO: FIM DO DRAG (E ENCAIXE INVALIDO SE NAO FIT)
     function onDragEnd(clientX: number, clientY: number) {
       if (!gameState.dragging || !boardCanvas) return;
       if (dragRafId != null) {
@@ -770,6 +776,7 @@ export default function GamePage() {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       if (dragGhost) dragGhost.remove();
+      GameAudio.stopMusic();
     };
   }, []);
 
