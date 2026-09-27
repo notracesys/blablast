@@ -2,32 +2,32 @@
   "placeholderImages": [
     {
       "id": "hero-gameplay",
-      "description": "Demonstração da interface do jogo Block Blast",
-      "imageUrl": "/painel.png",
-      "imageHint": "game screen block blast"
+      "description": "Demonstração da interface do jogo Block Cash",
+      "imageUrl": "/hero.webp",
+      "imageHint": "game screen block cash"
     },
     {
       "id": "how-to-1",
       "description": "Depósito PIX facilitado",
-      "imageUrl": "https://picsum.photos/seed/pix/400/250",
+      "imageUrl": "/card1.webp",
       "imageHint": "mobile payment app"
     },
     {
       "id": "how-to-2",
       "description": "Seleção de entrada de jogo",
-      "imageUrl": "https://picsum.photos/seed/entry/400/250",
+      "imageUrl": "/card2.webp",
       "imageHint": "game stake selection"
     },
     {
       "id": "how-to-3",
       "description": "Jogabilidade 8x8 blocks",
-      "imageUrl": "https://picsum.photos/seed/game/400/250",
+      "imageUrl": "/card3.png",
       "imageHint": "block puzzle gameplay"
     },
     {
       "id": "how-to-4",
       "description": "Saque PIX imediato",
-      "imageUrl": "https://picsum.photos/seed/cashout/400/250",
+      "imageUrl": "/card4.webp",
       "imageHint": "successful withdrawal"
     }
   ]

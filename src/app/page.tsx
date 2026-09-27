@@ -20,11 +20,16 @@ export default function LandingPage() {
       {/* 1) HEADER FIXO PREMIUM COMPACTO */}
       <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-16 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-2">
-          <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-amber-400 to-orange-600 rounded-lg font-black text-white italic text-xs shadow-lg shadow-orange-500/20">
-            BP
-          </div>
+          <Image 
+            src="/blockcash.png" 
+            alt="Block Cash Logo" 
+            width={28} 
+            height={28} 
+            className="object-contain"
+            priority
+          />
           <span className="font-black tracking-tighter text-[14px] uppercase italic bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-            BLOCK PIX
+            BLOCK CASH
           </span>
         </div>
         
@@ -58,13 +63,11 @@ export default function LandingPage() {
           {/* CARD DO JOGO (HERO BANNER) */}
           <div className="relative w-full aspect-[4/5] bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
-              src="/assets/hero-banner.png" 
+              src="/hero.webp" 
               alt="Block Blast Game Screen" 
               fill 
               className="object-cover transition-transform duration-700 group-hover:scale-105"
               priority
-              unoptimized
-              fallback="/assets/hero-banner.png"
             />
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-6">
@@ -145,25 +148,25 @@ export default function LandingPage() {
                 step: 1, 
                 title: '1. Deposite via PIX', 
                 desc: 'Adicione saldo à sua conta de forma rápida e segura para começar a jogar Block Blast.',
-                img: '/assets/card-1.png'
+                img: '/card1.webp'
               },
               { 
                 step: 2, 
                 title: '2. Escolha sua entrada', 
                 desc: 'Defina quanto quer apostar por partida. Quanto maior a entrada, maior a recompensa mínima.',
-                img: '/assets/card-2.png'
+                img: '/card2.webp'
               },
               { 
                 step: 3, 
                 title: '3. Monte e exploda linhas', 
                 desc: 'Encaixe as peças no tabuleiro 8x8. Cada linha ou coluna completa explode e acumula prêmios.',
-                img: '/assets/card-3.png'
+                img: '/card3.png'
               },
               { 
                 step: 4, 
                 title: '4. Resgate e saque', 
                 desc: 'Bateu a meta de 2x? Faça o cashout e retire seus ganhos via PIX na hora.',
-                img: '/assets/card-4.png'
+                img: '/card4.webp'
               }
             ].map((step) => (
               <Card key={step.step} className="bg-[#0b1d3f]/40 border-white/5 overflow-hidden rounded-[1.5rem] group transition-all duration-300 hover:border-white/10">
@@ -172,8 +175,7 @@ export default function LandingPage() {
                     src={step.img} 
                     alt={step.title} 
                     fill 
-                    className="object-cover opacity-60 group-hover:opacity-90 transition-opacity" 
-                    unoptimized
+                    className="object-cover opacity-70 group-hover:opacity-100 transition-opacity" 
                   />
                   <div className="absolute top-3 left-3 w-7 h-7 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-xl border border-white/10">
                     {step.step}
@@ -196,7 +198,7 @@ export default function LandingPage() {
             <h2 className="text-xl font-black text-white uppercase tracking-tight">
               QUEM JOGA, RECOMENDA!
             </h2>
-            <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">Resultados reais de jogadores reais</p>
+            <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">Resultados reais diários</p>
           </div>
 
           <div className="space-y-3.5">
@@ -270,15 +272,19 @@ export default function LandingPage() {
       {/* 8) FOOTER */}
       <footer className="px-4 py-6 border-t border-white/5 space-y-3 text-center bg-black/20">
         <div className="flex justify-center items-center gap-2 opacity-60">
-          <div className="w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-600 rounded flex items-center justify-center font-black text-white italic text-[9px]">
-            BP
-          </div>
-          <span className="font-black tracking-tighter text-[11px] uppercase italic text-white">Block Pix</span>
+          <Image 
+            src="/blockcash.png" 
+            alt="Block Cash Logo" 
+            width={18} 
+            height={18} 
+            className="object-contain"
+          />
+          <span className="font-black tracking-tighter text-[11px] uppercase italic text-white">Block Cash</span>
         </div>
         
         <div className="space-y-1">
           <p className="text-white/30 text-[9px] font-bold uppercase tracking-wider">
-            &copy; 2026 Block Pix. Todos os direitos reservados.
+            &copy; 2026 Block Cash. Todos os direitos reservados.
           </p>
           <div className="text-white/20 text-[8px] font-black uppercase tracking-wider max-w-[260px] mx-auto leading-relaxed">
             Jogue com responsabilidade. Proibido para menores de 18 anos.
