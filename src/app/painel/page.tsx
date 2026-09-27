@@ -1,16 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, Coins, ArrowUpRight } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, Coins, ArrowUpRight, X, Ticket } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import Image from 'next/image';
 
 export default function PainelPage() {
   const { user, loading: authLoading } = useUser();
@@ -28,14 +27,21 @@ export default function PainelPage() {
 
   const presets = [5, 10, 20, 30, 50, 100];
 
-  // Efeito para oscilar a quantidade de jogadores online de 500 a 1500
+  const depositPresets = [
+    { val: 20, tag: 'MÍNIMO', color: 'bg-[#00f19a] text-slate-950' },
+    { val: 30, tag: 'BOM', color: 'bg-amber-500 text-slate-950' },
+    { val: 40, tag: 'ÓTIMO', color: 'bg-orange-500 text-white' },
+    { val: 50, tag: 'EXCELENTE', color: 'bg-rose-500 text-white' },
+    { val: 100, tag: 'SUPER', color: 'bg-purple-500 text-white' },
+    { val: 200, tag: 'SUPER', color: 'bg-fuchsia-500 text-white' },
+  ];
+
   useEffect(() => {
-    // Define um valor inicial seguro pós-hydration
     setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
 
     const interval = setInterval(() => {
       setOnlinePlayers((current) => {
-        const change = Math.floor(Math.random() * 61) - 30; // Altera em até +/- 30 jogadores
+        const change = Math.floor(Math.random() * 61) - 30;
         let nextValue = current + change;
         if (nextValue < 500) nextValue = 500 + Math.floor(Math.random() * 20);
         if (nextValue > 1500) nextValue = 1500 - Math.floor(Math.random() * 20);
@@ -270,27 +276,88 @@ export default function PainelPage() {
         </button>
       </nav>
 
-      <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[5000]`}>
-        <div className="w-full max-w-xs p-6 border border-white/10 rounded-3xl bg-[#0d111c] shadow-2xl">
-          <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-3">
-            <Coins className="w-5 h-5 text-cyan-400" />
+      {/* NOVO MODAL DE DEPÓSITO CUSTOMIZADO EXATAMENTE IGUAL À IMAGEM */}
+      <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
+        <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative animate-fade-in-up">
+          
+          {/* Banner Superior */}
+          <div className="relative w-full aspect-[2.3/1] bg-slate-950">
+            <Image 
+              src="/card1.webp" 
+              alt="Quanto maior seu depósito maiores suas chances" 
+              fill 
+              className="object-cover"
+              priority
+            />
+            {/* Botão Fechar Vermelho Redondo */}
+            <button 
+              onClick={() => setShowDepositModal(false)}
+              className="absolute top-3 right-3 w-6 h-6 rounded-full bg-red-600 flex items-center justify-center text-white shadow-md z-30 transition-transform active:scale-90"
+            >
+              <X className="w-3.5 h-3.5 stroke-[3]" />
+            </button>
           </div>
-          <h2 className="text-sm font-black text-white uppercase text-center mb-1">Simular Depósito PIX</h2>
-          <p className="text-white/50 text-[10px] text-center mb-4">Adicione saldo de demonstração para testar as entradas.</p>
-          <div className="space-y-3 mb-4">
-            <div className="flex gap-2">
-              {['20', '50', '100'].map((val) => (
-                <button key={val} onClick={() => setDepositAmount(val)} className={`flex-1 h-8 rounded-xl text-[10px] font-black transition-all ${depositAmount === val ? 'bg-cyan-400 text-slate-950' : 'bg-[#131926] text-white/60 border border-white/5'}`}>
-                  + R${val}
-                </button>
-              ))}
+
+          {/* Conteúdo do Formulário de Depósito */}
+          <div className="p-5 flex flex-col space-y-4">
+            <div>
+              <label className="text-[11px] font-black uppercase text-white/40 tracking-wider block mb-3">
+                VALOR RÁPIDO
+              </label>
+
+              {/* Grid de valores rápidos com tags flutuantes */}
+              <div className="grid grid-cols-3 gap-x-2 gap-y-5 pt-2">
+                {depositPresets.map((item) => (
+                  <button
+                    key={item.val}
+                    type="button"
+                    onClick={() => setDepositAmount(String(item.val))}
+                    className={`h-12 rounded-xl font-black text-sm relative transition-all border ${
+                      depositAmount === String(item.val)
+                        ? 'bg-[#182030] text-white border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+                        : 'bg-[#182030] text-white border-transparent'
+                    }`}
+                  >
+                    {/* Tag em cima da caixinha */}
+                    <span className={`absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-wide leading-none ${item.color}`}>
+                      {item.tag}
+                    </span>
+                    R${item.val}
+                  </button>
+                ))}
+              </div>
             </div>
-            <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} className="h-10 bg-[#131926] border-white/5 rounded-xl text-center text-xs font-bold text-white focus-visible:ring-0 focus-visible:ring-offset-0" />
+
+            {/* Input Manual Estilizado */}
+            <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4 mt-2">
+              <span className="text-white/40 text-xs font-bold mr-2">R$</span>
+              <Input 
+                type="number" 
+                value={depositAmount} 
+                onChange={(e) => setDepositAmount(e.target.value)} 
+                className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+            </div>
+
+            {/* Botão de Cupom */}
+            <button 
+              type="button" 
+              className="flex items-center gap-1.5 text-[#ff4b72] text-[11px] font-bold uppercase tracking-wider self-start pl-1 py-1 hover:opacity-80"
+            >
+              <Ticket className="w-3.5 h-3.5 fill-current" />
+              Tenho um cupom
+            </button>
+
+            {/* Botão Principal Verde Gerar Código */}
+            <button 
+              onClick={handleAddBalance} 
+              disabled={isDepositing}
+              className="w-full h-12 rounded-2xl bg-[#00e26f] text-slate-950 font-black text-xs uppercase tracking-wider transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,226,111,0.25)] flex items-center justify-center"
+            >
+              {isDepositing ? 'PROCESSANDO...' : 'Gerar QR Code PIX'}
+            </button>
           </div>
-          <button onClick={handleAddBalance} disabled={isDepositing} className="w-full h-10 rounded-xl bg-[#35f59a] text-slate-950 font-black text-xs uppercase tracking-wider">
-            {isDepositing ? 'PROCESSANDO...' : 'CONFIRMAR DEPÓSITO'}
-          </button>
-          <button onClick={() => setShowDepositModal(false)} className="w-full h-8 rounded-xl text-[10px] uppercase font-bold text-white/30 mt-2">FECHAR</button>
+
         </div>
       </div>
     </div>
