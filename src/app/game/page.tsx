@@ -2,15 +2,17 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { GameAudio } from './audios';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Impedir execução no lado do servidor
     if (typeof window === 'undefined') return;
 
-    // Configurações e constantes do jogo original
+    // Preload do sistema de áudio
+    GameAudio.preload();
+
     const BOARD_SIZE = 8;
     const PREVIEW_CELL_SIZE = 20;
     const PREVIEW_MAX_SIZE = 76;
@@ -70,7 +72,6 @@ export default function GamePage() {
       { h: 250, s: 82, l: 62 }, { h: 98, s: 72, l: 48 }, { h: 348, s: 84, l: 62 }
     ];
 
-    // Estado interno mutável do jogo
     let CELL_SIZE = 36;
     const gameState = {
       board: Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(0)),
@@ -97,7 +98,6 @@ export default function GamePage() {
     let pendingPointerX = 0;
     let pendingPointerY = 0;
 
-    // Helpers de Formatação e Utilidades
     function formatBRL(value: number) {
       return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -137,7 +137,6 @@ export default function GamePage() {
       return { row: closestRow, col: closestCol };
     }
 
-    // Funções de Desenho Gráfico no Canvas
     function roundedRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, radius: number) {
       const r = Math.max(0, Math.min(radius, w / 2, h / 2));
       ctx.beginPath();
@@ -255,7 +254,6 @@ export default function GamePage() {
       ctx.restore();
     }
 
-    // Regras e Lógicas da Gameplay
     function canPlaceShape(shape: any, x: number, y: number) {
       const matrix = shape.matrix;
       const rows = matrix.length;
@@ -306,6 +304,9 @@ export default function GamePage() {
       const clearedCount = rowsToClear.length + colsToClear.length;
 
       if (clearedCount === 0) return 0;
+
+      // Som de limpeza de linha
+      GameAudio.play('clear');
 
       gameState.clearingLines.rows = rowsToClear;
       gameState.clearingLines.cols = colsToClear;
@@ -359,6 +360,10 @@ export default function GamePage() {
       }
 
       gameState.shapes.splice(shapeIndex, 1);
+      
+      // Som de encaixe válido
+      GameAudio.play('encaixe');
+
       const linesCleared = clearLines();
       gameState.score += blocksPlaced * gameState.level * 10;
       if (linesCleared > 0) gameState.score += linesCleared * gameState.level * 100;
@@ -385,6 +390,10 @@ export default function GamePage() {
         }
       }
       gameState.isGameOver = true;
+      
+      // Som de derrota
+      GameAudio.play('derrota');
+      
       document.getElementById('gameOverModal')?.classList.add('show');
     }
 
@@ -397,7 +406,6 @@ export default function GamePage() {
       renderShapes();
     }
 
-    // Renderizadores Visuais Compartilhados
     function drawPlacementPreview(shape: any, x: number, y: number) {
       if (!boardCtx) return;
       const matrix = shape.matrix;
@@ -514,8 +522,6 @@ export default function GamePage() {
 
         shapeItem.appendChild(canvas);
         shapesList.appendChild(shapeItem);
-
-        // Configurar Eventos de Arrastar e Soltar Nativos (Mouse e Toque)
         setupDragAndDrop(shapeItem, shape, index);
       }
     }
@@ -523,6 +529,10 @@ export default function GamePage() {
     function setupDragAndDrop(shapeItem: HTMLDivElement, shape: any, shapeIndex: number) {
       function startDrag(clientX: number, clientY: number) {
         if (gameState.isPaused || gameState.isGameOver) return;
+        
+        // Som de seleção/pegar peça
+        GameAudio.play('selection');
+        
         gameState.dragging = { shape, shapeIndex, shapeItem };
         shapeItem.classList.add('dragging');
         createDragGhost(shape);
@@ -630,8 +640,11 @@ export default function GamePage() {
       const placeX = cellX - pivot.col;
       const placeY = cellY - pivot.row;
 
-      if (placeX >= 0 && placeY >= 0 && placeX <= BOARD_SIZE - shape.matrix[0].length && placeY <= BOARD_SIZE - shape.matrix.length) {
+      if (placeX >= 0 && placeY >= 0 && placeX <= BOARD_SIZE - shape.matrix[0].length && placeY <= BOARD_SIZE - shape.matrix.length && canPlaceShape(shape, placeX, placeY)) {
         placeShape(gameState.dragging.shapeIndex, placeX, placeY);
+      } else {
+        // Som de falha ao tentar encaixar
+        GameAudio.play('broken');
       }
 
       if (gameState.dragging.shapeItem) gameState.dragging.shapeItem.classList.remove('dragging');
@@ -681,6 +694,9 @@ export default function GamePage() {
     }
 
     function restartGame() {
+      // Som de transição
+      GameAudio.play('swtch');
+
       if (dragGhost) {
         dragGhost.remove();
         dragGhost = null;
@@ -699,7 +715,6 @@ export default function GamePage() {
       render();
     }
 
-    // Configuração dos Ouvintes Globais
     function setupEventListeners() {
       document.addEventListener('mousemove', (e) => {
         if (gameState.dragging) onDragMove(e.clientX, e.clientY);
@@ -731,18 +746,21 @@ export default function GamePage() {
 
       const soundBtn = document.getElementById('soundBtn');
       if (soundBtn) {
-        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        let soundEnabled = !GameAudio.isMuted();
         soundBtn.setAttribute('aria-pressed', String(soundEnabled));
+        soundBtn.classList.toggle('is-muted', !soundEnabled);
+        
         soundBtn.onclick = () => {
-          soundEnabled = !soundEnabled;
-          localStorage.setItem('soundEnabled', String(soundEnabled));
-          soundBtn.setAttribute('aria-pressed', String(soundEnabled));
-          soundBtn.classList.toggle('is-muted', !soundEnabled);
+          const newState = !GameAudio.isMuted();
+          GameAudio.setMuted(newState);
+          soundBtn.setAttribute('aria-pressed', String(!newState));
+          soundBtn.classList.toggle('is-muted', newState);
+          // Som de transição ao clicar no botão
+          GameAudio.play('swtch');
         };
       }
     }
 
-    // Inicialização do Jogo
     boardCanvas = document.getElementById('gameBoard') as HTMLCanvasElement | null;
     boardCtx = boardCanvas ? boardCanvas.getContext('2d') : null;
     
@@ -761,7 +779,6 @@ export default function GamePage() {
 
   return (
     <div ref={containerRef} className="gameplay-page w-full min-h-screen text-white select-none relative overflow-x-hidden flex flex-col justify-between">
-      {/* Estilos Inline Scoped idênticos às regras originais do gameplay-brand e gameplay.css */}
       <style dangerouslySetInnerHTML={{ __html: `
         .gameplay-page {
           background-color: #020817;
@@ -962,6 +979,10 @@ export default function GamePage() {
           box-shadow: inset 0 1px rgba(255, 255, 255, .2), 0 0 16px rgba(35, 230, 255, .62);
           z-index: 99;
           cursor: pointer;
+        }
+        .sound.is-muted {
+            opacity: 0.5;
+            filter: grayscale(1);
         }
         .modal-overlay {
           position: fixed;
