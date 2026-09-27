@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Coins, Trophy, Info, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info } from 'lucide-react';
 import { GameAudio } from './audios';
 
 export default function GamePage() {
@@ -170,13 +170,13 @@ export default function GamePage() {
       ctx.shadowBlur = 0;
 
       const gloss = ctx.createLinearGradient(x, y, x, y + size * 0.4);
-      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+      gloss.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
       gloss.addColorStop(1, 'rgba(255, 255, 255, 0)');
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.fillStyle = gloss;
       ctx.fill();
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.lineWidth = 1;
       roundedRectPath(ctx, x, y, size, size, radius);
       ctx.stroke();
@@ -184,11 +184,11 @@ export default function GamePage() {
 
     function drawEmptyCell(ctx: CanvasRenderingContext2D, x: number, y: number, gradient: CanvasGradient) {
       const size = CELL_SIZE - 4;
-      const radius = CELL_SIZE * 0.2;
+      const radius = CELL_SIZE * 0.15;
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.fillStyle = gradient;
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
       ctx.lineWidth = 1;
       roundedRectPath(ctx, x + 2, y + 2, size, size, radius);
       ctx.stroke();
@@ -196,7 +196,7 @@ export default function GamePage() {
 
     function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any) {
       const size = CELL_SIZE - 4;
-      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.2, color, 4);
+      paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.15, color, 2);
     }
 
     function drawShape(ctx: CanvasRenderingContext2D, matrix: number[][], color: any, offsetX: number, offsetY: number, size: number) {
@@ -205,14 +205,14 @@ export default function GamePage() {
       const cellSize = size / Math.max(rows, cols);
       const pad = Math.min(2, cellSize * 0.1);
       const boxSize = cellSize - pad * 2;
-      const radius = cellSize * 0.2;
+      const radius = cellSize * 0.15;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
           if (matrix[row][col] === 1) {
             const x = offsetX + col * cellSize + pad;
             const y = offsetY + row * cellSize + pad;
-            paintTile(ctx, x, y, boxSize, radius, color, 2);
+            paintTile(ctx, x, y, boxSize, radius, color, 1);
           }
         }
       }
@@ -276,7 +276,7 @@ export default function GamePage() {
       gameState.clearingLines.isAnimating = true;
       gameState.clearingLines.animationTime = 0;
 
-      const duration = 300;
+      const duration = 200;
       const startTime = performance.now();
 
       function animate(currentTime: number) {
@@ -372,18 +372,18 @@ export default function GamePage() {
       const canFit = inside ? canPlaceShape(shape, x, y) : false;
 
       const theme = canFit ? {
-        fillTop: 'rgba(38, 217, 255, 0.15)',
-        fillBottom: 'rgba(53, 245, 154, 0.1)',
-        edge: '#35f59a'
+        fillTop: 'rgba(38, 217, 255, 0.12)',
+        fillBottom: 'rgba(53, 245, 154, 0.08)',
+        edge: '#26d9ff'
       } : {
-        fillTop: 'rgba(231, 59, 41, 0.2)',
-        fillBottom: 'rgba(169, 22, 25, 0.1)',
+        fillTop: 'rgba(231, 59, 41, 0.15)',
+        fillBottom: 'rgba(169, 22, 25, 0.08)',
         edge: '#e73b29'
       };
 
       const pad = 2;
       const size = CELL_SIZE - pad * 2;
-      const radius = CELL_SIZE * 0.2;
+      const radius = CELL_SIZE * 0.15;
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -410,12 +410,12 @@ export default function GamePage() {
     function render() {
       if (!boardCtx || !boardCanvas) return;
 
-      boardCtx.fillStyle = '#0a0f1d';
+      boardCtx.fillStyle = '#060a17';
       boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
 
       const emptyTileGradient = boardCtx.createLinearGradient(0, 0, 0, CELL_SIZE);
-      emptyTileGradient.addColorStop(0, '#121829');
-      emptyTileGradient.addColorStop(1, '#0b0e1a');
+      emptyTileGradient.addColorStop(0, '#0e1324');
+      emptyTileGradient.addColorStop(1, '#080b14');
 
       for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
@@ -444,7 +444,7 @@ export default function GamePage() {
       for (let index = 0; index < PIECE_SLOTS; index++) {
         const shape = gameState.shapes[index] as any;
         const shapeItem = document.createElement('div');
-        shapeItem.className = 'shape-item bg-[#121829]/60 border border-white/5 rounded-xl aspect-square flex items-center justify-center cursor-grab select-none relative overflow-hidden transition-transform duration-150 active:scale-95';
+        shapeItem.className = 'shape-item bg-slate-900/60 border border-white/5 rounded-xl aspect-square flex items-center justify-center cursor-grab select-none relative overflow-hidden transition-transform duration-150 active:scale-95';
         shapeItem.dataset.shapeIndex = String(index);
 
         if (!shape) {
@@ -580,7 +580,7 @@ export default function GamePage() {
       const rect = boardCanvas.getBoundingClientRect();
       const actualCellSize = rect.width / BOARD_SIZE;
       const mouseX = clientX - rect.left;
-      const mouseY = clientY - top;
+      const mouseY = clientY - rect.top;
       const cellX = Math.floor(mouseX / actualCellSize);
       const cellY = Math.floor(mouseY / actualCellSize);
       const shape = gameState.dragging.shape;
@@ -715,12 +715,18 @@ export default function GamePage() {
   };
 
   return (
-    <div ref={containerRef} className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-[#050814] bg-cover bg-center bg-no-repeat relative" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[3px] pointer-events-none z-0"></div>
+    <div 
+      ref={containerRef} 
+      className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-cover bg-center bg-no-repeat relative" 
+      style={{ backgroundImage: "url('/fundo1.png')" }}
+      onClick={() => GameAudio.unlock()} 
+      onTouchStart={() => GameAudio.unlock()}
+    >
+      <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[4px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
         <header className="w-full flex items-center justify-between h-14">
-          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
+          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           
@@ -729,7 +735,7 @@ export default function GamePage() {
           </span>
 
           <div className="flex items-center gap-2">
-            <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
+            <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white">
               {isMutedState ? <VolumeX className="w-5 h-5 opacity-50" /> : <Volume2 className="w-5 h-5" />}
             </button>
             <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
@@ -740,29 +746,29 @@ export default function GamePage() {
 
         <main className="w-full flex flex-col gap-3 flex-1 justify-center my-auto">
           <section className="grid grid-cols-2 gap-2">
-            <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/70 backdrop-blur-sm flex flex-col gap-0.5">
               <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Aposta demo</span>
               <strong id="betValue" className="text-base font-bold text-white">R$ 10,00</strong>
             </article>
 
-            <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/70 backdrop-blur-sm flex flex-col gap-0.5">
               <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Prêmio máximo</span>
               <strong id="maxWinValue" className="text-base font-bold text-cyan-400">R$ 50,00</strong>
             </article>
           </section>
 
-          <section className="text-center bg-[#0f1322]/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
+          <section className="text-center bg-slate-900/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
             <small className="text-[9px] font-bold uppercase text-white/40 tracking-wider mb-0.5">Progresso da partida</small>
             <strong id="prizeValue" className="text-2xl font-black text-white tracking-tight mb-2">
               R$ 0,00
             </strong>
-            <div id="winProgress" className="h-1.5 w-full bg-[#171c2c] rounded-full overflow-hidden">
+            <div id="winProgress" className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
               <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full"></div>
             </div>
           </section>
 
-          <section className="w-full aspect-square p-1.5 bg-[#0f1322]/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
-            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1d]/90">
+          <section className="w-full aspect-square p-1.5 bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
+            <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-slate-950/90">
               <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
             </div>
           </section>
@@ -777,7 +783,7 @@ export default function GamePage() {
       </div>
 
       <div className="modal-overlay fixed inset-0 hidden place-items-center p-4 bg-black/80 backdrop-blur-sm z-[3000]" id="gameOverModal">
-        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-[#0f1322]">
+        <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
           <p className="text-white/60 text-xs mb-5">Não há mais encaixes disponíveis para as peças atuais.</p>
           <button id="restartBtn" className="w-full h-11 rounded-lg font-bold text-sm bg-cyan-400 text-slate-950 transition-transform mb-3">
