@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { LogOut, Wallet, Plus, Coins, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
