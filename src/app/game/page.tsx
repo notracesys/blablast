@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, CheckCircle2, Wallet } from 'lucide-react';
 import { GameAudio } from './audios';
 
@@ -191,6 +192,7 @@ export default function GamePage() {
       const scale = progress < 0.25 ? 1 + progress * 2.2 : Math.max(0, 1.55 * (1 - progress));
       ctx.scale(scale, scale);
 
+      ctx.beginTransaction && ctx.beginTransaction();
       ctx.beginPath();
       ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
@@ -761,9 +763,16 @@ export default function GamePage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           
-          <span className="text-sm font-black tracking-widest text-white/90">
-            BLOCK CASH
-          </span>
+          <div className="flex items-center justify-center h-full max-w-[120px] relative">
+            <Image 
+              src="/blockcash.png" 
+              alt="Block Cash Logo" 
+              width={100} 
+              height={32} 
+              className="object-contain filter drop-shadow-[0_2px_8px_rgba(38,217,255,0.4)]"
+              priority
+            />
+          </div>
 
           <div className="flex items-center gap-2">
             <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white">
