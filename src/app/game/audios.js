@@ -16,6 +16,7 @@ let audioContext = null;
 let masterGain = null;
 const bufferCache = {};
 let muted = false;
+let bgMusic = null;
 
 async function init() {
   if (typeof window === 'undefined') return;
@@ -30,9 +31,7 @@ async function init() {
     const stored = localStorage.getItem('soundEnabled');
     muted = stored === 'false';
     masterGain.gain.value = muted ? 0 : 1;
-  } catch (e) {
-    // Falha silenciosa se o contexto não carregar
-  }
+  } catch (e) {}
 }
 
 async function getBuffer(filename) {
@@ -97,11 +96,33 @@ export const GameAudio = {
     return this.play(key, volume);
   },
 
+  async playMusic() {
+    if (typeof window === 'undefined') return;
+    if (bgMusic) {
+      if (bgMusic.paused && !muted) {
+        bgMusic.play().catch(() => {});
+      }
+      return;
+    }
+    bgMusic = new Audio(AUDIO_PATH + 'tatamusic-game-gaming-video-game-music-482380.mp3');
+    bgMusic.loop = true;
+    bgMusic.volume = muted ? 0 : 0.25;
+    bgMusic.play().catch(() => {});
+  },
+
   setMuted(val) {
     if (typeof window === 'undefined') return;
     muted = val;
     if (masterGain) {
       masterGain.gain.value = muted ? 0 : 1;
+    }
+    if (bgMusic) {
+      bgMusic.volume = muted ? 0 : 0.25;
+      if (muted) {
+        bgMusic.pause();
+      } else {
+        bgMusic.play().catch(() => {});
+      }
     }
     localStorage.setItem('soundEnabled', !muted);
   },
@@ -116,5 +137,6 @@ export const GameAudio = {
     if (audioContext && audioContext.state === 'suspended') {
       audioContext.resume();
     }
+    this.playMusic();
   },
 };
