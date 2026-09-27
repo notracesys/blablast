@@ -31,7 +31,7 @@ async function init() {
     muted = stored === 'false';
     masterGain.gain.value = muted ? 0 : 1;
   } catch (e) {
-    console.warn(e);
+    console.warn('Web Audio API not supported', e);
   }
 }
 
@@ -42,13 +42,12 @@ async function getBuffer(filename) {
 
   try {
     const response = await fetch(url);
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
+    
+    // Evita decodificar se for uma página HTML (como erro 404 padrão)
     const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('text/html')) {
-      return null;
-    }
+    if (contentType && contentType.includes('text/html')) return null;
+
     const arrayBuffer = await response.arrayBuffer();
     const buffer = await audioContext.decodeAudioData(arrayBuffer);
     bufferCache[url] = buffer;
@@ -114,6 +113,7 @@ export const GameAudio = {
 
   unlock() {
     if (typeof window === 'undefined') return;
+    if (!audioContext) init();
     if (audioContext && audioContext.state === 'suspended') {
       audioContext.resume();
     }

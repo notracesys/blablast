@@ -530,6 +530,8 @@ export default function GamePage() {
       function startDrag(clientX: number, clientY: number) {
         if (gameState.isPaused || gameState.isGameOver) return;
         
+        // Desbloqueia áudio na primeira interação
+        GameAudio.unlock();
         // Som de seleção/pegar peça
         GameAudio.play('selection');
         
@@ -694,6 +696,8 @@ export default function GamePage() {
     }
 
     function restartGame() {
+      // Desbloqueia áudio
+      GameAudio.unlock();
       // Som de transição
       GameAudio.play('swtch');
 
@@ -751,6 +755,7 @@ export default function GamePage() {
         soundBtn.classList.toggle('is-muted', !soundEnabled);
         
         soundBtn.onclick = () => {
+          GameAudio.unlock();
           const newState = !GameAudio.isMuted();
           GameAudio.setMuted(newState);
           soundBtn.setAttribute('aria-pressed', String(!newState));
@@ -778,7 +783,7 @@ export default function GamePage() {
   }, []);
 
   return (
-    <div ref={containerRef} className="gameplay-page w-full min-h-screen text-white select-none relative overflow-x-hidden flex flex-col justify-between">
+    <div ref={containerRef} className="gameplay-page w-full min-h-screen text-white select-none relative overflow-x-hidden flex flex-col justify-between" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
       <style dangerouslySetInnerHTML={{ __html: `
         .gameplay-page {
           background-color: #020817;
