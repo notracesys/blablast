@@ -4,51 +4,72 @@
 
 @layer base {
   :root {
-    --background: 30 40% 96%; /* #F9F5F0 - Light Beige */
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 354 70% 50%; /* #D72638 - Vermelho Junino */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 44 100% 48%; /* #F7B500 - Amarelo Milho */
-    --secondary-foreground: 0 0% 9%;
-    --muted: 30 20% 90%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 224 100% 58%; /* #2962FF - Azul Bandeirinha */
-    --accent-foreground: 0 0% 98%;
+    --background: 222 75% 10%; /* #06122b */
+    --foreground: 210 40% 98%;
+    --card: 222 70% 15%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 75% 10%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 190 100% 57%; /* #26d9ff - Ciano */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 250 100% 69%; /* #7b61ff - Roxo */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 40% 25%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 151 90% 59%; /* #35f59a - Verde */
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 30 20% 85%;
-    --input: 30 20% 85%;
-    --ring: 354 70% 50%;
-    --radius: 0.75rem;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 190 100% 57%;
+    --radius: 1rem;
   }
 }
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground antialiased;
     background-image: 
-      radial-gradient(circle at 2px 2px, rgba(215, 38, 56, 0.05) 1px, transparent 0);
-    background-size: 24px 24px;
+      radial-gradient(circle at 50% -20%, rgba(38, 217, 255, 0.15) 0%, transparent 50%),
+      linear-gradient(rgba(6, 18, 43, 1), rgba(6, 18, 43, 1));
+    background-attachment: fixed;
   }
 }
 
-.bg-wood-pattern {
-  background-color: #fcf9f5;
-  background-image: url("https://www.transparenttextures.com/patterns/wood-pattern.png");
+.bg-grid-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(38, 217, 255, 0.05) 1px, transparent 0);
+  background-size: 32px 32px;
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(38, 217, 255, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(53, 245, 154, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
+}
+
+.animate-shine {
+  mask-image: linear-gradient(-75deg, rgba(0,0,0,0.6) 30%, #000 50%, rgba(0,0,0,0.6) 70%);
+  mask-size: 200%;
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  from { mask-position: 150%; }
+  to { mask-position: -50%; }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -57,6 +78,28 @@
   100% { transform: translateY(0px); }
 }
 
-.flag-clip {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
+.pulse-dot {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(53, 245, 154, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(53, 245, 154, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(53, 245, 154, 0); }
+}
+
+/* Centralização desktop */
+.mobile-container {
+  @apply w-full mx-auto min-h-screen relative overflow-x-hidden;
+  max-width: 480px;
+}
+
+@media (min-width: 481px) {
+  body {
+    background-color: #030a1a;
+  }
+  .mobile-container {
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+    background-color: #06122b;
+  }
 }

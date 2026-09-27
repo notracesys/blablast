@@ -1,76 +1,34 @@
 {
   "placeholderImages": [
     {
-      "id": "hero-panel",
-      "description": "Painel Gigante Festa Junina - Produto Real",
+      "id": "hero-gameplay",
+      "description": "Demonstração da interface do jogo Block Blast",
       "imageUrl": "/painel.png",
-      "imageHint": "festa junina panel"
+      "imageHint": "game screen block blast"
     },
     {
-      "id": "preview-comparison",
-      "description": "Comparativo de escala do painel",
-      "imageUrl": "/painel.png",
-      "imageHint": "giant wall poster"
+      "id": "how-to-1",
+      "description": "Depósito PIX facilitado",
+      "imageUrl": "https://picsum.photos/seed/pix/400/250",
+      "imageHint": "mobile payment app"
     },
     {
-      "id": "step-1",
-      "description": "Buying digital product",
-      "imageUrl": "https://picsum.photos/seed/buy/400/300",
-      "imageHint": "digital purchase icon"
+      "id": "how-to-2",
+      "description": "Seleção de entrada de jogo",
+      "imageUrl": "https://picsum.photos/seed/entry/400/250",
+      "imageHint": "game stake selection"
     },
     {
-      "id": "step-2",
-      "description": "Downloading file",
-      "imageUrl": "https://picsum.photos/seed/download/400/300",
-      "imageHint": "download cloud"
+      "id": "how-to-3",
+      "description": "Jogabilidade 8x8 blocks",
+      "imageUrl": "https://picsum.photos/seed/game/400/250",
+      "imageHint": "block puzzle gameplay"
     },
     {
-      "id": "step-3",
-      "description": "Printing sheets",
-      "imageUrl": "https://picsum.photos/seed/print/400/300",
-      "imageHint": "printer paper"
-    },
-    {
-      "id": "step-4",
-      "description": "Mounting on wall",
-      "imageUrl": "https://picsum.photos/seed/mount/400/300",
-      "imageHint": "wall montage"
-    },
-    {
-      "id": "step-5",
-      "description": "Party celebration",
-      "imageUrl": "https://picsum.photos/seed/party/400/300",
-      "imageHint": "celebration people"
-    },
-    {
-      "id": "kit-completo",
-      "description": "Kit Festa Junina Completo",
-      "imageUrl": "/kit.png",
-      "imageHint": "party kit"
-    },
-    {
-      "id": "kit-downsell",
-      "description": "Kit Festa Junina Downsell",
-      "imageUrl": "/kit2.png",
-      "imageHint": "party kit"
-    },
-    {
-      "id": "bonus-receitas",
-      "description": "E-book +100 Receitas Juninas",
-      "imageUrl": "/receitas.png",
-      "imageHint": "brazilian food recipes"
-    },
-    {
-      "id": "feedback-1",
-      "description": "Foto de cliente usando o painel",
-      "imageUrl": "/ref1.jpg",
-      "imageHint": "happy customer"
-    },
-    {
-      "id": "feedback-2",
-      "description": "Foto de família no painel gigante",
-      "imageUrl": "/ref2.jpg",
-      "imageHint": "family celebration"
+      "id": "how-to-4",
+      "description": "Saque PIX imediato",
+      "imageUrl": "https://picsum.photos/seed/cashout/400/250",
+      "imageHint": "successful withdrawal"
     }
   ]
 }

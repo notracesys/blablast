@@ -1,9 +1,9 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Arraiá Gigante - Painel 3 Metros para Impressão',
-  description: 'Decoração profissional de Festa Junina em casa. Arquivo digital de painel gigante de 3m x 2.5m.',
+  title: 'Block Blast - Encaixe e Ganhe',
+  description: 'O melhor jogo de block puzzle onde você fatura de verdade.',
 };
 
 export default function RootLayout({
@@ -16,33 +16,12 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-        
-        {/* Utmify Pixel */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.pixelId = "6a11d232473d2c2b983812d8";
-              var a = document.createElement("script");
-              a.setAttribute("async", "");
-              a.setAttribute("defer", "");
-              a.setAttribute("src", "https://cdn.utmify.com.br/scripts/pixel/pixel.js");
-              document.head.appendChild(a);
-            `,
-          }}
-        />
-
-        {/* Utmify Tracking Script */}
-        <script
-          src="https://cdn.utmify.com.br/scripts/utms/latest.js"
-          data-utmify-prevent-xcod-sck
-          data-utmify-prevent-subids
-          async
-          defer
-        ></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased selection:bg-junino-yellow selection:text-black">
-        {children}
+      <body className="font-sans selection:bg-primary/30">
+        <div className="mobile-container bg-grid-pattern">
+          {children}
+        </div>
       </body>
     </html>
   );
