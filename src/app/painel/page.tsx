@@ -170,11 +170,12 @@ export default function PainelPage() {
         <div className="w-full bg-[#0b1426] border border-white/10 rounded-[2.5rem] p-5 shadow-2xl flex flex-col gap-6">
           <div className="relative w-full aspect-[1/0.9] bg-[#060a17] rounded-3xl border border-white/5 overflow-hidden">
             <Image 
-              src="/hero.webp" 
+              src="/hero.png" 
               alt="Jogo Block Cash" 
               fill 
               className="object-cover"
               priority
+              data-ai-hint="game hero"
             />
             <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot"></span>
