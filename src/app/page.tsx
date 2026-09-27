@@ -40,9 +40,9 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-1 pt-28 px-4 pb-20 space-y-8 w-full">
+      <main className="flex-1 pt-24 px-4 pb-20 space-y-8 w-full">
         {/* 2) HERO SECTION */}
-        <section className="text-center space-y-4">
+        <section className="text-center space-y-4 pt-4">
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a2046]/90 border border-cyan-500/30 text-[11px] font-bold text-cyan-400 uppercase tracking-wider backdrop-blur-sm shadow-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
@@ -57,8 +57,8 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          {/* CARD DO JOGO (HERO BANNER) */}
-          <div className="relative w-full aspect-[4/5] bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
+          {/* CARD DO JOGO (HERO BANNER) AJUSTADO PARA PROPORÇÃO DA SUA IMAGEM COMPLETA */}
+          <div className="relative w-full aspect-square bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
               src="/hero.webp" 
               alt="Block Blast Game Screen" 
@@ -284,7 +284,7 @@ export default function LandingPage() {
             &copy; 2026 Block Cash. Todos os direitos reservados.
           </p>
           <div className="text-white/20 text-[8px] font-black uppercase tracking-wider max-w-[260px] mx-auto leading-relaxed">
-            Jogue com responsabilidade. Proibido para menores di 18 anos.
+            Jogue com responsabilidade. Proibido para menores de 18 anos.
           </div>
         </div>
       </footer>
