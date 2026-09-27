@@ -182,34 +182,36 @@ export default function GamePage() {
     }
 
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
-      const shakeIntensity = Math.sin(progress * Math.PI * 14) * (1 - progress) * 14;
+      const shakeIntensity = Math.sin(progress * Math.PI * 16) * (1 - progress) * 20;
       const offsetX = (Math.random() - 0.5) * shakeIntensity;
       const offsetY = (Math.random() - 0.5) * shakeIntensity;
 
       ctx.save();
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
 
-      const scale = progress < 0.25 ? 1 + progress * 2.2 : Math.max(0, 1.55 * (1 - progress));
+      const scale = progress < 0.2 ? 1 + progress * 2.5 : Math.max(0, 1.6 * (1 - progress));
       ctx.scale(scale, scale);
 
-      ctx.beginTransaction && ctx.beginTransaction();
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.8), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.stroke();
 
-      ctx.fillStyle = color.primary;
-      for (let i = 0; i < 8; i++) {
-        const angle = (i * Math.PI) / 4 + progress * 3;
-        const dist = CELL_SIZE * progress * 2.5;
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = '#26d9ff';
+      ctx.shadowBlur = 25;
+      for (let i = 0; i < 12; i++) {
+        const angle = (i * Math.PI) / 6 + progress * 4;
+        const dist = CELL_SIZE * progress * 3.2;
         const px = Math.cos(angle) * dist;
         const py = Math.sin(angle) * dist;
-        const pSize = Math.max(0, 7 * (1 - progress));
+        const pSize = Math.max(0, 8 * (1 - progress));
         ctx.beginPath();
         ctx.arc(px, py, pSize, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.shadowBlur = 0;
 
       ctx.globalAlpha = Math.max(0, 1 - progress);
       const cellX = -CELL_SIZE / 2 + 2;
@@ -217,8 +219,8 @@ export default function GamePage() {
       const size = CELL_SIZE - 4;
       const radius = CELL_SIZE * 0.15;
 
-      const dynamicColor = progress < 0.35 ? { primary: '#ffffff', secondary: color.primary, tertiary: color.secondary } : color;
-      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, Math.max(0, 35 * (1 - progress)));
+      const dynamicColor = { primary: '#ffffff', secondary: '#35f59a', tertiary: color.secondary };
+      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, Math.max(0, 50 * (1 - progress)));
 
       ctx.restore();
     }
@@ -755,29 +757,27 @@ export default function GamePage() {
       onTouchStart={() => GameAudio.unlock()}
     >
       {/* Camada para escurecer e desfocar levemente o fundo1.png */}
-      <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[4px] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[6px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
-        <header className="w-full flex items-center justify-between h-14">
-          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white">
+        {/* HEADER PREMIUM COM LOGO CENTRALIZADA NO TOPO */}
+        <header className="w-full grid grid-cols-3 items-center h-14 relative z-20">
+          <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white justify-self-start">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           
-          <div className="flex items-center justify-center h-full max-w-[120px] relative">
+          <div className="flex items-center justify-center justify-self-center">
             <Image 
               src="/blockcash.png" 
               alt="Block Cash Logo" 
-              width={100} 
-              height={32} 
+              width={110} 
+              height={36} 
               className="object-contain filter drop-shadow-[0_2px_8px_rgba(38,217,255,0.4)]"
               priority
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-slate-900/80 backdrop-blur-sm text-white">
-              {isMutedState ? <VolumeX className="w-5 h-5 opacity-50" /> : <Volume2 className="w-5 h-5" />}
-            </button>
+          <div className="justify-self-end">
             <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
               TESTE
             </span>
@@ -785,29 +785,29 @@ export default function GamePage() {
         </header>
 
         <main className="w-full flex flex-col gap-4 flex-1 justify-center my-auto">
-          {/* DIVS BONITAS DA APOSTA E META */}
+          {/* SEÇÃO DA ENTRADA E PREMIO MAXIMO REESTILIZADOS */}
           <section className="grid grid-cols-2 gap-3">
-            <article className="p-3 rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-sm flex flex-col gap-0.5">
-              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest">Entrada fixa</span>
-              <strong className="text-base font-black text-white/95">R$ {BET_AMOUNT},00</strong>
+            <article className="p-3.5 rounded-2xl border border-white/5 bg-gradient-to-b from-slate-900/60 to-slate-950/80 backdrop-blur-md flex flex-col gap-1 shadow-lg">
+              <span className="text-[9px] text-white/40 uppercase font-black tracking-widest">Entrada fixa</span>
+              <strong className="text-lg font-black text-white/95">R$ {BET_AMOUNT},00</strong>
             </article>
 
-            <article className="p-3 rounded-xl border border-yellow-500/20 bg-yellow-950/20 backdrop-blur-sm flex flex-col gap-0.5">
-              <span className="text-[9px] text-yellow-400/60 uppercase font-bold tracking-widest flex items-center gap-1">
+            <article className="p-3.5 rounded-2xl border border-yellow-500/20 bg-gradient-to-b from-yellow-950/40 to-slate-950/80 backdrop-blur-md flex flex-col gap-1 shadow-lg">
+              <span className="text-[9px] text-yellow-400/60 uppercase font-black tracking-widest flex items-center gap-1">
                 <Target className="w-3 h-3 text-yellow-400" /> Meta do Jogo
               </span>
-              <strong className="text-base font-black text-yellow-400">4 Linhas Extintas</strong>
+              <strong className="text-lg font-black text-yellow-400">4 Linhas Extintas</strong>
             </article>
           </section>
 
           {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO DESTAQUE TOTAL (VERDE) */}
-          <section className="text-center p-4 flex flex-col items-center rounded-2xl border border-white/5 bg-slate-900/10 backdrop-blur-xs">
+          <section className="text-center p-4 flex flex-col items-center rounded-2xl">
             <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">
               {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
             </small>
             
             {/* VALOR DESTAQUE BEM GRANDE COR VERDE */}
-            <strong className="text-5xl font-[1000] text-emerald-400 tracking-tight mb-2 drop-shadow-[0_2px_20px_rgba(52,245,154,0.3)]">
+            <strong className="text-6xl font-[1000] text-emerald-400 tracking-tight mb-2 drop-shadow-[0_2px_25px_rgba(52,245,154,0.4)]">
               R$ {currentPotentialPrize},00
             </strong>
 
@@ -864,6 +864,15 @@ export default function GamePage() {
         </main>
       </div>
 
+      {/* BOTÃO DE VOLUME FLUTUANTE EXCLUSIVO NO CANTO INFERIOR DIREITO */}
+      <button 
+        onClick={toggleSound} 
+        className="absolute bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center border border-white/10 bg-slate-900/90 backdrop-blur-md text-white shadow-2xl z-[5000] active:scale-95 transition-transform"
+        aria-label="Alternar som"
+      >
+        {isMutedState ? <VolumeX className="w-5.5 h-5.5 opacity-50" /> : <Volume2 className="w-5.5 h-5.5" />}
+      </button>
+
       {/* MODAL DE EXPLICAÇÃO DO RESGATE NO MODO TESTE */}
       <div className={`modal-overlay fixed inset-0 ${showDemoWithdraw ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[4000]`}>
         <div className="modal-content w-full max-w-xs p-6 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
@@ -890,13 +899,12 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* MODAL DE FIM DE JOGO AJUSTADA ÀS REGRAS ESPECIFICADAS */}
+      {/* MODAL DE FIM DE JOGO */}
       <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[3000]`} id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl animate-in scale-in duration-200">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
           <p className="text-white/60 text-xs mb-4 font-medium">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
           
-          {/* Resumo financeiro transparente com base nas regras fornecidas */}
           <div className="my-4 p-3 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1.5">
             <div className="flex justify-between">
               <span className="text-white/50">Linhas feitas:</span>
