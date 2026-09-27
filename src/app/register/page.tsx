@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -34,10 +34,10 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!auth || !db) return;
 
-    // 1) Validação do Nome Completo (Nome + Sobrenome)
+    // 1) Validação do Nome Completo (Pelo menos Nome + Sobrenome)
     const nameTrimmed = fullName.trim();
     const nameParts = nameTrimmed.split(/\s+/);
-    if (nameParts.length < 2 || nameParts[1].length < 2) {
+    if (nameParts.length < 2 || nameParts[0].length < 2 || nameParts[1].length < 2) {
       toast({
         variant: "destructive",
         title: "Nome incompleto",
@@ -46,24 +46,24 @@ export default function RegisterPage() {
       return;
     }
 
-    // 2) Validação de Email com domínio completo
+    // 2) Validação de Email com domínio completo (ex: @gmail.com)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
         variant: "destructive",
         title: "E-mail inválido",
-        description: "Insira um endereço de e-mail válido com um domínio (ex: @gmail.com).",
+        description: "Insira um e-mail válido com um domínio (ex: @gmail.com).",
       });
       return;
     }
 
-    // 3) Validação do Telefone (Apenas números, DDD de 2 dígitos + 8 ou 9 dígitos)
+    // 3) Validação do Telefone (DDD + Número: 10 ou 11 dígitos)
     const cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
       toast({
         variant: "destructive",
         title: "Telefone incorreto",
-        description: "Informe o telefone completo incluindo o DDD com 2 dígitos (ex: 11999998888).",
+        description: "Informe o DDD e o número completo (ex: 11999998888).",
       });
       return;
     }
@@ -72,8 +72,8 @@ export default function RegisterPage() {
     if (password.length < 6) {
       toast({
         variant: "destructive",
-        title: "Senha fraca",
-        description: "Sua senha deve conter pelo menos 6 caracteres.",
+        title: "Senha muito curta",
+        description: "A senha deve conter no mínimo 6 caracteres.",
       });
       return;
     }
@@ -81,8 +81,8 @@ export default function RegisterPage() {
     if (password !== confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Erro nas senhas",
-        description: "As senhas não coincidem.",
+        title: "Senhas diferentes",
+        description: "A confirmação da senha não coincide.",
       });
       return;
     }
@@ -96,16 +96,14 @@ export default function RegisterPage() {
       const userData = {
         fullName: nameTrimmed,
         phone: cleanPhone,
-        email,
+        email: email.toLowerCase(),
         balance: 0,
         createdAt: new Date().toISOString(),
       };
 
+      // Firestore mutation without await
       setDoc(userRef, userData)
-        .then(() => {
-          router.push('/painel');
-        })
-        .catch((error) => {
+        .catch(async (error) => {
           const permissionError = new FirestorePermissionError({
             path: userRef.path,
             operation: 'create',
@@ -113,16 +111,17 @@ export default function RegisterPage() {
           });
           errorEmitter.emit('permission-error', permissionError);
         });
-
+      
+      router.push('/painel');
     } catch (error: any) {
-      let msg = "Não foi possível criar sua conta.";
-      if (error.code === 'auth/email-already-in-use') {
-        msg = "Este e-mail já está sendo utilizado por outra conta.";
-      }
+      let msg = "Erro ao criar conta.";
+      if (error.code === 'auth/email-already-in-use') msg = "Este e-mail já está cadastrado.";
+      if (error.code === 'auth/invalid-email') msg = "Formato de e-mail inválido.";
+      
       toast({
         variant: "destructive",
-        title: "Erro no cadastro",
-        description: error.message || msg,
+        title: "Falha no cadastro",
+        description: msg,
       });
     } finally {
       setLoading(false);
@@ -153,97 +152,87 @@ export default function RegisterPage() {
 
           <div className="mb-6">
             <h1 className="text-xl font-[900] text-white tracking-tight leading-none mb-2 uppercase">
-              Crie sua conta grátis
+              Crie sua conta
             </h1>
             <p className="text-white/50 text-[11px] font-medium leading-relaxed">
-              Insira dados válidos para garantir a segurança dos seus futuros resgates via PIX.
+              Use dados reais para garantir seus futuros resgates via PIX.
             </p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-3.5">
-            <div className="space-y-1.5">
+            <Input 
+              required
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Nome e Sobrenome" 
+              className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+            />
+
+            <Input 
+              required
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="E-mail (ex: joao@gmail.com)" 
+              className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+            />
+
+            <Input 
+              required
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="DDD + Número (ex: 11999998888)" 
+              className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+            />
+
+            <div className="relative">
               <Input 
                 required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Nome completo (Nome e Sobrenome)" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Senha (mín. 6 dígitos)" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
               />
+              <button 
+                type="button"
+                onClick={() => setShowPass(!showPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
+              >
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="relative">
               <Input 
                 required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="E-mail (exemplo@dominio.com)" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+                type={showConfirmPass ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirmar Senha" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <Input 
-                required
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Telefone celular com DDD (ex: 11999998888)" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="relative group">
-                <Input 
-                  required
-                  type={showPass ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Crie uma senha (mínimo 6 dígitos)" 
-                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40 transition-colors"
-                >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="relative group">
-                <Input 
-                  required
-                  type={showConfirmPass ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirme sua senha" 
-                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowConfirmPass(!showConfirmPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40 transition-colors"
-                >
-                  {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <button 
+                type="button"
+                onClick={() => setShowConfirmPass(!showConfirmPass)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
+              >
+                {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
 
             <Button 
               disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-3 border border-purple-400/20"
+              className="w-full h-12 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-3"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'CONCLUIR CADASTRO'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'FINALIZAR CADASTRO'}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-white/40 text-[11px] font-bold">
-              Já tem uma conta? <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition-colors">Voltar ao início</Link>
+              Já tem conta? <Link href="/" className="text-cyan-400 font-black">ENTRAR</Link>
             </p>
           </div>
         </div>
