@@ -2,13 +2,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, CheckCircle2, Wallet } from 'lucide-react';
 import { GameAudio } from './audios';
 
 export default function GamePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
+  const [showDemoWithdraw, setShowDemoWithdraw] = useState(false);
   
   // Estados reativos da lógica de negócio informada
   const [linesCompleted, setLinesCompleted] = useState(0);
@@ -732,7 +733,6 @@ export default function GamePage() {
 
   const handleManualRestart = () => {
     setShowGameOver(false);
-    // Dispara o clique interno para resetar a mecânica nativa do canvas
     const btn = document.getElementById('restartBtn');
     if (btn) (btn as HTMLButtonElement).click();
   };
@@ -753,7 +753,7 @@ export default function GamePage() {
       onTouchStart={() => GameAudio.unlock()}
     >
       {/* Camada para escurecer e desfocar levemente o fundo1.png */}
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-[3px] pointer-events-none z-0"></div>
+      <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[4px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative">
         <header className="w-full flex items-center justify-between h-14">
@@ -783,16 +783,16 @@ export default function GamePage() {
               <strong className="text-base font-black text-white/95">R$ {BET_AMOUNT},00</strong>
             </article>
 
-            <article className="p-3 rounded-xl border border-amber-500/10 bg-slate-900/40 backdrop-blur-sm flex flex-col gap-0.5">
-              <span className="text-[9px] text-amber-400/50 uppercase font-bold tracking-widest flex items-center gap-1">
-                <Target className="w-3 h-3 text-amber-400" /> Meta do Jogo
+            <article className="p-3 rounded-xl border border-yellow-500/20 bg-yellow-950/20 backdrop-blur-sm flex flex-col gap-0.5">
+              <span className="text-[9px] text-yellow-400/60 uppercase font-bold tracking-widest flex items-center gap-1">
+                <Target className="w-3 h-3 text-yellow-400" /> Meta do Jogo
               </span>
-              <strong className="text-base font-black text-amber-400">4 Linhas Extintas</strong>
+              <strong className="text-base font-black text-yellow-400">4 Linhas Extintas</strong>
             </article>
           </section>
 
           {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO DESTAQUE TOTAL (VERDE) */}
-          <section className="text-center p-4 flex flex-col items-center rounded-2xl border border-white/5 bg-slate-900/20 backdrop-blur-xs">
+          <section className="text-center p-4 flex flex-col items-center rounded-2xl border border-white/5 bg-slate-900/10 backdrop-blur-xs">
             <small className="text-[10px] font-black uppercase text-white/40 tracking-widest mb-1">
               {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
             </small>
@@ -810,19 +810,32 @@ export default function GamePage() {
                 </div>
               )}
               {isTargetAchieved && (
-                <div className="text-[10px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center">
+                <div className="text-[10px] text-emerald-400 font-black uppercase tracking-wider flex items-center gap-1 justify-center animate-bounce mt-1">
                   <Award className="w-3.5 h-3.5 text-emerald-400" /> Lucro Líquido Garantido: R$ {netProfit},00
                 </div>
               )}
             </div>
 
             {/* BARRA DE PROGRESSO DE ACORDO COM AS LINHAS */}
-            <div className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px]">
+            <div className="h-1.5 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px] mb-2">
               <div 
                 className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)] transition-all duration-300"
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
+
+            {/* BOTÃO DE RESGATAR COMPATÍVEL COM O MODO DEMO */}
+            {isTargetAchieved && (
+              <button 
+                onClick={() => {
+                  GameAudio.play('swtch');
+                  setShowDemoWithdraw(true);
+                }}
+                className="w-full mt-2 h-12 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black text-sm tracking-wide uppercase shadow-[0_0_20px_rgba(52,245,154,0.4)] hover:opacity-95 active:scale-95 transition-transform flex items-center justify-center gap-2"
+              >
+                <Wallet className="w-4 h-4 text-slate-950" /> Resgatar R$ {FINAL_PRIZE},00 via PIX
+              </button>
+            )}
           </section>
 
           {/* TABLEIRO DO JOGO */}
@@ -840,6 +853,32 @@ export default function GamePage() {
             <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Arraste uma peça para o tabuleiro e complete linhas completas.</p>
           </div>
         </main>
+      </div>
+
+      {/* MODAL DE EXPLICAÇÃO DO RESGATE NO MODO TESTE */}
+      <div className={`modal-overlay fixed inset-0 ${showDemoWithdraw ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[4000]`}>
+        <div className="modal-content w-full max-w-xs p-6 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
+          <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+          </div>
+          <h2 className="text-xl font-black text-white uppercase tracking-wide mb-2">Objetivo Concluído!</h2>
+          <p className="text-white/70 text-xs mb-4 leading-relaxed">
+            Parabéns! Você alcançou a meta e acumulou <span className="text-emerald-400 font-bold">R$ {FINAL_PRIZE},00</span>.
+          </p>
+          <div className="p-3 bg-slate-950/60 rounded-xl border border-white/5 text-[11px] text-white/50 text-left mb-5 leading-normal">
+            ⚠️ <span className="text-white font-semibold">Aviso de Modo Teste:</span> Como você está jogando a versão de demonstração gratuita, o saldo gerado é fictício. Crie sua conta real agora para faturar de verdade!
+          </div>
+
+          <Link href="/" className="w-full h-11 rounded-lg font-bold text-sm bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center transition-transform active:scale-95 shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-3">
+            CRIAR CONTA REAL & SACAR
+          </Link>
+          <button 
+            onClick={() => setShowDemoWithdraw(false)} 
+            className="w-full h-10 rounded-lg text-xs font-semibold border border-white/10 text-white/60 hover:text-white"
+          >
+            Continuar Testando
+          </button>
+        </div>
       </div>
 
       {/* MODAL DE FIM DE JOGO AJUSTADA ÀS REGRAS ESPECIFICADAS */}
