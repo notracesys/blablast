@@ -19,18 +19,15 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen text-white bg-[#06122b] selection:bg-cyan-500/30">
       {/* 1) HEADER FIXO PREMIUM COMPACTO */}
       <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-16 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <Image 
             src="/blockcash.png" 
             alt="Block Cash Logo" 
-            width={28} 
-            height={28} 
+            width={42} 
+            height={42} 
             className="object-contain"
             priority
           />
-          <span className="font-black tracking-tighter text-[14px] uppercase italic bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-            BLOCK CASH
-          </span>
         </div>
         
         <div className="flex items-center gap-2">
