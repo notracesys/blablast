@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -125,11 +125,11 @@ export default function PainelPage() {
     if (!user || !db || !userData) return;
 
     const amount = parseFloat(withdrawAmount);
-    if (isNaN(amount) || amount < 10) {
+    if (isNaN(amount) || amount < 5) {
       toast({
         variant: "destructive",
         title: "Valor inválido",
-        description: "O valor mínimo para saque é de R$ 10,00.",
+        description: "O valor mínimo para saque é de R$ 5,00.",
       });
       return;
     }
@@ -472,7 +472,7 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* MODAL DE SAQUE CUSTOMIZADO (IGUAL À IMAGEM DE REFERÊNCIA) */}
+      {/* MODAL DE SAQUE CUSTOMIZADO */}
       <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative pb-4">
           
@@ -518,9 +518,9 @@ export default function PainelPage() {
               />
             </div>
 
-            {/* Texto de Taxa Informativo */}
+            {/* Texto de Saque Informativo */}
             <p className="text-[11px] text-white/60 px-1">
-              Taxa de saque: R$ 3,00. Você receberá na sua conta bancária: <span className="font-black text-white">R$ {netWithdrawAmount.toFixed(2).replace('.', ',')}</span>
+              Taxa de saque: R$ 3,00. Mínimo R$ 5,00. Você receberá na sua conta bancária: <span className="font-black text-white">R$ {netWithdrawAmount.toFixed(2).replace('.', ',')}</span>
             </p>
 
             {/* Input Chave PIX */}
@@ -547,7 +547,7 @@ export default function PainelPage() {
               />
             </div>
 
-            {/* Alerta Vermelho de Saldo Insuficiente (Aparece condicionalmente conforme imagem) */}
+            {/* Alerta Vermelho de Saldo Insuficiente */}
             {isWithdrawInsufficient && (
               <div className="w-full py-2.5 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
                 <span className="text-[11px] font-bold text-rose-400">
