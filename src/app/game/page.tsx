@@ -187,9 +187,9 @@ export default function GamePage() {
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
 
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 3.2), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 4;
       ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
@@ -729,7 +729,6 @@ export default function GamePage() {
       <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[7px] pointer-events-none z-0"></div>
       
       <div className="w-full flex flex-col justify-between h-full flex-1 max-w-[430px] mx-auto z-10 relative overflow-hidden">
-        {/* HEADER EXPLICITAMENTE SEPARADO E SEM SOBREPOSIÇÕES */}
         <header className="w-full grid grid-cols-3 items-center h-10 relative z-20 shrink-0 px-1">
           <Link href="/" className="w-8 h-8 rounded-lg border border-white/5 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center text-white justify-self-start">
             <ArrowLeft className="w-4 h-4" />
@@ -753,7 +752,6 @@ export default function GamePage() {
           </div>
         </header>
 
-        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA */}
         <section className="text-center flex flex-col items-center shrink-0 mt-7 mb-1">
           <small className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-0.5">
             {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
@@ -777,9 +775,9 @@ export default function GamePage() {
             )}
           </div>
 
-          <div className="h-1 w-full bg-slate-950/80 rounded-full overflow-hidden border border-white/5 p-[1px] mt-1.5">
+          <div className="h-3 w-full bg-slate-950/90 rounded-full overflow-hidden border border-white/10 p-[1.5px] mt-2 relative shadow-inner">
             <div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_10px_rgba(52,245,154,0.5)] transition-all duration-300"
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,245,154,0.7)] transition-all duration-300"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -797,16 +795,13 @@ export default function GamePage() {
           )}
         </section>
 
-        {/* ÁREA CENTRAL DO JOGO (TABLEIRO + PEÇAS) AGRUPADAS */}
         <div className="flex flex-col items-center justify-center flex-1 gap-2 my-auto">
-          {/* TABLEIRO DO JOGO ADAPTÁVEL */}
           <section className="w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden max-w-[340px] mx-auto">
             <div className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
               <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
             </div>
           </section>
 
-          {/* SLOTS DAS PEÇAS COMPACTAS - APROXIMADAS DO TABLEIRO */}
           <section className="grid grid-cols-3 gap-2 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
         </div>
         
@@ -816,7 +811,6 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* CONTROLE DE VOLUME FLUTUANTE */}
       <button 
         onClick={toggleSound} 
         className="absolute bottom-4 right-4 w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-slate-900/90 backdrop-blur-md text-white shadow-xl z-[5000] active:scale-95 transition-transform"
@@ -825,7 +819,6 @@ export default function GamePage() {
         {isMutedState ? <VolumeX className="w-4 h-4 opacity-50" /> : <Volume2 className="w-4 h-4" />}
       </button>
 
-      {/* MODAL MODO TESTE */}
       <div className={`modal-overlay fixed inset-0 ${showDemoWithdraw ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[4000]`}>
         <div className="modal-content w-full max-w-xs p-5 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
           <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
@@ -851,7 +844,6 @@ export default function GamePage() {
         </div>
       </div>
 
-      {/* MODAL GAME OVER */}
       <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[3000]`} id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-5 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
           <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
@@ -897,7 +889,6 @@ export default function GamePage() {
         </div>
       </div>
       
-      {/* Botão oculto para suporte de clique legado de reset se necessário */}
       <button id="restartBtn" className="hidden"></button>
     </div>
   );
