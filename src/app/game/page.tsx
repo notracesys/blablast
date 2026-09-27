@@ -843,7 +843,7 @@ export default function GamePage() {
       <div className="modal-overlay fixed inset-0 hidden place-items-center p-4 bg-black/80 backdrop-blur-sm z-[3000]" id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-6 text-center border border-white/10 rounded-2xl bg-slate-900">
           <h2 className="text-xl font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-5">Não há mais encaixes disponíveis para as peças atuais.</p>
+          <p className="text-white/60 text-xs mb-5">Não há mais espaço para encaixar as peças atuais.</p>
           <button id="restartBtn" className="w-full h-11 rounded-lg font-bold text-sm bg-emerald-400 text-slate-950 transition-transform mb-3 shadow-[0_0_15px_rgba(52,245,154,0.4)]">
             Jogar de novo
           </button>
