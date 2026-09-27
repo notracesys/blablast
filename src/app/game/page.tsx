@@ -827,9 +827,9 @@ export default function GamePage() {
               <strong id="betValue" className="text-lg font-black text-white/95">R$ 10,00</strong>
             </article>
 
-            <article className="p-3.5 rounded-2xl border border-cyan-500/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
-              <span className="text-[10px] text-cyan-400/50 uppercase font-black tracking-widest">Prêmio máximo</span>
-              <strong id="maxWinValue" className="text-lg font-black text-cyan-400 drop-shadow-[0_0_12px_rgba(34,211,238,0.2)]">R$ 50,00</strong>
+            <article className="p-3.5 rounded-2xl border border-yellow-500/10 bg-gradient-to-b from-slate-900/80 to-slate-950/80 backdrop-blur-md flex flex-col gap-0.5 shadow-xl">
+              <span className="text-[10px] text-yellow-400/50 uppercase font-black tracking-widest">Prêmio máximo</span>
+              <strong id="maxWinValue" className="text-lg font-black text-yellow-400 drop-shadow-[0_0_12px_rgba(234,179,8,0.2)]">R$ 50,00</strong>
             </article>
           </section>
 
