@@ -15,7 +15,6 @@ export default function GamePage() {
   const [linesCompleted, setLinesCompleted] = useState(0);
 
   const TARGET_LINES = 4;
-  const BET_AMOUNT = 10;
   const VALUE_PER_LINE = 5;
   const FINAL_PRIZE = 20;
 
@@ -798,17 +797,20 @@ export default function GamePage() {
           )}
         </section>
 
-        {/* TABLEIRO DO JOGO ADAPTÁVEL */}
-        <section className="w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden my-auto max-w-[340px] mx-auto">
-          <div className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
-            <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
-          </div>
-        </section>
+        {/* ÁREA CENTRAL DO JOGO (TABLEIRO + PEÇAS) AGRUPADAS */}
+        <div className="flex flex-col items-center justify-center flex-1 gap-2 my-auto">
+          {/* TABLEIRO DO JOGO ADAPTÁVEL */}
+          <section className="w-full aspect-square p-1 bg-slate-900/20 backdrop-blur-sm border border-white/5 rounded-xl flex items-center justify-center shadow-xl overflow-hidden max-w-[340px] mx-auto">
+            <div className="w-full h-full rounded-lg overflow-hidden flex items-center justify-center bg-slate-950/95 border border-white/5">
+              <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
+            </div>
+          </section>
 
-        {/* SLOTS DAS PEÇAS COMPACTAS - APROXIMADAS DO TABLEIRO */}
-        <section className="grid grid-cols-3 gap-2 mt-0.5 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
+          {/* SLOTS DAS PEÇAS COMPACTAS - APROXIMADAS DO TABLEIRO */}
+          <section className="grid grid-cols-3 gap-2 shrink-0 max-w-[340px] mx-auto w-full" id="shapesList" aria-label="Peças disponíveis"></section>
+        </div>
         
-        <div className="flex items-center justify-center gap-1.5 text-center mt-1 shrink-0">
+        <div className="flex items-center justify-center gap-1.5 text-center mb-4 shrink-0">
           <Info className="w-3 h-3 text-white/30 shrink-0" />
           <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças para completar linhas completas.</p>
         </div>
