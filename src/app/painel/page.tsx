@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -79,7 +80,9 @@ export default function PainelPage() {
 
   const handleAddBalance = () => {
     if (!user || !db || !userData) return;
+    
     const amount = parseFloat(depositAmount);
+    
     if (isNaN(amount) || amount < 20) {
       toast({
         variant: "destructive",
@@ -286,16 +289,14 @@ export default function PainelPage() {
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative">
           
-          {/* Banner com Proporção Perfeita */}
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
               src="/card1.webp" 
-              alt="Quanto maior seu depósito maiores suas chances" 
+              alt="Banner de Depósito" 
               fill 
               className="object-cover"
               priority
             />
-            {/* Botão Fechar Vermelho Redondo */}
             <button 
               onClick={() => setShowDepositModal(false)}
               className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#e73b29] flex items-center justify-center text-white shadow-md z-30 transition-transform active:scale-90"
@@ -304,14 +305,12 @@ export default function PainelPage() {
             </button>
           </div>
 
-          {/* Conteúdo do Formulário de Depósito */}
           <div className="p-5 flex flex-col space-y-4">
             <div>
               <label className="text-[11px] font-black uppercase text-white/40 tracking-wider block mb-3">
                 VALOR RÁPIDO (MÍNIMO R$ 20)
               </label>
 
-              {/* Grid de valores rápidos com tags flutuantes */}
               <div className="grid grid-cols-3 gap-x-2 gap-y-5 pt-2">
                 {depositPresets.map((item) => (
                   <button
@@ -324,7 +323,6 @@ export default function PainelPage() {
                         : 'bg-[#182030] text-white border-transparent'
                     }`}
                   >
-                    {/* Tag em cima da caixinha */}
                     <span className={`absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-wide leading-none ${item.color}`}>
                       {item.tag}
                     </span>
@@ -334,18 +332,22 @@ export default function PainelPage() {
               </div>
             </div>
 
-            {/* Input Manual Estilizado */}
-            <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4 mt-2">
-              <span className="text-white/40 text-xs font-bold mr-2">R$</span>
-              <Input 
-                type="number" 
-                value={depositAmount} 
-                onChange={(e) => setDepositAmount(e.target.value)} 
-                className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-bold text-white/30 uppercase tracking-widest pl-1">
+                DIGITE O VALOR (MÍNIMO R$ 20,00)
+              </label>
+              <div className="relative bg-[#182030] rounded-xl border border-white/5 h-12 flex items-center px-4">
+                <span className="text-white/40 text-xs font-bold mr-2">R$</span>
+                <Input 
+                  type="number" 
+                  min="20"
+                  value={depositAmount} 
+                  onChange={(e) => setDepositAmount(e.target.value)} 
+                  className="bg-transparent border-0 h-full p-0 text-white font-black text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
             </div>
 
-            {/* Botão de Cupom */}
             <button 
               type="button" 
               className="flex items-center gap-1.5 text-[#ff4b72] text-[11px] font-bold uppercase tracking-wider self-start pl-1 py-1 hover:opacity-80"
@@ -354,7 +356,6 @@ export default function PainelPage() {
               Tenho um cupom
             </button>
 
-            {/* Botão Principal Verde Gerar Código */}
             <button 
               onClick={handleAddBalance} 
               disabled={isDepositing}
