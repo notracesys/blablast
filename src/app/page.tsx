@@ -18,7 +18,6 @@ import { Card, CardContent } from '@/components/ui/card';
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen text-white bg-[#06122b] selection:bg-cyan-500/30">
-      {/* 1) HEADER FIXO PREMIUM COMPACTO */}
       <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-20 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center">
           <Image 
@@ -32,9 +31,11 @@ export default function LandingPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="text-[11px] font-bold text-white/70 uppercase tracking-wider hover:text-white transition-colors py-1.5 px-3 rounded-xl border border-white/10 bg-white/5">
-            ENTRAR
-          </button>
+          <Link href="/login">
+            <button className="text-[11px] font-bold text-white/70 uppercase tracking-wider hover:text-white transition-colors py-1.5 px-3 rounded-xl border border-white/10 bg-white/5">
+              ENTRAR
+            </button>
+          </Link>
           <Link href="/register">
             <Button size="sm" className="bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white hover:opacity-90 px-3.5 h-8 font-black text-[11px] uppercase tracking-wider rounded-xl glow-purple border border-purple-400/20">
               CRIAR CONTA
@@ -44,7 +45,6 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1 pt-24 px-4 pb-20 space-y-8 w-full">
-        {/* 2) HERO SECTION */}
         <section className="text-center space-y-4 pt-4">
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0a2046]/90 border border-cyan-500/30 text-[11px] font-bold text-cyan-400 uppercase tracking-wider backdrop-blur-sm shadow-lg">
@@ -60,7 +60,6 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          {/* CARD DO JOGO (HERO BANNER) */}
           <div className="relative w-full aspect-square bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
               src="/hero.webp" 
@@ -81,7 +80,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 3) BOTÕES DE AÇÃO PRINCIPAIS */}
         <section className="space-y-3.5">
           <Link href="/game" className="block w-full">
             <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] hover:opacity-95 text-slate-950 font-black text-base glow-green transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide animate-shine flex items-center justify-between px-5 border border-emerald-300/30">
@@ -114,13 +112,12 @@ export default function LandingPage() {
           </Link>
 
           <div className="text-center pt-2">
-            <Link href="/register" className="text-white/50 hover:text-cyan-400 transition-colors text-[12px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
+            <Link href="/login" className="text-white/50 hover:text-cyan-400 transition-colors text-[12px] font-bold uppercase tracking-widest inline-flex items-center gap-1.5">
               Já tenho conta <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </section>
 
-        {/* 4) CARDS DE ESTATÍSTICAS */}
         <section className="grid grid-cols-3 gap-2.5">
           {[
             { label: 'JOGADORES NA ARENA', value: '1.933', icon: Users, color: 'text-cyan-400' },
@@ -138,7 +135,6 @@ export default function LandingPage() {
           })}
         </section>
 
-        {/* 5) COMO JOGAR */}
         <section className="space-y-6 pt-6 border-t border-white/5">
           <div className="text-center space-y-1">
             <span className="text-cyan-400 text-[11px] font-black uppercase tracking-[0.25em]">PASSO A PASSO</span>
@@ -198,7 +194,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 6) DEPOIMENTOS */}
         <section className="space-y-6 pt-6 border-t border-white/5">
           <div className="text-center space-y-1">
             <h2 className="text-xl font-black text-white uppercase tracking-tight">
@@ -254,7 +249,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 7) CTA FINAL */}
         <section className="py-8 px-4 bg-gradient-to-b from-transparent to-cyan-500/5 rounded-[2rem] text-center space-y-4 border border-white/5">
           <div className="space-y-1">
             <h2 className="text-2xl font-black tracking-tight text-white uppercase leading-tight">
@@ -277,7 +271,6 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* 8) FOOTER */}
       <footer className="px-4 py-6 border-t border-white/5 space-y-3 text-center bg-black/20">
         <div className="flex justify-center items-center">
           <Image 
