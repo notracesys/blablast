@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Volume2, VolumeX, Info, Target, Award, CheckCircle2, Wallet } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Info, Award, CheckCircle2, Wallet } from 'lucide-react';
 import { GameAudio } from './audios';
 
 export default function GamePage() {
@@ -14,7 +13,6 @@ export default function GamePage() {
   const [showDemoWithdraw, setShowDemoWithdraw] = useState(false);
   
   const [linesCompleted, setLinesCompleted] = useState(0);
-  const [currentScore, setCurrentScore] = useState(0);
 
   const TARGET_LINES = 4;
   const BET_AMOUNT = 10;
@@ -182,31 +180,28 @@ export default function GamePage() {
     }
 
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
-      const shakeIntensity = Math.sin(progress * Math.PI * 16) * (1 - progress) * 20;
+      const shakeIntensity = Math.sin(progress * Math.PI * 12) * (1 - progress) * 25;
       const offsetX = (Math.random() - 0.5) * shakeIntensity;
       const offsetY = (Math.random() - 0.5) * shakeIntensity;
 
       ctx.save();
       ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
 
-      const scale = progress < 0.2 ? 1 + progress * 2.5 : Math.max(0, 1.6 * (1 - progress));
-      ctx.scale(scale, scale);
-
       ctx.beginPath();
-      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 2.6), 0, Math.PI * 2);
+      ctx.arc(0, 0, Math.max(0, CELL_SIZE * progress * 3.0), 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(38, 217, 255, ${Math.max(0, 1 - progress)})`;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#26d9ff';
-      ctx.shadowBlur = 25;
-      for (let i = 0; i < 12; i++) {
-        const angle = (i * Math.PI) / 6 + progress * 4;
-        const dist = CELL_SIZE * progress * 3.2;
+      ctx.shadowColor = '#ffe778';
+      ctx.shadowBlur = 35;
+      for (let i = 0; i < 16; i++) {
+        const angle = (i * Math.PI) / 8 + progress * 6;
+        const dist = CELL_SIZE * progress * 3.8;
         const px = Math.cos(angle) * dist;
         const py = Math.sin(angle) * dist;
-        const pSize = Math.max(0, 8 * (1 - progress));
+        const pSize = Math.max(0, 10 * (1 - progress));
         ctx.beginPath();
         ctx.arc(px, py, pSize, 0, Math.PI * 2);
         ctx.fill();
@@ -219,8 +214,8 @@ export default function GamePage() {
       const size = CELL_SIZE - 4;
       const radius = CELL_SIZE * 0.15;
 
-      const dynamicColor = { primary: '#ffffff', secondary: '#35f59a', tertiary: color.secondary };
-      paintTile(ctx, cellX, cellY, size, radius, dynamicColor, Math.max(0, 50 * (1 - progress)));
+      const explosiveColor = { primary: '#ffffff', secondary: '#ffe477', tertiary: color.primary };
+      paintTile(ctx, cellX, cellY, size, radius, explosiveColor, Math.max(0, 60 * (1 - progress)));
 
       ctx.restore();
     }
@@ -302,7 +297,7 @@ export default function GamePage() {
       gameState.clearingLines.isAnimating = true;
       gameState.clearingLines.animationTime = 0;
 
-      const duration = 550;
+      const duration = 600;
       const startTime = performance.now();
 
       function animate(currentTime: number) {
@@ -323,7 +318,6 @@ export default function GamePage() {
           gameState.clearingLines.isAnimating = false;
           
           setLinesCompleted(gameState.lines);
-          updateUI();
           render();
           checkGameOver();
         }
@@ -352,8 +346,6 @@ export default function GamePage() {
       const linesCleared = clearLines();
       gameState.score += blocksPlaced * 10;
       if (linesCleared > 0) gameState.score += linesCleared * 100;
-      
-      setCurrentScore(gameState.score);
 
       if (gameState.shapes.length === 0) {
         generateShapes(PIECE_SLOTS);
@@ -361,7 +353,6 @@ export default function GamePage() {
         renderShapes();
         if (linesCleared === 0) checkGameOver();
       }
-      updateUI();
       render();
     }
 
@@ -647,9 +638,6 @@ export default function GamePage() {
       render();
     }
 
-    function updateUI() {
-    }
-
     function resizeCanvas() {
       if (!boardCanvas) return;
       const container = boardCanvas.parentElement;
@@ -684,7 +672,6 @@ export default function GamePage() {
       gameState.isGameOver = false;
       
       setLinesCompleted(0);
-      setCurrentScore(0);
       setShowGameOver(false);
 
       generateShapes(PIECE_SLOTS);
@@ -711,7 +698,6 @@ export default function GamePage() {
     const restartBtn = document.getElementById('restartBtn');
     if (restartBtn) restartBtn.onclick = restartGame;
 
-    updateUI();
     render();
 
     return () => {
@@ -762,7 +748,7 @@ export default function GamePage() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
           
-          <div className="flex items-center justify-center justify-self-center">
+          <div className="flex absolute left-1/2 -translate-x-1/2 top-0 h-10 items-center justify-center">
             <Image 
               src="/blockcash.png" 
               alt="Block Cash Logo" 
@@ -780,8 +766,8 @@ export default function GamePage() {
           </div>
         </header>
 
-        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA - Ajustada para maior espaçamento da logo */}
-        <section className="text-center p-2 flex flex-col items-center rounded-xl shrink-0 mt-4 mb-1 bg-slate-900/20 border border-white/5">
+        {/* ÁREA DE EXIBIÇÃO DE PREMIAÇÃO ULTRA COMPACTA - Espaçamento otimizado com mt-7 */}
+        <section className="text-center flex flex-col items-center shrink-0 mt-7 mb-1">
           <small className="text-[8px] font-black uppercase text-white/40 tracking-widest mb-0.5">
             {isTargetAchieved ? 'PRÊMIO LIBERADO!' : 'PRÊMIO EM FORMAÇÃO'}
           </small>
@@ -794,7 +780,7 @@ export default function GamePage() {
             <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas completas</div>
             {!isTargetAchieved && (
               <div className="text-[9px] text-amber-400/90 font-medium">
-                Custo de Entrada: R$ 10,00 • Complete 4 linhas para liberar <span className="font-bold">R$ {FINAL_PRIZE},00</span>
+                Custo de Entrada: R$ 10,00 • Complete 4 linhas para liberar <span className="font-bold text-white">R$ {FINAL_PRIZE},00</span>
               </div>
             )}
             {isTargetAchieved && (
@@ -906,7 +892,7 @@ export default function GamePage() {
             )}
           </div>
 
-          <button id="restartBtn" onClick={handleManualRestart} className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]">
+          <button id="restartBtn" className="w-full h-10 rounded-lg font-bold text-xs bg-emerald-400 text-slate-950 mb-2 shadow-[0_0_12px_rgba(52,245,154,0.4)]">
             Jogar de novo
           </button>
           <Link href="/" className="w-full h-10 rounded-lg font-medium text-[11px] flex items-center justify-center border border-white/10 text-white">
