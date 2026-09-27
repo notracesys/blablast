@@ -218,6 +218,7 @@ export default function GamePage() {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
       const scale = 1 - progress * 0.5;
       const opacity = 1 - progress;
@@ -452,7 +453,7 @@ export default function GamePage() {
           if (cell !== 0 && cell !== null) {
             const isClearing = gameState.clearingLines.rows.includes(row) || gameState.clearingLines.cols.includes(col);
             if (isClearing && gameState.clearingLines.isAnimating) {
-              drawBreakingCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color, gameState.clearingLines.animationTime);
+              drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
             } else {
               drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
             }
@@ -469,7 +470,7 @@ export default function GamePage() {
       for (let index = 0; index < PIECE_SLOTS; index++) {
         const shape = gameState.shapes[index] as any;
         const shapeItem = document.createElement('div');
-        shapeItem.className = 'shape-item border border-white/5 rounded-xl bg-[#111625] aspect-square flex items-center justify-center cursor-grab select-none relative overflow-hidden transition-transform duration-150 active:scale-95';
+        shapeItem.className = 'shape-item bg-[#121829]/60 border border-white/5 rounded-xl aspect-square flex items-center justify-center cursor-grab select-none relative overflow-hidden transition-transform duration-150 active:scale-95';
         shapeItem.dataset.shapeIndex = String(index);
 
         if (!shape) {
@@ -740,66 +741,60 @@ export default function GamePage() {
   };
 
   return (
-    <div ref={containerRef} className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-[#050814]" onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
+    <div ref={containerRef} className="w-full min-h-screen text-white select-none flex flex-col justify-between p-4 bg-[#050814] bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/fundo1.png')" }} onClick={() => GameAudio.unlock()} onTouchStart={() => GameAudio.unlock()}>
       <header className="w-full flex items-center justify-between h-14 max-w-[430px] mx-auto">
-        <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/10 bg-[#0f1322] text-white">
+        <Link href="/" className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         
-        <span className="text-lg font-black tracking-wider text-white">
+        <span className="text-base font-black tracking-widest text-white">
           BLOCK CASH
         </span>
 
         <div className="flex items-center gap-2">
-          <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/10 bg-[#0f1322] text-white">
+          <button onClick={toggleSound} className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5 bg-[#0f1322]/80 backdrop-blur-sm text-white">
             {isMutedState ? <VolumeX className="w-5 h-5 opacity-50" /> : <Volume2 className="w-5 h-5" />}
           </button>
-          <span className="px-2.5 py-1 rounded-md border border-cyan-500/30 bg-cyan-950/40 text-cyan-400 text-[10px] font-black tracking-wider uppercase">
+          <span className="px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-950/40 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
             TESTE
           </span>
         </div>
       </header>
 
-      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-4 flex-1 justify-center">
-        <section className="grid grid-cols-2 gap-3">
-          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322] flex items-center gap-3">
-            <Coins className="w-4 h-4 text-white/60" />
-            <div>
-              <small className="block text-[10px] text-white/40 uppercase font-medium">Aposta demo</small>
-              <strong id="betValue" className="text-sm font-bold text-white">R$ 10,00</strong>
-            </div>
+      <main className="w-full max-w-[430px] mx-auto flex flex-col gap-3 flex-1 justify-center">
+        <section className="grid grid-cols-2 gap-2">
+          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+            <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Aposta demo</span>
+            <strong id="betValue" className="text-base font-bold text-white">R$ 10,00</strong>
           </article>
 
-          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322] flex items-center gap-3">
-            <Trophy className="w-4 h-4 text-cyan-400" />
-            <div>
-              <small className="block text-[10px] text-white/40 uppercase font-medium">Prêmio máximo</small>
-              <strong id="maxWinValue" className="text-sm font-bold text-cyan-400">R$ 50,00</strong>
-            </div>
+          <article className="p-3 rounded-xl border border-white/5 bg-[#0f1322]/70 backdrop-blur-sm flex flex-col gap-0.5">
+            <span className="text-[9px] text-white/40 uppercase font-bold tracking-wider">Prêmio máximo</span>
+            <strong id="maxWinValue" className="text-base font-bold text-cyan-400">R$ 50,00</strong>
           </article>
         </section>
 
-        <section className="text-center py-2 bg-[#0f1322] border border-white/5 rounded-xl p-4">
-          <small className="block text-[10px] font-bold uppercase text-white/40 tracking-widest mb-1">Progresso da partida</small>
-          <strong id="prizeValue" className="block text-3xl font-black text-white tracking-tight mb-3">
+        <section className="text-center bg-[#0f1322]/70 backdrop-blur-sm border border-white/5 rounded-xl p-3 flex flex-col items-center">
+          <small className="text-[9px] font-bold uppercase text-white/40 tracking-wider mb-0.5">Progresso da partida</small>
+          <strong id="prizeValue" className="text-2xl font-black text-white tracking-tight mb-2">
             R$ 0,00
           </strong>
-          <div id="winProgress" className="h-2 w-full bg-[#171c2c] rounded-full overflow-hidden">
-            <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full transition-all duration-200"></div>
+          <div id="winProgress" className="h-1.5 w-full bg-[#171c2c] rounded-full overflow-hidden">
+            <div id="winProgressBar" className="h-full w-0 bg-cyan-400 rounded-full"></div>
           </div>
         </section>
 
-        <section className="w-full aspect-square p-2 bg-[#0f1322] border border-white/5 rounded-2xl flex items-center justify-center">
-          <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1d]">
+        <section className="w-full aspect-square p-1.5 bg-[#0f1322]/40 backdrop-blur-sm border border-white/5 rounded-2xl flex items-center justify-center">
+          <div className="w-full h-full rounded-xl overflow-hidden flex items-center justify-center bg-[#0a0f1d]/90">
             <canvas id="gameBoard" className="w-full h-full touch-none block" aria-label="Tabuleiro 8 por 8"></canvas>
           </div>
         </section>
 
-        <section className="grid grid-cols-3 gap-3" id="shapesList" aria-label="Peças disponíveis"></section>
+        <section className="grid grid-cols-3 gap-2" id="shapesList" aria-label="Peças disponíveis"></section>
         
-        <div className="rounded-xl py-2.5 px-4 flex items-center justify-center gap-2 max-w-[360px] mx-auto text-center">
-          <Info className="w-3.5 h-3.5 text-white/30 shrink-0" />
-          <p className="text-[11px] text-white/50 font-medium">Arraste uma peça para o tabuleiro e complete linhas.</p>
+        <div className="flex items-center justify-center gap-1.5 max-w-[360px] mx-auto text-center">
+          <Info className="w-3 h-3 text-white/30 shrink-0" />
+          <p className="text-[10px] text-white/40 font-medium">Arraste uma peça para o tabuleiro e complete linhas.</p>
         </div>
       </main>
 
