@@ -199,6 +199,28 @@ export default function GamePage() {
       paintTile(ctx, x + 2, y + 2, size, CELL_SIZE * 0.15, color, 2);
     }
 
+    function drawBreakingCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: any, progress: number) {
+      const shakeIntensity = Math.sin(progress * Math.PI * 8) * (1 - progress) * 6;
+      const offsetX = (Math.random() - 0.5) * shakeIntensity;
+      const offsetY = (Math.random() - 0.5) * shakeIntensity;
+      const scale = 1 - progress * 0.4;
+      const opacity = 1 - progress;
+
+      ctx.save();
+      ctx.translate(x + CELL_SIZE / 2 + offsetX, y + CELL_SIZE / 2 + offsetY);
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = opacity;
+
+      const cellX = -CELL_SIZE / 2 + 2;
+      const cellY = -CELL_SIZE / 2 + 2;
+      const size = CELL_SIZE - 4;
+      const radius = CELL_SIZE * 0.15;
+
+      paintTile(ctx, cellX, cellY, size, radius, color, 12 * (1 - progress));
+      
+      ctx.restore();
+    }
+
     function drawShape(ctx: CanvasRenderingContext2D, matrix: number[][], color: any, offsetX: number, offsetY: number, size: number) {
       const rows = matrix.length;
       const cols = matrix[0].length;
@@ -276,7 +298,7 @@ export default function GamePage() {
       gameState.clearingLines.isAnimating = true;
       gameState.clearingLines.animationTime = 0;
 
-      const duration = 200;
+      const duration = 400;
       const startTime = performance.now();
 
       function animate(currentTime: number) {
@@ -426,11 +448,17 @@ export default function GamePage() {
         }
       }
 
+      const cl = gameState.clearingLines;
       for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
           const cell = gameState.board[row][col];
           if (cell !== 0 && cell !== null) {
-            drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
+            const isClearing = cl.isAnimating && (cl.rows.includes(row) || cl.cols.includes(col));
+            if (isClearing) {
+              drawBreakingCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color, cl.animationTime);
+            } else {
+              drawCell(boardCtx, col * CELL_SIZE, row * CELL_SIZE, cell.color);
+            }
           }
         }
       }
