@@ -30,11 +30,29 @@ export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetValue = e.target.value;
+    const clean = targetValue.replace(/\D/g, '');
+    
+    let formatted = clean;
+    if (clean.length > 0) {
+      if (clean.length <= 2) {
+        formatted = `(${clean}`;
+      } else if (clean.length <= 6) {
+        formatted = `(${clean.slice(0, 2)}) ${clean.slice(2)}`;
+      } else if (clean.length <= 10) {
+        formatted = `(${clean.slice(0, 2)}) ${clean.slice(2, 6)}-${clean.slice(6)}`;
+      } else {
+        formatted = `(${clean.slice(0, 2)}) ${clean.slice(2, 7)}-${clean.slice(7, 11)}`;
+      }
+    }
+    setPhone(formatted);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth || !db) return;
 
-    // 1) Validação do Nome Completo (Pelo menos Nome + Sobrenome)
     const nameTrimmed = fullName.trim();
     const nameParts = nameTrimmed.split(/\s+/);
     if (nameParts.length < 2 || nameParts[0].length < 2 || nameParts[1].length < 2) {
@@ -46,7 +64,6 @@ export default function RegisterPage() {
       return;
     }
 
-    // 2) Validação de Email com domínio completo (ex: @gmail.com)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
@@ -57,18 +74,16 @@ export default function RegisterPage() {
       return;
     }
 
-    // 3) Validação do Telefone (DDD + Número: 10 ou 11 dígitos)
     const cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
       toast({
         variant: "destructive",
         title: "Telefone incorreto",
-        description: "Informe o DDD e o número completo (ex: 11999998888).",
+        description: "Informe o DDD e o número completo.",
       });
       return;
     }
 
-    // 4) Validação da Senha (+6 caracteres)
     if (password.length < 6) {
       toast({
         variant: "destructive",
@@ -101,7 +116,6 @@ export default function RegisterPage() {
         createdAt: new Date().toISOString(),
       };
 
-      // Firestore mutation without await
       setDoc(userRef, userData)
         .catch(async (error) => {
           const permissionError = new FirestorePermissionError({
@@ -181,8 +195,8 @@ export default function RegisterPage() {
               required
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="DDD + Número (ex: 11999998888)" 
+              onChange={handlePhoneChange}
+              placeholder="Telefone: (DD) 99999-9999" 
               className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
             />
 
