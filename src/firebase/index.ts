@@ -1,12 +1,20 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-// Interfaces para o Provider
+// Centraliza a inicialização para evitar múltiplas instâncias
+export function initializeFirebase() {
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  return { app, auth, db };
+}
+
 interface FirebaseContextType {
   app: FirebaseApp | null;
   auth: Auth | null;
@@ -20,42 +28,32 @@ const FirebaseContext = createContext<FirebaseContextType>({
 });
 
 export function FirebaseClientProvider({ children }: { children: React.ReactNode }) {
-  const [firebase, setFirebase] = useState<FirebaseContextType>({
+  const [services, setServices] = useState<FirebaseContextType>({
     app: null,
     auth: null,
     db: null,
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-      setFirebase({ app, auth, db });
-    }
+    const { app, auth, db } = initializeFirebase();
+    setServices({ app, auth, db });
   }, []);
 
-  return (
-    <FirebaseContext.Provider value={firebase}>
-      {children}
-    </FirebaseContext.Provider>
-  );
+  return React.createElement(FirebaseContext.Provider, { value: services }, children);
 }
 
-// Hooks simplificados
 export const useFirebaseApp = () => useContext(FirebaseContext).app;
 export const useAuth = () => useContext(FirebaseContext).auth;
 export const useFirestore = () => useContext(FirebaseContext).db;
 
-// Hook de usuário
 export function useUser() {
   const auth = useAuth();
-  const [user, setUser] = useState(auth?.currentUser || null);
+  const [user, setUser] = useState<User | null>(auth?.currentUser || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!auth) return;
-    return auth.onAuthStateChanged((u) => {
+    return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
     });

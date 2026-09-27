@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -57,7 +58,10 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db) return;
+    if (!auth || !db) {
+      setErrors(prev => ({ ...prev, general: 'Erro de conexão: Serviços do Firebase não inicializados.' }));
+      return;
+    }
 
     const currentErrors = {
       fullName: '',
@@ -108,9 +112,11 @@ export default function RegisterPage() {
     setErrors(currentErrors);
 
     try {
+      // 1. Cria o usuário no Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // 2. Salva os dados no Firestore Database
       const userRef = doc(db, 'users', user.uid);
       const userData = {
         fullName: nameTrimmed,
@@ -123,12 +129,13 @@ export default function RegisterPage() {
       await setDoc(userRef, userData);
       router.push('/painel');
     } catch (error: any) {
+      console.error("Erro no registro:", error);
       if (error.code === 'auth/email-already-in-use') {
         setErrors(prev => ({ ...prev, email: 'Este e-mail já está em uso por outro usuário.' }));
       } else if (error.code === 'auth/invalid-email') {
         setErrors(prev => ({ ...prev, email: 'Formato de e-mail inválido.' }));
       } else {
-        setErrors(prev => ({ ...prev, general: 'Erro ao salvar dados no banco de dados. Certifique-se de que o Firestore está ativado.' }));
+        setErrors(prev => ({ ...prev, general: `Erro ao salvar dados: ${error.message}` }));
       }
     } finally {
       setLoading(false);
@@ -139,9 +146,6 @@ export default function RegisterPage() {
     <div className="min-h-screen w-full bg-[#060a17] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
       
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-600/10 blur-[120px] rounded-full"></div>
-
       <main className="w-full max-w-[400px] z-10 flex flex-col items-center">
         <div className="mb-6 relative animate-float">
           <Image 
@@ -155,8 +159,6 @@ export default function RegisterPage() {
         </div>
 
         <div className="w-full bg-[#0b1426] border border-white/5 rounded-[2rem] p-7 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-
           <div className="mb-6">
             <h1 className="text-xl font-[900] text-white tracking-tight leading-none mb-2 uppercase">
               Crie sua conta
@@ -267,7 +269,7 @@ export default function RegisterPage() {
             </div>
 
             {errors.general && (
-              <p className="text-xs text-red-400 text-center font-bold">{errors.general}</p>
+              <p className="text-xs text-red-400 text-center font-bold bg-red-400/10 p-2 rounded-xl border border-red-400/20">{errors.general}</p>
             )}
 
             <Button 
@@ -285,13 +287,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </main>
-
-      <div className="absolute bottom-0 w-full flex justify-center gap-1 opacity-20 pointer-events-none">
-        <div className="w-16 h-20 bg-purple-700/40 rounded-t-lg blur-[2px] translate-y-8"></div>
-        <div className="w-16 h-24 bg-blue-700/40 rounded-t-lg blur-[2px] translate-y-4"></div>
-        <div className="w-16 h-28 bg-cyan-700/40 rounded-t-lg blur-[2px]"></div>
-        <div className="w-16 h-24 bg-emerald-700/40 rounded-t-lg blur-[2px] translate-y-12"></div>
-      </div>
     </div>
   );
 }
