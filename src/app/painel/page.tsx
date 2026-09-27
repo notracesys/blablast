@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle, Copy, Check, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -22,7 +22,9 @@ export default function PainelPage() {
   const [selectedValue, setSelectedValue] = useState<number>(10);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState<boolean>(false);
+  const [showAffiliateModal, setShowAffiliateModal] = useState<boolean>(false);
   const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false);
+  
   const [depositAmount, setDepositAmount] = useState<string>('20');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('30');
   const [pixKey, setPixKey] = useState<string>('');
@@ -30,6 +32,7 @@ export default function PainelPage() {
   const [isDepositing, setIsDepositing] = useState<boolean>(false);
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const presets = [5, 10, 20, 30, 50, 100];
 
@@ -41,6 +44,8 @@ export default function PainelPage() {
     { val: 100, tag: 'SUPER', color: 'bg-purple-500 text-white' },
     { val: 200, tag: 'MÁXIMO', color: 'bg-fuchsia-500 text-white' },
   ];
+
+  const referralLink = user ? `https://blockwins.net/register?ref=${user.uid}` : '';
 
   useEffect(() => {
     setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
@@ -82,6 +87,16 @@ export default function PainelPage() {
 
     return () => unsubscribe();
   }, [user, authLoading, db, router]);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    setLinkCopied(true);
+    toast({
+      title: "Link Copiado!",
+      description: "Seu link de indicação foi copiado com sucesso.",
+    });
+    setTimeout(() => setLinkCopied(false), 3000);
+  };
 
   const handleAddBalance = () => {
     if (!user || !db || !userData) return;
@@ -328,7 +343,7 @@ export default function PainelPage() {
           <span className="text-[9px] font-black text-[#35f59a] uppercase tracking-wider mt-1.5">Jogar</span>
         </div>
 
-        <button onClick={() => router.push('/')} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
+        <button onClick={() => setShowAffiliateModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
           <Users className="w-4 h-4" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Indicar</span>
         </button>
@@ -342,6 +357,102 @@ export default function PainelPage() {
           <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
         </button>
       </nav>
+
+      {/* MODAL DE INDICAÇÕES (AFILIADOS) */}
+      <div className={`fixed inset-0 ${showAffiliateModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[7000]`}>
+        <div className="w-full max-w-[390px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300">
+          
+          <div className="relative w-full aspect-[2.7/1] bg-slate-900/50">
+            <Image 
+              src="/hero.webp" 
+              alt="Indique e Ganhe" 
+              fill 
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0f17] via-transparent to-transparent"></div>
+            <button 
+              onClick={() => setShowAffiliateModal(false)}
+              className="absolute top-4 right-4 w-7 h-7 rounded-full bg-[#e73b29] flex items-center justify-center text-white shadow-lg z-30 transition-transform active:scale-90"
+            >
+              <X className="w-4 h-4 stroke-[3]" />
+            </button>
+
+            <div className="absolute bottom-3 left-5">
+              <h2 className="text-xl font-[1000] text-white uppercase tracking-tighter leading-none">
+                Indique e Ganhe <br/>
+                <span className="text-emerald-400">50% R$</span>
+              </h2>
+            </div>
+          </div>
+
+          <div className="p-5 flex flex-col space-y-5">
+            {/* Bloco de Saldo de Comissões */}
+            <div className="bg-[#35f59a] rounded-[2rem] p-5 flex flex-col space-y-4 shadow-[0_8px_25px_rgba(53,245,154,0.2)]">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Saldo de Comissões</span>
+                  <strong className="text-2xl font-[1000] text-slate-950">R$ 0,00</strong>
+                  <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">Total recebido: R$ 0,00</span>
+                </div>
+                <div className="text-right flex flex-col">
+                  <span className="text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Indicados</span>
+                  <strong className="text-2xl font-[1000] text-slate-950">0</strong>
+                  <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">No total</span>
+                </div>
+              </div>
+
+              <button className="w-full h-11 rounded-2xl bg-slate-950/10 border border-slate-950/10 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+                <ArrowUpRight className="w-4 h-4" /> Sacar Comissões
+              </button>
+            </div>
+
+            {/* Seu Link Exclusivo */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.2em] pl-1">Seu Link Exclusivo</label>
+              <div className="relative bg-slate-950/60 rounded-2xl border border-white/5 h-12 flex items-center px-4 overflow-hidden">
+                <span className="text-white/20 text-[10px] truncate max-w-[240px] font-mono">{referralLink}</span>
+              </div>
+              <button 
+                onClick={handleCopyLink}
+                className="w-full h-11 rounded-2xl bg-[#35f59a] text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg"
+              >
+                {linkCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {linkCopied ? 'Copiado!' : 'Copiar Link'}
+              </button>
+            </div>
+
+            {/* Grade de Níveis */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
+                <span className="text-emerald-400 font-black text-base">N1</span>
+                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Diretos</span>
+                <div className="py-2">
+                  <strong className="text-xl font-black text-white block">0</strong>
+                  <span className="text-[8px] font-black text-white/20 uppercase">Indicados</span>
+                </div>
+                <div className="pt-1">
+                  <span className="text-amber-400 font-black text-xs">R$ 0,00</span>
+                  <span className="text-[8px] font-black text-white/20 uppercase block">Volume Depositado</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
+                <span className="text-emerald-400 font-black text-base">N2</span>
+                <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">2º Nível</span>
+                <div className="py-2">
+                  <strong className="text-xl font-black text-white block">0</strong>
+                  <span className="text-[8px] font-black text-white/20 uppercase">Indicados</span>
+                </div>
+                <div className="pt-1">
+                  <span className="text-amber-400 font-black text-xs">R$ 0,00</span>
+                  <span className="text-[8px] font-black text-white/20 uppercase block">Volume Depositado</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* MODAL DE SALDO INSUFICIENTE */}
       <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[6000]`}>
