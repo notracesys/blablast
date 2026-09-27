@@ -10,7 +10,7 @@ import { LogOut, Wallet, Plus, Coins, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function PainelPage() {
   const { user, loading: authLoading } = useUser();
@@ -45,7 +45,7 @@ export default function PainelPage() {
       const permissionError = new FirestorePermissionError({
         path: userRef.path,
         operation: 'get',
-      });
+      } satisfies SecurityRuleContext);
       errorEmitter.emit('permission-error', permissionError);
     });
 
@@ -61,14 +61,7 @@ export default function PainelPage() {
   const handleAddBalance = () => {
     if (!user || !db || !userData) return;
     const amount = parseFloat(depositAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast({
-        variant: "destructive",
-        title: "Valor inválido",
-        description: "Digite um valor para depositar.",
-      });
-      return;
-    }
+    if (isNaN(amount) || amount <= 0) return;
 
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
@@ -78,7 +71,7 @@ export default function PainelPage() {
       .then(() => {
         toast({
           title: "Saldo Adicionado!",
-          description: `R$ ${amount.toFixed(2)} creditados com sucesso via PIX Simulado.`,
+          description: `R$ ${amount.toFixed(2)} creditados via PIX Simulado.`,
         });
         setShowDepositModal(false);
         setIsDepositing(false);
@@ -89,7 +82,7 @@ export default function PainelPage() {
           path: userRef.path,
           operation: 'update',
           requestResourceData: { balance: newBalance },
-        });
+        } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
   };
@@ -110,16 +103,17 @@ export default function PainelPage() {
     const newBalance = userData.balance - selectedValue;
 
     updateDoc(userRef, { balance: newBalance })
+      .then(() => {
+        router.push('/game');
+      })
       .catch(async (error) => {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'update',
           requestResourceData: { balance: newBalance },
-        });
+        } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
-
-    router.push('/game');
   };
 
   if (authLoading || !userData) {
@@ -152,14 +146,10 @@ export default function PainelPage() {
           <div className="bg-[#060a17] border border-white/5 rounded-xl px-2.5 py-1 flex items-center gap-2 shadow-inner">
             <Wallet className="w-3 h-3 text-cyan-400" />
             <span className="text-xs font-black text-emerald-400">R$ {(userData.balance || 0).toFixed(2)}</span>
-            <button 
-              onClick={() => setShowDepositModal(true)}
-              className="w-5 h-5 rounded-md bg-cyan-400 flex items-center justify-center text-slate-950 ml-1"
-            >
+            <button onClick={() => setShowDepositModal(true)} className="w-5 h-5 rounded-md bg-cyan-400 flex items-center justify-center text-slate-950 ml-1">
               <Plus className="w-3 h-3 stroke-[3]" />
             </button>
           </div>
-
           <button onClick={handleSignOut} className="p-2 text-white/40 hover:text-red-400 rounded-xl border border-white/5">
             <LogOut className="w-4 h-4" />
           </button>
@@ -169,14 +159,7 @@ export default function PainelPage() {
       <main className="w-full max-w-[420px] mx-auto z-10">
         <div className="w-full bg-[#0b1426] border border-white/10 rounded-[2.5rem] p-5 shadow-2xl flex flex-col gap-6">
           <div className="relative w-full aspect-[1/0.9] bg-[#060a17] rounded-3xl border border-white/5 overflow-hidden">
-            <Image 
-              src="/hero.png" 
-              alt="Jogo Block Cash" 
-              fill 
-              className="object-cover"
-              priority
-              data-ai-hint="game hero"
-            />
+            <Image src="/hero.png" alt="Jogo Block Cash" fill className="object-cover" priority data-ai-hint="game hero" />
             <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full border border-white/10 flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-dot"></span>
               <span className="text-[9px] font-black text-white/80 uppercase">883 JOGANDO AGORA</span>
@@ -191,9 +174,7 @@ export default function PainelPage() {
                   key={val}
                   onClick={() => setSelectedValue(val)}
                   className={`h-11 rounded-xl font-black text-xs transition-all border ${
-                    selectedValue === val 
-                      ? 'bg-white text-slate-950 border-cyan-400 shadow-[0_0_15px_rgba(38,217,255,0.2)]' 
-                      : 'bg-[#060a17] text-white/60 border-white/5'
+                    selectedValue === val ? 'bg-white text-slate-950 border-cyan-400 shadow-[0_0_15px_rgba(38,217,255,0.2)]' : 'bg-[#060a17] text-white/60 border-white/5'
                   }`}
                 >
                   R$ {val}
@@ -204,15 +185,10 @@ export default function PainelPage() {
 
           <div className="w-full bg-[#060a17] rounded-2xl border border-cyan-500/20 p-4 text-center">
             <span className="text-[9px] text-white/30 uppercase font-black tracking-widest block mb-1">Potencial de Ganho</span>
-            <strong className="text-2xl font-[1000] text-amber-400">
-              R$ {minReward.toFixed(2).replace('.', ',')}
-            </strong>
+            <strong className="text-2xl font-[1000] text-amber-400">R$ {minReward.toFixed(2).replace('.', ',')}</strong>
           </div>
 
-          <button
-            onClick={handleStartGame}
-            className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-[1000] text-base shadow-[0_0_20px_rgba(53,245,154,0.3)] uppercase tracking-wider flex items-center justify-center gap-2"
-          >
+          <button onClick={handleStartGame} className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-[1000] text-base shadow-[0_0_20px_rgba(53,245,154,0.3)] uppercase tracking-wider flex items-center justify-center gap-2">
             <Play className="w-4 h-4 fill-current" />
             JOGAR AGORA
           </button>
@@ -226,43 +202,20 @@ export default function PainelPage() {
           </div>
           <h2 className="text-base font-black text-white uppercase text-center mb-1">Simular Depósito PIX</h2>
           <p className="text-white/50 text-[10px] text-center mb-4">Adicione saldo fictício para testar a arena real.</p>
-
           <div className="space-y-3 mb-4">
             <div className="flex gap-2">
               {['20', '50', '100'].map((val) => (
-                <button
-                  key={val}
-                  onClick={() => setDepositAmount(val)}
-                  className={`flex-1 h-9 rounded-xl text-[10px] font-black transition-all ${
-                    depositAmount === val ? 'bg-cyan-400 text-slate-950' : 'bg-[#060a17] text-white/60 border border-white/5'
-                  }`}
-                >
+                <button key={val} onClick={() => setDepositAmount(val)} className={`flex-1 h-9 rounded-xl text-[10px] font-black transition-all ${depositAmount === val ? 'bg-cyan-400 text-slate-950' : 'bg-[#060a17] text-white/60 border border-white/5'}`}>
                   + R${val}
                 </button>
               ))}
             </div>
-            <Input 
-              type="number"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              className="h-12 bg-[#060a17] border-white/5 rounded-xl text-center text-sm font-bold text-white"
-            />
+            <Input type="number" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} className="h-12 bg-[#060a17] border-white/5 rounded-xl text-center text-sm font-bold text-white" />
           </div>
-
-          <button
-            onClick={handleAddBalance}
-            disabled={isDepositing}
-            className="w-full h-11 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-xs uppercase tracking-wider"
-          >
+          <button onClick={handleAddBalance} disabled={isDepositing} className="w-full h-11 rounded-xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-xs uppercase tracking-wider">
             {isDepositing ? 'PROCESSANDO...' : 'CONFIRMAR DEPÓSITO'}
           </button>
-
-          <button
-            onClick={() => setShowDepositModal(false)}
-            className="w-full h-9 rounded-xl text-[10px] uppercase font-bold text-white/30 mt-2"
-          >
-            FECHAR
-          </button>
+          <button onClick={() => setShowDepositModal(false)} className="w-full h-9 rounded-xl text-[10px] uppercase font-bold text-white/30 mt-2">FECHAR</button>
         </div>
       </div>
     </div>

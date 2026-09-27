@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/index';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 export const metadata: Metadata = {
   title: 'Block Blast - Encaixe e Ganhe',
@@ -22,6 +23,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans selection:bg-primary/30">
         <FirebaseClientProvider>
+          <FirebaseErrorListener />
           <div className="mobile-container bg-grid-pattern">
             {children}
           </div>

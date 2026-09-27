@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -12,7 +11,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false);
@@ -60,48 +59,37 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db) {
-      setErrors(prev => ({ ...prev, general: 'Erro de conexão: Serviços do Firebase não inicializados.' }));
-      return;
-    }
+    if (!auth || !db) return;
 
-    const currentErrors = {
-      fullName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: '',
-      general: ''
-    };
-    
+    const currentErrors = { fullName: '', email: '', phone: '', password: '', confirmPassword: '', general: '' };
     let hasError = false;
 
     const nameTrimmed = fullName.trim();
     const nameParts = nameTrimmed.split(/\s+/);
-    if (nameParts.length < 2 || nameParts[0].length < 2 || nameParts[1].length < 2) {
-      currentErrors.fullName = 'Por favor, insira o nome completo com pelo menos um sobrenome.';
+    if (nameParts.length < 2) {
+      currentErrors.fullName = 'Insira nome e sobrenome.';
       hasError = true;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      currentErrors.email = 'Insira um e-mail válido contendo o domínio completo (ex: @gmail.com).';
+      currentErrors.email = 'E-mail inválido.';
       hasError = true;
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
-    if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-      currentErrors.phone = 'Informe o DDD (2 dígitos) mais o número do telefone completo.';
+    if (cleanPhone.length < 10) {
+      currentErrors.phone = 'Telefone inválido.';
       hasError = true;
     }
 
     if (password.length < 6) {
-      currentErrors.password = 'A senha deve conter no mínimo 6 caracteres.';
+      currentErrors.password = 'Mínimo 6 caracteres.';
       hasError = true;
     }
 
     if (password !== confirmPassword) {
-      currentErrors.confirmPassword = 'A confirmação da senha não coincide com a senha digitada.';
+      currentErrors.confirmPassword = 'Senhas não coincidem.';
       hasError = true;
     }
 
@@ -111,8 +99,6 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    setErrors(currentErrors);
-
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -136,20 +122,16 @@ export default function RegisterPage() {
             path: userRef.path,
             operation: 'create',
             requestResourceData: userData,
-          });
+          } satisfies SecurityRuleContext);
           errorEmitter.emit('permission-error', permissionError);
-          setErrors(prev => ({ ...prev, general: 'Erro de permissão no Firestore. Verifique as Regras (Rules) no console.' }));
         });
 
     } catch (error: any) {
       setLoading(false);
-      console.error("Erro no registro:", error);
       if (error.code === 'auth/email-already-in-use') {
-        setErrors(prev => ({ ...prev, email: 'Este e-mail já está em uso por outro usuário.' }));
-      } else if (error.code === 'auth/invalid-email') {
-        setErrors(prev => ({ ...prev, email: 'Formato de e-mail inválido.' }));
+        setErrors(prev => ({ ...prev, email: 'E-mail já cadastrado.' }));
       } else {
-        setErrors(prev => ({ ...prev, general: `Erro ao criar conta: ${error.message}` }));
+        setErrors(prev => ({ ...prev, general: error.message }));
       }
     }
   };
@@ -176,7 +158,7 @@ export default function RegisterPage() {
               Crie sua conta
             </h1>
             <p className="text-white/50 text-[11px] font-medium leading-relaxed">
-              Use dados reais para garantir seus futuros resgates via PIX.
+              Use dados reais para garantir seus resgates via PIX.
             </p>
           </div>
 
@@ -185,16 +167,11 @@ export default function RegisterPage() {
               <Input 
                 required
                 value={fullName}
-                onChange={(e) => {
-                  setFullName(e.target.value);
-                  setErrors(prev => ({ ...prev, fullName: '' }));
-                }}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Nome e Sobrenome" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20"
               />
-              {errors.fullName && (
-                <p className="text-xs text-red-400 mt-1 pl-2 font-medium">{errors.fullName}</p>
-              )}
+              {errors.fullName && <p className="text-[10px] text-red-400 mt-1 pl-2 font-bold uppercase">{errors.fullName}</p>}
             </div>
 
             <div>
@@ -202,16 +179,11 @@ export default function RegisterPage() {
                 required
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors(prev => ({ ...prev, email: '' }));
-                }}
-                placeholder="E-mail (ex: joao@gmail.com)" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-mail" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20"
               />
-              {errors.email && (
-                <p className="text-xs text-red-400 mt-1 pl-2 font-medium">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-[10px] text-red-400 mt-1 pl-2 font-bold uppercase">{errors.email}</p>}
             </div>
 
             <div>
@@ -221,73 +193,44 @@ export default function RegisterPage() {
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="Telefone: (DD) 99999-9999" 
-                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 text-sm placeholder:text-white/20"
               />
-              {errors.phone && (
-                <p className="text-xs text-red-400 mt-1 pl-2 font-medium">{errors.phone}</p>
-              )}
+              {errors.phone && <p className="text-[10px] text-red-400 mt-1 pl-2 font-bold uppercase">{errors.phone}</p>}
             </div>
 
-            <div>
-              <div className="relative">
-                <Input 
-                  required
-                  type={showPass ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors(prev => ({ ...prev, password: '' }));
-                  }}
-                  placeholder="Senha (mín. 6 dígitos)" 
-                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPass(!showPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
-                >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-xs text-red-400 mt-1 pl-2 font-medium">{errors.password}</p>
-              )}
+            <div className="relative">
+              <Input 
+                required
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Senha (mín. 6 dígitos)" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20"
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20">
+                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+              {errors.password && <p className="text-[10px] text-red-400 mt-1 pl-2 font-bold uppercase">{errors.password}</p>}
             </div>
 
-            <div>
-              <div className="relative">
-                <Input 
-                  required
-                  type={showConfirmPass ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    setErrors(prev => ({ ...prev, confirmPassword: '' }));
-                  }}
-                  placeholder="Confirmar Senha" 
-                  className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20 focus:border-purple-500/50 transition-all outline-none"
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowConfirmPass(!showConfirmPass)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
-                >
-                  {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-xs text-red-400 mt-1 pl-2 font-medium">{errors.confirmPassword}</p>
-              )}
+            <div className="relative">
+              <Input 
+                required
+                type={showConfirmPass ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirmar Senha" 
+                className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20"
+              />
+              <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20">
+                {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+              {errors.confirmPassword && <p className="text-[10px] text-red-400 mt-1 pl-2 font-bold uppercase">{errors.confirmPassword}</p>}
             </div>
 
-            {errors.general && (
-              <p className="text-xs text-red-400 text-center font-bold bg-red-400/10 p-2 rounded-xl border border-red-400/20">{errors.general}</p>
-            )}
+            {errors.general && <p className="text-xs text-red-400 text-center font-bold bg-red-400/10 p-2 rounded-xl border border-red-400/20">{errors.general}</p>}
 
-            <Button 
-              disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-2"
-            >
+            <Button disabled={loading} className="w-full h-12 bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] hover:opacity-95 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(123,97,255,0.3)] mt-2">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'FINALIZAR CADASTRO'}
             </Button>
           </form>
