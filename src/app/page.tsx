@@ -2,152 +2,153 @@ import React from 'react';
 import Image from 'next/image';
 import { 
   Play, 
-  UserPlus, 
-  Gamepad2, 
   ArrowRight, 
   Star,
-  Zap,
-  TrendingUp,
-  ShieldCheck
+  ShieldCheck,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen text-white pb-20 bg-[#06122b]">
-      {/* 1) HEADER FIXO EXATAMENTE COMO A REFERÊNCIA */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-background/80 backdrop-blur-md border-b border-white/5 mobile-container">
+    <div className="flex flex-col min-h-screen text-white bg-[#06122b] selection:bg-cyan-500/30">
+      {/* 1) HEADER FIXO PREMIUM */}
+      <header className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-5 h-16 bg-background/80 backdrop-blur-xl border-b border-white/5 mobile-container">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-red-600 rounded-lg flex items-center justify-center font-black text-white italic text-xs shadow-md">
+          <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-orange-600 rounded-lg flex items-center justify-center font-black text-white italic text-[10px] shadow-lg shadow-orange-500/20">
             BP
           </div>
-          <span className="font-black tracking-tighter text-base uppercase italic bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+          <span className="font-black tracking-tighter text-[15px] uppercase italic bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
             BLOCK PIX
           </span>
         </div>
-        <div>
-          <Button size="sm" className="bg-gradient-to-r from-secondary to-purple-600 text-white hover:opacity-90 px-5 h-9 font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_15px_rgba(123,97,255,0.4)]">
+        <div className="flex items-center gap-3">
+          <button className="text-[11px] font-bold text-white/60 uppercase tracking-widest hover:text-white transition-colors">
+            ENTRAR
+          </button>
+          <Button size="sm" className="bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white hover:opacity-90 px-4 h-9 font-black text-[10px] uppercase tracking-wider rounded-full glow-purple">
             CRIAR CONTA
           </Button>
         </div>
       </header>
 
-      <main className="pt-24 px-6 space-y-8">
-        {/* 2) HERO SECTION CONFORME A FOTO */}
+      <main className="flex-1 pt-20 px-6 pb-20 space-y-8 max-w-md mx-auto w-full">
+        {/* 2) HERO SECTION */}
         <section className="text-center space-y-5">
           <div className="flex justify-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0a2046] border border-cyan-500/30 text-xs font-semibold text-cyan-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 pulse-dot" />
-              <strong className="text-white font-bold">2.860</strong> jogadores online agora
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0a2046]/80 border border-cyan-500/20 text-[10px] font-bold text-cyan-400 uppercase tracking-widest backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot" />
+              <span className="text-white">3.083</span> jogadores online
             </div>
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white uppercase text-center leading-tight">
+          <h1 className="text-3xl font-[900] tracking-tight text-white uppercase text-center leading-[1.1]">
             ENCAIXE OS BLOCOS <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-black">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#35f59a] to-[#26d9ff] font-black">
               E GANHE R$
             </span>
           </h1>
 
-          {/* CARD PRINCIPAL IGUAL À TELA */}
-          <div className="relative w-full aspect-square bg-[#0b1d3f] rounded-[2rem] border border-white/10 overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+          {/* CARD DO JOGO (HERO BANNER) */}
+          <div className="relative w-full aspect-[4/5] bg-[#0b1d3f] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl animate-float group">
             <Image 
-              src="/painel.png" 
-              alt="Encaixe os Blocos e Ganhe R$" 
+              src="https://picsum.photos/seed/gameplay/600/800" 
+              alt="Block Blast Game" 
               fill 
-              className="object-cover"
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
               priority
               data-ai-hint="game screen block blast"
             />
             
-            {/* Fallback caso a imagem não exista para ficar bonito */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 pointer-events-none">
-              <span className="text-[10px] text-white/40 uppercase tracking-widest bg-black/40 backdrop-blur-sm self-start px-3 py-1 rounded-full">
-                Experiência visual demonstrativa
-              </span>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-8">
+              <div className="bg-black/40 backdrop-blur-md self-start px-3 py-1 rounded-full border border-white/5">
+                <span className="text-[9px] text-white/60 uppercase tracking-[0.2em] font-bold">
+                  Experiência visual demonstrativa
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 3) BOTÕES DE AÇÃO PRINCIPAIS DA REFERÊNCIA */}
-        <section className="space-y-4 pt-2">
-          <Button className="w-full h-14 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-base shadow-[0_8px_25px_rgba(52,245,154,0.4)] transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide">
+        {/* 3) BOTÕES DE AÇÃO */}
+        <section className="space-y-4">
+          <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] hover:opacity-90 text-slate-950 font-black text-base glow-green transition-all hover:scale-[1.02] active:scale-95 uppercase tracking-wide animate-shine">
+            <Play className="w-5 h-5 fill-current mr-2" />
             JOGAR GRÁTIS
           </Button>
 
-          <Button className="w-full h-14 rounded-full bg-gradient-to-r from-secondary to-purple-600 hover:opacity-90 text-white font-black text-base shadow-[0_8px_25px_rgba(123,97,255,0.3)] transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide">
+          <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#7b61ff] to-[#6366f1] hover:opacity-90 text-white font-black text-base glow-purple transition-all hover:scale-[1.02] active:scale-95 uppercase tracking-wide">
             CRIAR CONTA
           </Button>
 
-          <div className="text-center pt-1">
-            <a href="#" className="text-white/60 hover:text-cyan-400 transition-colors text-xs font-medium tracking-wide">
-              Já tenho conta &rarr;
+          <div className="text-center">
+            <a href="#" className="text-white/40 hover:text-cyan-400 transition-colors text-[11px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-1">
+              Já tenho conta <ChevronRight className="w-3 h-3" />
             </a>
           </div>
         </section>
 
-        {/* 4) CARDS DE ESTATÍSTICAS INTEGRADOS NO LAYOUT */}
-        <section className="grid grid-cols-3 gap-2.5 pt-4">
+        {/* 4) CARDS DE ESTATÍSTICAS */}
+        <section className="grid grid-cols-3 gap-3">
           {[
             { label: 'JOGADORES NA ARENA', value: '1.933' },
             { label: 'PRÊMIOS HOJE', value: 'R$ 8.523' },
             { label: 'MAIOR PRÊMIO HOJE', value: 'R$ 987' }
           ].map((stat, i) => (
-            <div key={i} className="bg-[#0b1d3f]/80 border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center min-h-[75px]">
-              <span className="text-sm font-black text-cyan-400 tracking-tight">{stat.value}</span>
-              <span className="text-[8px] font-bold text-white/40 uppercase tracking-tight mt-1 leading-tight">{stat.label}</span>
+            <div key={i} className="bg-[#0b1d3f]/60 backdrop-blur-sm border border-white/5 rounded-2xl p-3 flex flex-col items-center justify-center text-center">
+              <span className="text-xs font-black text-cyan-400 tracking-tight">{stat.value}</span>
+              <span className="text-[7px] font-black text-white/40 uppercase tracking-tight mt-1 leading-tight">{stat.label}</span>
             </div>
           ))}
         </section>
 
-        {/* 5) SEÇÃO COMO JOGAR */}
-        <section className="space-y-6 py-6 border-t border-white/5">
-          <div className="text-center space-y-1">
-            <span className="text-cyan-400 text-[10px] font-black uppercase tracking-[0.2em]">COMO JOGAR</span>
-            <h2 className="text-xl font-bold text-white uppercase tracking-tight">
-              Aprenda a faturar em 4 passos
+        {/* 5) COMO JOGAR */}
+        <section className="space-y-8 pt-8 border-t border-white/5">
+          <div className="text-center space-y-2">
+            <span className="text-cyan-400 text-[10px] font-black uppercase tracking-[0.3em]">COMO JOGAR</span>
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight leading-tight">
+              Aprenda a faturar <br/> em 4 passos simples
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {[
               { 
                 step: 1, 
                 title: '1. Deposite via PIX', 
                 desc: 'Adicione saldo à sua conta de forma rápida e segura para começar a jogar Block Blast.',
-                img: 'https://picsum.photos/seed/pix/400/250'
+                img: 'https://picsum.photos/seed/pix1/500/300'
               },
               { 
                 step: 2, 
                 title: '2. Escolha sua entrada', 
                 desc: 'Defina quanto quer apostar por partida. Quanto maior a entrada, maior a recompensa mínima.',
-                img: 'https://picsum.photos/seed/entry/400/250'
+                img: 'https://picsum.photos/seed/entry1/500/300'
               },
               { 
                 step: 3, 
                 title: '3. Monte e exploda linhas', 
                 desc: 'Encaixe as peças no tabuleiro 8x8. Cada linha ou coluna completa explode e acumula prêmios.',
-                img: 'https://picsum.photos/seed/game/400/250'
+                img: 'https://picsum.photos/seed/game1/500/300'
               },
               { 
                 step: 4, 
                 title: '4. Resgate e saque', 
                 desc: 'Bateu a meta de 2x? Faça o cashout e retire seus ganhos via PIX na hora.',
-                img: 'https://picsum.photos/seed/cashout/400/250'
+                img: 'https://picsum.photos/seed/cashout1/500/300'
               }
             ].map((step) => (
-              <Card key={step.step} className="bg-[#0b1d3f]/40 border-white/5 overflow-hidden rounded-2xl group">
-                <div className="relative aspect-[16/9] w-full bg-slate-950">
-                  <Image src={step.img} alt={step.title} fill className="object-cover opacity-80" />
-                  <div className="absolute top-3 left-3 w-8 h-8 bg-cyan-400 rounded-full flex items-center justify-center font-black text-slate-950 text-sm shadow-md">
+              <Card key={step.step} className="bg-[#0b1d3f]/40 border-white/5 overflow-hidden rounded-[2rem] group border-t-2 border-t-white/5">
+                <div className="relative aspect-video w-full bg-slate-950">
+                  <Image src={step.img} alt={step.title} fill className="object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute top-4 left-4 w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-full flex items-center justify-center font-black text-white text-sm shadow-xl">
                     {step.step}
                   </div>
                 </div>
-                <CardContent className="p-4 space-y-1">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wide">{step.title}</h3>
-                  <p className="text-white/50 text-xs leading-relaxed font-normal">
+                <CardContent className="p-6 space-y-2">
+                  <h3 className="text-sm font-black text-white uppercase tracking-wide">{step.title}</h3>
+                  <p className="text-white/40 text-xs leading-relaxed font-medium">
                     {step.desc}
                   </p>
                 </CardContent>
@@ -156,13 +157,13 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 6) SEÇÃO DE DEPOIMENTOS REALISTAS COM FOTO DE PERFIL */}
-        <section className="space-y-6 py-4 border-t border-white/5">
-          <div className="text-center space-y-1">
-            <h2 className="text-xl font-bold text-white uppercase tracking-tight">
+        {/* 6) DEPOIMENTOS */}
+        <section className="space-y-8 pt-8 border-t border-white/5">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-black text-white uppercase tracking-tight">
               QUEM JOGA, RECOMENDA!
             </h2>
-            <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Resultados reais de jogadores reais</p>
+            <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.25em]">Resultados reais de jogadores reais</p>
           </div>
 
           <div className="space-y-4">
@@ -171,39 +172,39 @@ export default function LandingPage() {
                 name: 'Rafael Martins',
                 initials: 'RM',
                 text: 'Comecei com R$ 10 e resgatei R$ 20 na primeira partida. O jogo é bom demais, muito fácil. O PIX caiu na hora!',
-                role: 'Jogador há 2 meses'
+                role: '✓ Usuário verificado'
               },
               {
                 name: 'Camila Souza',
                 initials: 'CS',
                 text: 'Já era viciado em Block Blast de qualquer forma, agora ainda ganho dinheiro jogando. A tática é resgatar cedo e não ser ganancioso.',
-                role: 'Mãe Festeira'
+                role: '✓ Usuário verificado'
               },
               {
                 name: 'Bruno Lima',
                 initials: 'BL',
                 text: 'Interface limpa, sem enrolação. Depositei, joguei e saquei no mesmo dia. Cada linha que explode é muito satisfatório.',
-                role: 'Usuário Ativo'
+                role: '✓ Usuário verificado'
               }
             ].map((testimonial, i) => (
-              <Card key={i} className="bg-[#0b1d3f]/50 border-white/5 p-4 rounded-2xl">
-                <div className="flex gap-1 mb-2">
+              <Card key={i} className="bg-[#0b1d3f]/50 border-white/5 p-6 rounded-[2rem] border-l-4 border-l-cyan-500/50">
+                <div className="flex gap-1 mb-3">
                   {Array.from({ length: 5 }).map((_, j) => (
                     <Star key={j} className="w-3 h-3 fill-emerald-400 text-emerald-400" />
                   ))}
                 </div>
-                <p className="text-xs text-white/80 italic mb-4 leading-relaxed">
+                <p className="text-xs text-white/70 italic mb-5 leading-relaxed font-medium">
                   "{testimonial.text}"
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center font-bold text-cyan-400 text-xs border border-white/10 uppercase">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-purple-500/20 flex items-center justify-center font-black text-cyan-400 text-xs border border-white/10 uppercase shadow-inner">
                     {testimonial.initials}
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-white uppercase tracking-wide leading-none">{testimonial.name}</h4>
-                    <div className="flex items-center gap-1 mt-1">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wide leading-none">{testimonial.name}</h4>
+                    <div className="flex items-center gap-1 mt-1.5">
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">{testimonial.role}</span>
+                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">{testimonial.role}</span>
                     </div>
                   </div>
                 </div>
@@ -212,42 +213,43 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 7) SEÇÃO FINAL CTA */}
-        <section className="py-8 px-4 bg-gradient-to-b from-transparent to-cyan-500/5 rounded-[2rem] text-center space-y-5 border border-white/5">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-black tracking-tight text-white uppercase">
-              Pronto para <br /> montar e ganhar?
+        {/* 7) CTA FINAL */}
+        <section className="py-12 px-6 bg-gradient-to-b from-transparent to-cyan-500/5 rounded-[2.5rem] text-center space-y-6 border border-white/5">
+          <div className="space-y-3">
+            <h2 className="text-3xl font-black tracking-tight text-white uppercase leading-tight">
+              PRONTO PARA <br /> MONTAR E GANHAR?
             </h2>
-            <p className="text-white/50 text-xs max-w-xs mx-auto">
+            <p className="text-white/40 text-xs font-medium max-w-[200px] mx-auto leading-relaxed">
               Crie sua conta grátis, deposite a partir de R$ 20 e comece agora mesmo.
             </p>
           </div>
 
-          <Button className="w-full h-14 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-base shadow-[0_8px_25px_rgba(52,245,154,0.4)] transition-all uppercase tracking-wide">
+          <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 font-black text-base shadow-xl glow-green transition-all uppercase tracking-widest animate-shine">
             CRIAR CONTA GRÁTIS
           </Button>
 
-          <div className="text-[9px] text-white/30 uppercase tracking-widest">
-            Cadastro rápido • experiência demonstrativa
+          <div className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-bold">
+            Cadastro rápido • modo demonstração
           </div>
         </section>
       </main>
 
       {/* 8) FOOTER */}
-      <footer className="mt-8 px-6 py-6 border-t border-white/5 space-y-4 text-center">
-        <div className="flex justify-center items-center gap-2 opacity-50">
-          <div className="w-5 h-5 bg-gradient-to-br from-cyan-500 to-purple-500 rounded flex items-center justify-center font-black text-white italic text-[10px]">
+      <footer className="px-6 py-10 border-t border-white/5 space-y-6 text-center bg-black/20">
+        <div className="flex justify-center items-center gap-2 opacity-50 grayscale">
+          <div className="w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-600 rounded flex items-center justify-center font-black text-white italic text-[8px]">
             BP
           </div>
-          <span className="font-black tracking-tighter text-xs uppercase italic text-white">Block Pix</span>
+          <span className="font-black tracking-tighter text-[10px] uppercase italic text-white">Block Pix</span>
         </div>
         
-        <p className="text-white/30 text-[9px] font-medium">
-          &copy; 2026 Block Pix. Todos os direitos reservados.
-        </p>
-        
-        <div className="text-white/20 text-[8px] font-bold uppercase tracking-wider max-w-xs mx-auto leading-relaxed">
-          Jogue com responsabilidade. Proibido para menores de 18 anos.
+        <div className="space-y-2">
+          <p className="text-white/20 text-[9px] font-bold uppercase tracking-widest">
+            &copy; 2026 Block Pix. Todos os direitos reservados.
+          </p>
+          <div className="text-white/10 text-[8px] font-black uppercase tracking-[0.2em] max-w-[220px] mx-auto leading-relaxed">
+            Jogue com responsabilidade. Proibido para menores de 18 anos.
+          </div>
         </div>
       </footer>
     </div>
