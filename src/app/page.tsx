@@ -284,7 +284,7 @@ export default function LandingPage() {
             &copy; 2026 Block Cash. Todos os direitos reservados.
           </p>
           <div className="text-white/20 text-[8px] font-black uppercase tracking-wider max-w-[260px] mx-auto leading-relaxed">
-            Jogue com responsabilidade. Proibido para menores de 18 anos.
+            Jogue com responsabilidade. Proibido para menores di 18 anos.
           </div>
         </div>
       </footer>
