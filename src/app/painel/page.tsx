@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -227,7 +228,10 @@ export default function PainelPage() {
 
     const userRef = doc(db, 'users', user.uid);
 
-    updateDoc(userRef, { balance: increment(-selectedValue) })
+    updateDoc(userRef, { 
+      balance: increment(-selectedValue),
+      gamesPlayed: increment(1)
+    })
       .then(() => {
         router.push(`/game?entry=${selectedValue}`);
       })
@@ -235,7 +239,7 @@ export default function PainelPage() {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'update',
-          requestResourceData: { balance: 'decrement_start_game' },
+          requestResourceData: { balance: 'decrement_start_game', gamesPlayed: 'increment' },
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
@@ -434,19 +438,19 @@ export default function PainelPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                <strong className="text-2xl font-black text-white">0</strong>
+                <strong className="text-2xl font-black text-white">{userData.gamesPlayed || 0}</strong>
                 <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Partidas</span>
               </div>
               <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                <strong className="text-2xl font-black text-white">0</strong>
+                <strong className="text-2xl font-black text-white">{userData.totalRedeems || 0}</strong>
                 <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Resgates</span>
               </div>
               <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                <strong className="text-2xl font-black text-emerald-400">R$ 0,00</strong>
+                <strong className="text-2xl font-black text-emerald-400">R$ {(userData.totalWinnings || 0).toFixed(2).replace('.', ',')}</strong>
                 <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Total ganho</span>
               </div>
               <div className="bg-slate-900/40 rounded-[1.5rem] p-5 border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                <strong className="text-2xl font-black text-emerald-400">R$ 0,00</strong>
+                <strong className="text-2xl font-black text-emerald-400">R$ {(userData.maxRedeem || 0).toFixed(2).replace('.', ',')}</strong>
                 <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Maior resgate</span>
               </div>
             </div>

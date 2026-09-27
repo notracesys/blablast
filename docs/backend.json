@@ -3,7 +3,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Dados da conta do usuário e saldo financeiro",
+      "description": "Dados da conta do usuário, saldo financeiro e estatísticas de jogo",
       "type": "object",
       "properties": {
         "fullName": {
@@ -22,6 +22,22 @@
         "balance": {
           "type": "number",
           "description": "Saldo atual em conta"
+        },
+        "gamesPlayed": {
+          "type": "number",
+          "description": "Total de partidas iniciadas"
+        },
+        "totalRedeems": {
+          "type": "number",
+          "description": "Quantidade total de resgates realizados"
+        },
+        "totalWinnings": {
+          "type": "number",
+          "description": "Soma total de todos os prêmios ganhos"
+        },
+        "maxRedeem": {
+          "type": "number",
+          "description": "O maior prêmio individual já resgatado"
         },
         "createdAt": {
           "type": "string",

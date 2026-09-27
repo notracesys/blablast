@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState, Suspense } from 'react';
@@ -7,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Volume2, VolumeX, Info, Award, Loader2, CheckCircle2 } from 'lucide-react';
 import { GameAudio } from './audios';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, updateDoc, increment, getDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
@@ -22,6 +23,7 @@ function GameContent() {
   const [showGameOver, setShowGameOver] = useState(false);
   const [linesCompleted, setLinesCompleted] = useState(0);
   const [isRedeeming, setIsRedeeming] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
 
   // Lógica dinâmica baseada na entrada: meta 5 linhas, cada linha vale 1x a entrada.
   const entryValue = parseFloat(searchParams.get('entry') || '10');
@@ -30,6 +32,15 @@ function GameContent() {
   const FINAL_PRIZE = entryValue * 5;
 
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
+
+  useEffect(() => {
+    if (user && db) {
+      const userRef = doc(db, 'users', user.uid);
+      getDoc(userRef).then(snap => {
+        if (snap.exists()) setUserData(snap.data());
+      });
+    }
+  }, [user, db]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -70,8 +81,7 @@ function GameContent() {
 
     const COLOR_PALETTES = [
       { h: 208, s: 95, l: 56 }, { h: 128, s: 68, l: 48 }, { h: 276, s: 88, l: 60 },
-      { h: 45, s: 100, l: 55 }, { h: 2, s: 88, l: 56 }, { h: 190, s: 92, l: 50 },
-      { h: 24, s: 96, l: 55 }
+      { h: 45, s: 100, l: 55 }, { h: 190, s: 92, l: 50 }, { h: 24, s: 96, l: 55 }
     ];
 
     let CELL_SIZE = 36;
@@ -709,7 +719,7 @@ function GameContent() {
       if (dragGhost) dragGhost.remove();
       GameAudio.stopMusic();
     };
-  }, []);
+  }, [user, db]);
 
   const toggleSound = () => {
     GameAudio.unlock();
@@ -732,10 +742,17 @@ function GameContent() {
 
     const userRef = doc(db, 'users', user.uid);
     
-    // Incremento atômico para segurança máxima do saldo
-    updateDoc(userRef, {
-      balance: increment(FINAL_PRIZE)
-    })
+    const updates: any = {
+      balance: increment(FINAL_PRIZE),
+      totalWinnings: increment(FINAL_PRIZE),
+      totalRedeems: increment(1)
+    };
+
+    if (FINAL_PRIZE > (userData?.maxRedeem || 0)) {
+      updates.maxRedeem = FINAL_PRIZE;
+    }
+
+    updateDoc(userRef, updates)
     .then(() => {
       router.push('/painel');
     })
@@ -743,7 +760,7 @@ function GameContent() {
       const permissionError = new FirestorePermissionError({
         path: userRef.path,
         operation: 'update',
-        requestResourceData: { balance: 'increment_prize' },
+        requestResourceData: updates,
       } satisfies SecurityRuleContext);
       errorEmitter.emit('permission-error', permissionError);
       setIsRedeeming(false);
