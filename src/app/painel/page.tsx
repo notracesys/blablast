@@ -1,11 +1,10 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket } from 'lucide-react';
+import { Wallet, Users, User, Gamepad2, ArrowUpRight, X, Ticket, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -22,6 +21,7 @@ export default function PainelPage() {
   const [userData, setUserData] = useState<any>(null);
   const [selectedValue, setSelectedValue] = useState<number>(10);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
+  const [showInsufficientBalanceModal, setShowInsufficientBalanceModal] = useState<boolean>(false);
   const [depositAmount, setDepositAmount] = useState<string>('20');
   const [isDepositing, setIsDepositing] = useState<boolean>(false);
   const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
@@ -119,12 +119,7 @@ export default function PainelPage() {
   const handleStartGame = () => {
     if (!userData || !user || !db) return;
     if ((userData.balance || 0) < selectedValue) {
-      toast({
-        variant: "destructive",
-        title: "Saldo insuficiente",
-        description: "Adicione saldo para entrar nesta partida.",
-      });
-      setShowDepositModal(true);
+      setShowInsufficientBalanceModal(true);
       return;
     }
 
@@ -284,6 +279,52 @@ export default function PainelPage() {
           <span className="text-[9px] font-bold uppercase tracking-wider">Perfil</span>
         </button>
       </nav>
+
+      {/* MODAL DE SALDO INSUFICIENTE */}
+      <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[6000]`}>
+        <div className="w-full max-w-[340px] border border-white/5 rounded-[2rem] bg-[#111622] p-6 shadow-2xl text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-400">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          
+          <div className="space-y-1">
+            <h3 className="text-base font-black uppercase tracking-wide text-white">Saldo Insuficiente</h3>
+            <p className="text-white/60 text-xs leading-relaxed">
+              Você precisa de saldo para entrar nesta partida.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-950/60 rounded-2xl border border-white/5 space-y-2 text-left">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-white/40 font-bold uppercase">Seu Saldo:</span>
+              <span className="text-rose-400 font-black">R$ {(userData.balance || 0).toFixed(2).replace('.', ',')}</span>
+            </div>
+            <div className="h-px bg-white/5" />
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-white/40 font-bold uppercase">Custo de Entrada:</span>
+              <span className="text-cyan-400 font-black">R$ {selectedValue.toFixed(2).replace('.', ',')}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button 
+              onClick={() => {
+                setShowInsufficientBalanceModal(false);
+                setShowDepositModal(true);
+              }}
+              className="w-full h-11 rounded-xl bg-[#35f59a] text-slate-950 font-black text-xs uppercase tracking-wider shadow-[0_4px_12px_rgba(53,245,154,0.2)]"
+            >
+              Fazer Depósito
+            </button>
+            <button 
+              onClick={() => setShowInsufficientBalanceModal(false)}
+              className="w-full h-11 rounded-xl bg-[#182030] text-white/60 font-black text-xs uppercase tracking-wider border border-white/5"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* MODAL DE DEPÓSITO CUSTOMIZADO */}
       <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
