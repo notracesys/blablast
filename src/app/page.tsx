@@ -18,7 +18,7 @@ import { Card, CardContent } from '@/components/ui/card';
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen text-white bg-[#06122b] selection:bg-cyan-500/30">
-      <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-20 bg-[#06122b]/80 backdrop-blur-xl border-b border-white/5">
+      <header className="fixed top-0 max-w-[480px] w-full mx-auto left-0 right-0 z-[100] flex items-center justify-between px-4 h-20 bg-[#06122b]/80 backdrop-blur-xl border-b border-b-white/5">
         <div className="flex items-center">
           <Image 
             src="/blockcash.png" 
@@ -81,7 +81,7 @@ export default function LandingPage() {
         </section>
 
         <section className="space-y-3.5">
-          <Link href="/game" className="block w-full">
+          <Link href="/demo" className="block w-full">
             <Button className="w-full h-16 rounded-2xl bg-gradient-to-r from-[#35f59a] to-[#26d9ff] hover:opacity-95 text-slate-950 font-black text-base glow-green transition-all hover:scale-[1.01] active:scale-95 uppercase tracking-wide animate-shine flex items-center justify-between px-5 border border-emerald-300/30">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 bg-slate-950/10 rounded-xl flex items-center justify-center">

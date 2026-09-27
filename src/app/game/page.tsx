@@ -14,7 +14,6 @@ export default function GamePage() {
   const { user } = useUser();
   const [isMutedState, setIsMutedState] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
-  const [showDemoWithdraw, setShowDemoWithdraw] = useState(false);
   
   const [linesCompleted, setLinesCompleted] = useState(0);
 
@@ -56,10 +55,7 @@ export default function GamePage() {
       { matrix: [[1, 0, 0], [1, 1, 1]], complexity: 3 },
       { matrix: [[0, 0, 1], [1, 1, 1]], complexity: 3 },
       { matrix: [[1, 1, 1], [1, 0, 0]], complexity: 3 },
-      { matrix: [[1, 1, 1], [0, 0, 1]], complexity: 3 },
-      { matrix: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], complexity: 4 },
-      { matrix: [[1, 0, 1], [1, 1, 1]], complexity: 4 },
-      { matrix: [[1, 1, 1], [1, 0, 1]], complexity: 4 }
+      { matrix: [[1, 1, 1], [0, 0, 1]], complexity: 3 }
     ];
 
     const COLOR_PALETTES = [
@@ -699,16 +695,11 @@ export default function GamePage() {
   const handleBackClick = (e: React.MouseEvent) => {
     e.preventDefault();
     GameAudio.play('swtch');
-    if (user) {
-      router.push('/painel');
-    } else {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   const isTargetAchieved = linesCompleted >= TARGET_LINES;
   const currentPotentialPrize = linesCompleted * VALUE_PER_LINE;
-  const realEarnings = isTargetAchieved ? FINAL_PRIZE : 0;
   const progressPercentage = Math.min(100, (linesCompleted / TARGET_LINES) * 100);
 
   return (
@@ -743,7 +734,7 @@ export default function GamePage() {
 
           <div className="justify-self-end flex items-center">
             <span className="px-1.5 py-0.5 rounded border border-cyan-500/35 bg-cyan-950/60 text-cyan-400 text-[9px] font-black tracking-wider uppercase shadow-[0_0_8px_rgba(38,217,255,0.2)]">
-              {user ? 'PARTIDA' : 'TESTE'}
+              ARENA REAL
             </span>
           </div>
         </header>
@@ -761,7 +752,7 @@ export default function GamePage() {
             <div>Progresso: <span className="text-cyan-400 font-black">{linesCompleted}</span> de <span className="text-white font-black">{TARGET_LINES}</span> linhas completas</div>
             {!isTargetAchieved && (
               <div className="text-[9px] text-amber-400/90 font-medium">
-                Custo de Entrada: R$ 10,00 • Complete 4 linhas para liberar <span className="font-bold text-white">R$ {FINAL_PRIZE},00</span>
+                Custo de Entrada da Arena Real • Lance blocos para atingir o objetivo
               </div>
             )}
             {isTargetAchieved && (
@@ -782,19 +773,15 @@ export default function GamePage() {
             <button 
               onClick={() => {
                 GameAudio.play('swtch');
-                if (user) {
-                  router.push('/painel');
-                } else {
-                  setShowDemoWithdraw(true);
-                }
+                router.push('/painel');
               }}
-              className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_25px_rgba(234,179,8,0.6)] border border-amber-200/40 flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:-translate-x-full before:animate-[shine_2s_infinite]"
+              className="w-full mt-2 h-11 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-500 text-slate-950 font-black text-xs tracking-wide uppercase shadow-[0_0_25px_rgba(234,179,8,0.6)] border border-amber-200/40 flex items-center justify-center gap-1.5 relative overflow-hidden animate-pulse"
               style={{
                 textShadow: '0 1px 2px rgba(255,255,255,0.3)',
                 boxShadow: '0 0 30px rgba(234,179,8,0.7), inset 0 2px 4px rgba(255,255,255,0.6)'
               }}
             >
-              <Wallet className="w-4 h-4 text-slate-950 stroke-[2.5]" /> {user ? 'Voltar ao Painel & Sacar' : `Resgatar R$ ${FINAL_PRIZE},00 via PI`}
+              Concluir Partida e Salvar Lucro
             </button>
           )}
         </section>
@@ -811,7 +798,7 @@ export default function GamePage() {
         
         <div className="flex items-center justify-center gap-1.5 text-center mb-4 shrink-0">
           <Info className="w-3 h-3 text-white/30 shrink-0" />
-          <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças para completar linhas completas.</p>
+          <p className="text-[9px] text-white/40 font-bold uppercase tracking-wider">Arraste as peças estrategicamente para estourar as linhas.</p>
         </div>
       </div>
 
@@ -823,92 +810,29 @@ export default function GamePage() {
         {isMutedState ? <VolumeX className="w-4 h-4 opacity-50" /> : <Volume2 className="w-4 h-4" />}
       </button>
 
-      <div className={`modal-overlay fixed inset-0 ${showDemoWithdraw ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[4000]`}>
-        <div className="modal-content w-full max-w-xs p-5 text-center border border-emerald-500/30 rounded-2xl bg-slate-900 shadow-2xl">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-          </div>
-          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Você conquistou R$ {FINAL_PRIZE},00!</h2>
-          <p className="text-white/70 text-xs mb-3">
-            No jogo real você já teria colocado esse dinheiro no bolso!
-          </p>
-          <div className="p-2.5 bg-slate-950/60 rounded-xl border border-white/5 text-[10px] text-white/50 text-left mb-4">
-            ⚠️ <span className="text-white font-semibold">Saldo Demonstrativo:</span> Como você está na versão de testes gratuita, este prêmio é apenas simulação. Deposite de verdade para resgatar PIX reais na sua conta bancária agora mesmo!
-          </div>
-
-          <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_15px_rgba(38,217,255,0.3)] mb-2 uppercase tracking-wider">
-            CRIAR CONTA REAL & FATURAR
-          </Link>
-          <button 
-            onClick={() => setShowDemoWithdraw(false)} 
-            className="w-full h-9 rounded-lg text-[11px] font-semibold border border-white/10 text-white/60 hover:text-white"
-          >
-            Continuar Testando
-          </button>
-        </div>
-      </div>
-
       <div className={`modal-overlay fixed inset-0 ${showGameOver ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[3000]`} id="gameOverModal">
         <div className="modal-content w-full max-w-xs p-5 text-center border border-white/10 rounded-2xl bg-slate-900 shadow-2xl">
-          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Fim de jogo</h2>
-          <p className="text-white/60 text-xs mb-3">Acabou porque não há mais espaço para encaixar as peças atuais.</p>
+          <h2 className="text-lg font-black text-white uppercase tracking-wide mb-1">Fim da Partida</h2>
+          <p className="text-white/60 text-xs mb-3">Tabuleiro cheio! Não há mais encaixes válidos para as peças disponíveis.</p>
           
           <div className="my-3 p-2.5 rounded-xl bg-slate-950/60 border border-white/5 text-left text-xs space-y-1">
             <div className="flex justify-between">
-              <span className="text-white/50">Linhas feitas:</span>
+              <span className="text-white/50">Linhas concluídas:</span>
               <span className="font-bold text-white">{linesCompleted} / 4</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-white/50">Status da meta:</span>
+              <span className="text-white/50">Status:</span>
               <span className={`font-bold ${isTargetAchieved ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {isTargetAchieved ? 'Concluída' : 'Não atingida'}
-              </span>
-            </div>
-            <div className="h-px bg-white/5 my-1" />
-            <div className="flex justify-between text-xs">
-              <span className="font-bold text-white/70">Você poderia ter ganho:</span>
-              <span className={`font-black ${isTargetAchieved ? 'text-emerald-400' : 'text-amber-400'}`}>
-                R$ {isTargetAchieved ? FINAL_PRIZE : currentPotentialPrize},00
+                {isTargetAchieved ? 'Meta Concluída' : 'Abaixo da Meta'}
               </span>
             </div>
           </div>
 
-          {isTargetAchieved && !user && (
-            <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider">
-              CRIAR CONTA REAL & SACAR
-            </Link>
-          )}
-          {isTargetAchieved && user && (
-            <button 
-              onClick={() => router.push('/painel')}
-              className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center shadow-[0_0_12px_rgba(52,245,154,0.4)] mb-2 uppercase tracking-wider"
-            >
-              VOLTAR AO PAINEL
-            </button>
-          )}
-          {!isTargetAchieved && !user && (
-            <Link href="/register" className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider">
-              JOGAR NA ARENA REAL
-            </Link>
-          )}
-          {!isTargetAchieved && user && (
-            <button 
-              onClick={() => router.push('/painel')}
-              className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#7b61ff] to-[#5a42d8] text-white flex items-center justify-center shadow-[0_0_12px_rgba(123,97,255,0.4)] mb-2 uppercase tracking-wider"
-            >
-              VOLTAR AO PAINEL
-            </button>
-          )}
-
           <button 
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.location.reload();
-              }
-            }} 
-            className="w-full h-10 rounded-lg font-bold text-xs bg-slate-800 text-white mb-2"
+            onClick={() => router.push('/painel')}
+            className="w-full h-10 rounded-lg font-bold text-xs bg-gradient-to-r from-[#35f59a] to-[#26d9ff] text-slate-950 flex items-center justify-center uppercase tracking-wider mb-2"
           >
-            Tentar de Novo
+            Voltar ao Painel
           </button>
         </div>
       </div>
