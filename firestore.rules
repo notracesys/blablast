@@ -12,7 +12,7 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // O OWNER é o Deus do sistema: Claim Admin ou Campo no Banco
+    // O OWNER é o Deus do sistema
     function isOwner() {
       return isAuth() && (
         request.auth.token.role == 'owner' || 
@@ -21,7 +21,7 @@ service cloud.firestore {
       );
     }
     
-    // MANAGER: Claim ou Campo
+    // MANAGER
     function isManager() {
       return isAuth() && (
         request.auth.token.role == 'manager' || 
@@ -35,7 +35,6 @@ service cloud.firestore {
       allow get: if isAuth() && (request.auth.uid == userId || isOwner());
       allow list: if isOwner();
       allow create: if isAuth();
-      // Apenas Owner muda campos sensíveis
       allow update: if isOwner() || (
         isAuth() && request.auth.uid == userId && 
         !request.resource.data.diff(resource.data).affectedKeys()
@@ -59,9 +58,14 @@ service cloud.firestore {
       allow write: if isOwner();
     }
     
+    match /logs/{logId} {
+      allow read: if isOwner();
+      allow create: if isAuth();
+    }
+
     match /auditLogs/{logId} {
       allow read: if isOwner();
-      allow create: if isAuth(); // Permite que o sistema registre ações
+      allow create: if isAuth();
     }
 
     match /matches/{matchId} {
@@ -69,7 +73,7 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
-    // BLOQUEIO GLOBAL PARA DESLOGADOS
+    // BLOQUEIO GLOBAL
     match /{document=**} {
       allow read, write: if isOwner();
     }

@@ -9,10 +9,7 @@ import {
   DollarSign, 
   Zap,
   ShieldCheck,
-  BarChart3,
-  AlertTriangle,
   UserCircle,
-  Activity,
   Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,22 +30,32 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!db) return;
 
-    // Dashboard Master do Owner
-    onSnapshot(collection(db, 'users'), snap => {
+    // Estatísticas de Usuários
+    const unsubUsers = onSnapshot(collection(db, 'users'), snap => {
       const mgrs = snap.docs.filter(d => d.data().role === 'manager').length;
       setStats(prev => ({ ...prev, users: snap.size, managers: mgrs }));
     });
 
-    onSnapshot(collection(db, 'influencers'), snap => {
+    // Estatísticas de Influenciadores
+    const unsubInf = onSnapshot(collection(db, 'influencers'), snap => {
       setStats(prev => ({ ...prev, influencers: snap.size }));
     });
 
-    const logsQ = query(collection(db, 'auditLogs'), orderBy('timestamp', 'desc'), limit(10));
-    onSnapshot(logsQ, snap => {
+    // Logs de Auditoria (usando a coleção 'logs' que você já tem)
+    const logsQ = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(10));
+    const unsubLogs = onSnapshot(logsQ, snap => {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setLogs(list);
+    }, (err) => {
+      console.log("Aguardando logs...");
     });
+
+    return () => {
+      unsubUsers();
+      unsubInf();
+      unsubLogs();
+    };
   }, [db]);
 
   const cards = [
@@ -106,8 +113,8 @@ export default function AdminDashboard() {
                     <tr><td colSpan={3} className="px-8 py-10 text-center text-white/10 font-black uppercase text-[10px] italic">Sem atividade recente</td></tr>
                   ) : logs.map(log => (
                     <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{new Date(log.timestamp).toLocaleTimeString()}</td>
-                      <td className="px-8 py-5 text-xs font-bold text-white uppercase tracking-tight">{log.action}</td>
+                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : '---'}</td>
+                      <td className="px-8 py-5 text-xs font-bold text-white uppercase tracking-tight">{log.action || log.details}</td>
                       <td className="px-8 py-5 text-right"><span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase">Gravado</span></td>
                     </tr>
                   ))}

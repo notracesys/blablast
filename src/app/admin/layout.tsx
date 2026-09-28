@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUser, useAuth } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
@@ -14,7 +14,6 @@ import {
   Menu,
   X,
   Loader2,
-  Terminal,
   Users as UsersIcon,
   Gamepad2,
   FileText,
@@ -30,14 +29,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
         router.push('/login');
       } else if (role !== 'owner') {
-        // Se for manager, manda pro painel dele. Se for user, manda pro painel comum.
+        // Redireciona se não for dono
         router.push(role === 'manager' ? '/manager' : '/painel');
       }
     }
@@ -47,11 +46,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Acesso Master...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Autenticando Owner...</span>
       </div>
     );
   }
 
+  // Só renderiza se for owner
   if (role !== 'owner') return null;
 
   const menuItems = [

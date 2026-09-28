@@ -62,28 +62,29 @@ export function useUser() {
     if (!auth || !db) return;
     
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      setLoading(true);
       if (u) {
         try {
-          // 1. Tenta pegar a role via Claim
+          setUser(u);
+          // 1. Tenta Claims
           const tokenResult = await getIdTokenResult(u, true);
           let userRole = tokenResult.claims.role as any;
 
-          // 2. Fallback via Firestore se a claim não existir
+          // 2. Fallback Firestore (o que você tem no print)
           if (!userRole) {
             const userSnap = await getDoc(doc(db, 'users', u.uid));
             if (userSnap.exists()) {
               const data = userSnap.data();
-              userRole = (data.role === 'owner' || data.isAdmin) ? 'owner' : data.role || 'user';
+              // Prioridade total para Owner
+              if (data.role === 'owner' || data.isAdmin === true) {
+                userRole = 'owner';
+              } else {
+                userRole = data.role || 'user';
+              }
             }
           }
 
-          console.log(`[AUTH] UID: ${u.uid} | ROLE: ${userRole || 'user'}`);
           setRole(userRole || 'user');
-          setUser(u);
         } catch (e) {
-          console.error("[AUTH] Erro ao carregar perfil", e);
-          setUser(u);
           setRole('user');
         }
       } else {
