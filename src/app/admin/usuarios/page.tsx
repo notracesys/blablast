@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -9,13 +10,10 @@ import {
   UserCheck, 
   ShieldAlert, 
   ShieldCheck, 
-  MoreHorizontal,
   Mail,
   Phone,
   Calendar,
-  Wallet,
   Gamepad2,
-  Trash2,
   Loader2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -39,6 +37,9 @@ export default function UsersAdmin() {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setUsers(list);
+      setLoading(false);
+    }, () => {
+      // Ignora erro pois o layout já valida
       setLoading(false);
     });
     return () => unsubscribe();
@@ -77,7 +78,7 @@ export default function UsersAdmin() {
   );
 
   return (
-    <div className="p-8 md:p-10 space-y-8" id="admin-page">
+    <div className="p-8 md:p-10 space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-2xl font-black text-white uppercase tracking-tight">Gestão da Base de Dados</h2>
@@ -89,7 +90,7 @@ export default function UsersAdmin() {
             placeholder="Pesquisar por Nome, E-mail ou Telefone..." 
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="h-12 bg-[#111622] border-white/5 pl-12 rounded-2xl text-sm"
+            className="h-12 bg-[#111622] border-white/5 pl-12 rounded-2xl text-sm font-bold"
           />
         </div>
       </div>

@@ -1,44 +1,27 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { collection, onSnapshot, doc, getDoc, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { 
   Users, 
-  TrendingUp, 
-  Gamepad2, 
-  AlertTriangle, 
-  UserPlus, 
   DollarSign, 
   Zap,
   ArrowUpRight,
   ArrowDownRight,
-  Loader2,
-  ShieldAlert,
   ShieldCheck,
-  BarChart3
+  BarChart3,
+  AlertTriangle,
+  Gamepad2,
+  UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 export default function AdminDashboard() {
-  const auth = useAuth();
   const db = useFirestore();
-  const { user: authUser, loading: authLoading } = useUser();
-  const { toast } = useToast();
-
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingPrivileges, setCheckingPrivileges] = useState(true);
-  
-  // Login State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
 
   // Stats State
   const [stats, setStats] = useState({
@@ -55,31 +38,7 @@ export default function AdminDashboard() {
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!authUser || !db) {
-      setCheckingPrivileges(false);
-      return;
-    }
-
-    const checkAdmin = async () => {
-      try {
-        const userRef = doc(db, 'users', authUser.uid);
-        const snap = await getDoc(userRef);
-        if (snap.exists() && snap.data().isAdmin === true) {
-          setIsAdmin(true);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setCheckingPrivileges(false);
-      }
-    };
-
-    checkAdmin();
-  }, [authUser, db, authLoading]);
-
-  useEffect(() => {
-    if (!isAdmin || !db) return;
+    if (!db) return;
 
     // Usuários Totais e Gerentes
     const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
@@ -91,6 +50,8 @@ export default function AdminDashboard() {
       });
       setStats(prev => ({ ...prev, totalUsers: snap.size, managerCount: admins }));
       setRecentUsers(list.sort((a, b) => b.createdAt?.localeCompare(a.createdAt)).slice(0, 5));
+    }, () => {
+      // Ignora erro de permissão silenciosamente pois o layout já valida
     });
 
     // Faturamento e Configurações
@@ -99,68 +60,13 @@ export default function AdminDashboard() {
         const d = snap.data();
         setStats(prev => ({ ...prev, grossRevenue: d.totalDeposited || 0 }));
       }
-    });
+    }, () => {});
 
     return () => {
       unsubUsers();
       unsubSettings();
     };
-  }, [isAdmin, db]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!auth) return;
-    setLoginLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err) {
-      toast({ variant: "destructive", title: "Erro", description: "Credenciais inválidas ou sem permissão master." });
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  if (checkingPrivileges) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-[#08090d]">
-        <Loader2 className="animate-spin text-cyan-500" size={32} />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-[#08090d] p-6">
-        <div className="w-full max-w-md space-y-8 rounded-[2.5rem] bg-[#111622] p-10 border border-white/5 shadow-2xl">
-          <div className="text-center space-y-2">
-            <Image src="/blockcash.png" alt="Logo" width={100} height={40} className="mx-auto filter brightness-125 mb-4" />
-            <h1 className="text-2xl font-black uppercase tracking-tight text-white">Terminal Master</h1>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação de Segurança Nível 4</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <Input 
-              placeholder="E-mail Administrativo" 
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              className="h-14 bg-black/40 border-white/5 rounded-2xl" 
-            />
-            <Input 
-              placeholder="Chave de Segurança" 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              className="h-14 bg-black/40 border-white/5 rounded-2xl" 
-            />
-            <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)]">
-              {loginLoading ? <Loader2 className="animate-spin" /> : "ACESSAR TERMINAL"}
-            </Button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  }, [db]);
 
   const metricCards = [
     { label: 'Usuários Totais', value: stats.totalUsers, icon: Users, color: 'text-blue-400', trend: '+12%', up: true },
@@ -172,7 +78,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="p-8 md:p-12 space-y-10" id="admin-page">
+    <div className="p-8 md:p-12 space-y-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight">Cérebro da Operação</h2>
@@ -222,7 +128,7 @@ export default function AdminDashboard() {
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Últimas Atividades na Arena</h3>
-              <Button onClick={() => window.location.href='/admin/usuarios'} variant="link" className="text-cyan-400 text-xs font-black uppercase">Ver Base Completa</Button>
+              <Button onClick={() => router.push('/admin/usuarios')} variant="link" className="text-cyan-400 text-xs font-black uppercase">Ver Base Completa</Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -279,14 +185,14 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Preset Atual</span>
               <div className="text-4xl font-black text-white">50%</div>
             </div>
-            <Button onClick={() => window.location.href='/admin/configuracoes'} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
+            <Button onClick={() => router.push('/admin/configuracoes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
               Configurar Arena
             </Button>
           </Card>
 
           <div className="p-8 rounded-[2.5rem] border border-rose-500/20 bg-rose-500/5 space-y-4">
             <div className="flex items-center gap-3 text-rose-500">
-              <ShieldAlert size={20} />
+              <AlertTriangle size={20} />
               <h4 className="text-xs font-black uppercase tracking-widest">Rede Antifraude</h4>
             </div>
             <p className="text-[10px] text-white/40 leading-relaxed font-medium">

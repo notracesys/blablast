@@ -1,8 +1,10 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -18,19 +20,129 @@ import {
   LogOut,
   ChevronRight,
   Menu,
-  X
+  X,
+  Loader2,
+  ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useUser();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const pathname = usePathname();
+  const { user: authUser, loading: authLoading } = useUser();
+  const db = useFirestore();
   const auth = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const { toast } = useToast();
+
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Login State
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (!authUser || !db) {
+      setChecking(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    const checkAdmin = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'users', authUser.uid));
+        if (snap.exists() && snap.data().isAdmin === true) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (e) {
+        setIsAdmin(false);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkAdmin();
+  }, [authUser, db, authLoading]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth) return;
+    setLoginLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou sem permissão master." });
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  if (checking || authLoading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
+        <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Terminal...</span>
+      </div>
+    );
+  }
+
+  if (!authUser || isAdmin === false) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-[#08090d] p-6">
+        <div className="w-full max-w-md space-y-8 rounded-[2.5rem] bg-[#111622] p-10 border border-white/5 shadow-2xl">
+          <div className="text-center space-y-2">
+            <Image src="/blockcash.png" alt="Logo" width={100} height={40} className="mx-auto filter brightness-125 mb-4" />
+            <h1 className="text-2xl font-black uppercase tracking-tight text-white">Terminal Master</h1>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação de Segurança Nível 4</p>
+          </div>
+
+          {!authUser ? (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <Input 
+                placeholder="E-mail Administrativo" 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" 
+              />
+              <Input 
+                placeholder="Chave de Segurança" 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" 
+              />
+              <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)]">
+                {loginLoading ? <Loader2 className="animate-spin" /> : "ACESSAR TERMINAL"}
+              </Button>
+            </form>
+          ) : (
+            <div className="text-center py-6 space-y-4">
+              <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 border border-rose-500/20">
+                <ShieldAlert size={32} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-white font-black uppercase">Acesso Negado</h3>
+                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios de Administrador Master. Entre em contato com o proprietário.</p>
+              </div>
+              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase">Trocar de Conta</Button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
@@ -45,11 +157,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Logs Auditoria', icon: History, href: '/admin/logs' },
   ];
 
-  if (loading) return null;
-
   return (
-    <div className="min-h-screen bg-[#08090d] flex">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#08090d] flex" id="admin-page">
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-72 bg-[#111622] border-r border-white/5 transition-transform duration-300 ease-in-out md:relative md:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -95,7 +204,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-20 bg-[#111622]/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 md:px-10 sticky top-0 z-40">
           <div className="flex items-center gap-4">
@@ -110,10 +218,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col text-right mr-4">
               <span className="text-[10px] font-black text-emerald-400 uppercase">Sistema Online</span>
-              <span className="text-xs font-bold text-white/30 truncate max-w-[150px]">{user?.email}</span>
+              <span className="text-xs font-bold text-white/30 truncate max-w-[150px]">{authUser?.email}</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-black">
-              {user?.email?.charAt(0).toUpperCase()}
+              {authUser?.email?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
