@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -20,7 +21,8 @@ import {
   X,
   Loader2,
   ShieldAlert,
-  Terminal
+  Terminal,
+  Users
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -37,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const { toast } = useToast();
 
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [adminData, setAdminData] = useState<any>(null);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -47,42 +49,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    // Só inicia a verificação se o Auth terminou de carregar
     if (authLoading) return;
     
     if (!authUser) {
-      setIsAdmin(false);
       setChecking(false);
       return;
     }
 
-    const checkAdminStatus = async () => {
-      if (!db || !authUser) return;
-      
-      try {
-        // MODO DEUS: Verifica Claims e Documento em paralelo de forma resiliente
-        const idToken = await authUser.getIdTokenResult();
-        const hasClaim = !!(idToken.claims.isAdmin || idToken.claims.admin);
+    if (!db) return;
 
-        if (hasClaim) {
-          console.log("[ADMIN] Acesso Total via Token ✅");
-          setIsAdmin(true);
-        } else {
-          // Fallback para documento caso o claim não esteja pronto
-          const snap = await getDoc(doc(db, 'users', authUser.uid));
-          const hasDocAccess = snap.exists() && (snap.data().isAdmin === true || snap.data().role === 'admin');
-          setIsAdmin(hasDocAccess);
-          console.log(hasDocAccess ? "[ADMIN] Acesso via Documento 📄" : "[ADMIN] Acesso Recusado ❌");
-        }
-      } catch (e) {
-        console.error("[ADMIN] Erro na validação:", e);
-        setIsAdmin(false);
-      } finally {
-        setChecking(false);
+    // Escuta o perfil do admin em tempo real para mudanças de cargo/permissão
+    const unsub = onSnapshot(doc(db, 'users', authUser.uid), (snap) => {
+      if (snap.exists() && snap.data().isAdmin) {
+        setAdminData({ id: snap.id, ...snap.data() });
+      } else {
+        setAdminData(null);
       }
-    };
+      setChecking(false);
+    }, (err) => {
+      console.error("[ADMIN] Falha na validação de permissão:", err);
+      setChecking(false);
+    });
 
-    checkAdminStatus();
+    return () => unsub();
   }, [authUser, db, authLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -98,16 +87,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   };
 
-  if (authLoading || (checking && authUser)) {
+  if (authLoading || checking) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Autenticando Master...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Acesso Master...</span>
       </div>
     );
   }
 
-  if (!authUser || isAdmin === false) {
+  if (!authUser || !adminData) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-[#08090d] p-6">
         <div className="w-full max-w-md space-y-8 rounded-[2.5rem] bg-[#111622] p-10 border border-white/5 shadow-2xl">
@@ -115,8 +104,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-cyan-500/20">
               <Terminal className="text-cyan-400" size={32} />
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-tight text-white">Terminal Master</h1>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação Necessária</p>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-white italic italic">Terminal de Operações</h1>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação Master Requerida</p>
           </div>
 
           {!authUser ? (
@@ -135,8 +124,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onChange={e => setPassword(e.target.value)} 
                 className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" 
               />
-              <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl">
-                {loginLoading ? <Loader2 className="animate-spin" /> : "ACESSAR TERMINAL"}
+              <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl shadow-xl">
+                {loginLoading ? <Loader2 className="animate-spin" /> : "DESBLOQUEAR ACESSO"}
               </Button>
             </form>
           ) : (
@@ -145,10 +134,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <ShieldAlert size={32} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-white font-black uppercase">Acesso Restrito</h3>
-                <p className="text-xs text-white/40 leading-relaxed px-4">Seu usuário não possui as credenciais administrativas necessárias.</p>
+                <h3 className="text-white font-black uppercase tracking-tight">Acesso Não Autorizado</h3>
+                <p className="text-[11px] text-white/40 leading-relaxed px-4">Seu UID não possui a flag <code className="text-cyan-400">isAdmin: true</code> ativa no banco de dados.</p>
                 <div className="mt-4 p-4 bg-black/40 rounded-2xl border border-white/5 text-left">
-                  <span className="text-[8px] font-black text-white/30 uppercase block mb-1">Seu Identificador (UID):</span>
+                  <span className="text-[8px] font-black text-white/30 uppercase block mb-1">Seu UID para suporte:</span>
                   <code className="text-[10px] text-cyan-400 font-mono break-all">{authUser.uid}</code>
                 </div>
               </div>
@@ -160,16 +149,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  // Define o menu com base no cargo (Dono ou Gerente)
+  const isOwner = adminData.role === 'owner';
+  
   const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-    { label: 'Gerentes', icon: ShieldCheck, href: '/admin/gerentes' },
-    { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores' },
-    { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes' },
-    { label: 'Antifraude', icon: AlertOctagon, href: '/admin/antifraude' },
-    { label: 'Comissões', icon: BarChart4, href: '/admin/comissoes' },
-    { label: 'Relatórios', icon: FileText, href: '/admin/relatorios' },
-    { label: 'Logs Auditoria', icon: History, href: '/admin/logs' },
-  ];
+    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: ['owner', 'manager'] },
+    { label: 'Gerentes', icon: ShieldCheck, href: '/admin/gerentes', roles: ['owner'] },
+    { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores', roles: ['owner', 'manager'] },
+    { label: 'Usuários', icon: Users, href: '/admin/usuarios', roles: ['owner'] },
+    { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes', roles: ['owner'] },
+    { label: 'Antifraude', icon: AlertOctagon, href: '/admin/antifraude', roles: ['owner'] },
+    { label: 'Comissões', icon: BarChart4, href: '/admin/comissoes', roles: ['owner', 'manager'] },
+    { label: 'Relatórios', icon: FileText, href: '/admin/relatorios', roles: ['owner', 'manager'] },
+    { label: 'Logs Auditoria', icon: History, href: '/admin/logs', roles: ['owner'] },
+  ].filter(item => item.roles.includes(adminData.role || 'manager'));
 
   return (
     <div className="min-h-screen bg-[#08090d] flex" id="admin-page">
@@ -212,7 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="w-full flex items-center justify-start gap-3 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 rounded-xl"
             >
               <LogOut size={18} />
-              Finalizar Sessão
+              Sair do Terminal
             </Button>
           </div>
         </div>
@@ -225,23 +218,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu size={24} />
             </Button>
             <h1 className="text-sm font-black uppercase tracking-[0.2em] text-white/60">
-              Terminal Master <span className="text-cyan-400 ml-2">/ {menuItems.find(m => m.href === pathname)?.label || 'Dashboard'}</span>
+              Terminal <span className="text-cyan-400 ml-2">/ {adminData.role === 'owner' ? 'MASTER' : 'GERÊNCIA'}</span>
             </h1>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col text-right mr-4">
-              <span className="text-[10px] font-black text-emerald-400 uppercase">Acesso Root</span>
+              <span className={cn(
+                "text-[10px] font-black uppercase",
+                isOwner ? "text-amber-500" : "text-cyan-400"
+              )}>
+                {adminData.role === 'owner' ? 'OPERADOR MASTER' : 'OPERADOR GERENTE'}
+              </span>
               <span className="text-xs font-bold text-white/30 truncate max-w-[150px]">{authUser?.email}</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-black">
+            <div className={cn(
+              "w-10 h-10 rounded-xl border flex items-center justify-center font-black",
+              isOwner ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
+            )}>
               {authUser?.email?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#08090d]">
-          {isAdmin ? children : null}
+          {children}
         </main>
       </div>
     </div>
