@@ -2,7 +2,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth, onAuthStateChanged, User, getIdTokenResult } from 'firebase/auth';
+import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, Firestore, doc, getDoc } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -51,6 +51,10 @@ export const useFirebaseApp = () => useContext(FirebaseContext).app;
 export const useAuth = () => useContext(FirebaseContext).auth;
 export const useFirestore = () => useContext(FirebaseContext).db;
 
+/**
+ * HOOK DE USUÁRIO CENTRALIZADO
+ * Garante que a Role seja verificada no Firestore antes de liberar o carregamento
+ */
 export function useUser() {
   const auth = useAuth();
   const db = useFirestore();
@@ -61,33 +65,27 @@ export function useUser() {
   useEffect(() => {
     if (!auth || !db) return;
     
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+    return onAuthStateChanged(auth, async (u) => {
       setLoading(true);
       if (u) {
         setUser(u);
         try {
-          // 1. Tenta Claims primeiro (mais rápido)
-          const tokenResult = await getIdTokenResult(u, true);
-          let detectedRole = tokenResult.claims.role as any;
-
-          // 2. Fallback Firestore - ESSENCIAL PARA O BOOTSTRAP
+          // Busca o documento do usuário para validar a Role
           const userSnap = await getDoc(doc(db, 'users', u.uid));
           if (userSnap.exists()) {
             const data = userSnap.data();
-            // Se for admin no banco, ele É owner para o sistema
             if (data.role === 'owner' || data.isAdmin === true) {
-              detectedRole = 'owner';
+              setRole('owner');
             } else if (data.role === 'manager') {
-              detectedRole = 'manager';
+              setRole('manager');
             } else {
-              detectedRole = 'user';
+              setRole('user');
             }
+          } else {
+            setRole('user');
           }
-
-          console.log(`[AUTH] UID: ${u.uid} | ROLE DETECTADA: ${detectedRole}`);
-          setRole(detectedRole || 'user');
         } catch (e) {
-          console.error("[AUTH] Erro ao validar permissões:", e);
+          console.error("Erro ao ler cargo:", e);
           setRole('user');
         }
       } else {
@@ -96,8 +94,6 @@ export function useUser() {
       }
       setLoading(false);
     });
-
-    return () => unsubscribe();
   }, [auth, db]);
 
   return { user, role, loading };

@@ -23,6 +23,10 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+/**
+ * ADMIN GATEKEEPER
+ * Só renderiza se for OWNER confirmado no Firestore
+ */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, role, loading } = useUser();
   const auth = useAuth();
@@ -31,18 +35,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
   useEffect(() => {
+    // Redireciona apenas se o carregamento terminou e não for owner
     if (!loading) {
       if (!user) {
-        console.log("[GATEKEEPER] Sem usuário. Indo para login.");
         router.push('/login');
       } else if (role !== 'owner') {
-        console.log("[GATEKEEPER] Acesso negado. Role:", role);
         router.push(role === 'manager' ? '/manager' : '/painel');
       }
     }
   }, [user, role, loading, router]);
 
-  // Enquanto carrega ou se não for o dono, não mostra NADA
+  // Enquanto valida, mostra uma tela de carregamento profissional
   if (loading) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
@@ -52,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  // Barreira final: se não for owner, trava a renderização aqui
+  // Trava de segurança final
   if (role !== 'owner') return null;
 
   const menuItems = [

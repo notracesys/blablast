@@ -3,43 +3,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // HELPERS BÁSICOS
-    function isAuth() {
-      return request.auth != null;
-    }
-    
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
+    // HELPERS SIMPLES E EFICAZES
+    function isAuth() { return request.auth != null; }
+    function userData() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isOwner() { return isAuth() && (userData().role == 'owner' || userData().isAdmin == true); }
+    function isManager() { return isAuth() && (userData().role == 'manager'); }
 
-    // O OWNER É DEUS
-    function isOwner() {
-      return isAuth() && (
-        request.auth.token.role == 'owner' || 
-        getUserData().role == 'owner' || 
-        getUserData().isAdmin == true
-      );
-    }
-    
-    // MANAGER (Acesso restrito)
-    function isManager() {
-      return isAuth() && (
-        request.auth.token.role == 'manager' || 
-        getUserData().role == 'manager'
-      );
-    }
-
-    // REGRAS POR COLEÇÃO
-    
+    // PROTEÇÃO POR COLEÇÃO
     match /users/{userId} {
       allow get: if isAuth() && (request.auth.uid == userId || isOwner());
       allow list: if isOwner();
-      allow create: if isAuth();
-      allow update: if isOwner() || (
-        isAuth() && request.auth.uid == userId && 
-        !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['role', 'isAdmin', 'managerId', 'balance', 'commissionBalance'])
-      );
+      allow write: if isOwner();
     }
     
     match /settings/{docId} {
@@ -58,18 +32,7 @@ service cloud.firestore {
       allow create: if isAuth();
     }
 
-    match /auditLogs/{logId} {
-      allow read: if isOwner();
-      allow create: if isAuth();
-    }
-
-    match /matches/{matchId} {
-      allow read: if isOwner() || (isAuth() && resource.data.userId == request.auth.uid);
-      allow list: if isOwner() || isManager();
-      allow create: if isAuth();
-    }
-
-    // BLOQUEIO GLOBAL PARA SEGURANÇA
+    // BLOQUEIO PADRÃO
     match /{document=**} {
       allow read, write: if isOwner();
     }
