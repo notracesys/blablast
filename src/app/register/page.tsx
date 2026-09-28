@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -8,12 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import { doc, setDoc, updateDoc, increment } from 'firebase/firestore';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
-export default function RegisterPage() {
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const refCode = searchParams.get('ref');
+
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -109,22 +113,29 @@ export default function RegisterPage() {
         phone: cleanPhone,
         email: email.toLowerCase(),
         balance: 0,
+        gamesPlayed: 0,
+        totalRedeems: 0,
+        totalWinnings: 0,
+        maxRedeem: 0,
+        commissionBalance: 0,
+        totalCommissionEarned: 0,
+        referredCount: 0,
+        referredDepositVolume: 0,
+        referredBy: refCode || null,
         createdAt: new Date().toISOString(),
       };
 
-      setDoc(userRef, userData)
-        .then(() => {
-          router.push('/painel');
-        })
-        .catch(async (error: any) => {
-          setLoading(false);
-          const permissionError = new FirestorePermissionError({
-            path: userRef.path,
-            operation: 'create',
-            requestResourceData: userData,
-          } satisfies SecurityRuleContext);
-          errorEmitter.emit('permission-error', permissionError);
-        });
+      await setDoc(userRef, userData);
+
+      // Se houver indicação, incrementa o contador do padrinho
+      if (refCode) {
+        const referrerRef = doc(db, 'users', refCode);
+        updateDoc(referrerRef, {
+          referredCount: increment(1)
+        }).catch(() => { /* Ignorar erros se o padrinho não existir */ });
+      }
+
+      router.push('/painel');
 
     } catch (error: any) {
       setLoading(false);
@@ -243,5 +254,13 @@ export default function RegisterPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
   );
 }

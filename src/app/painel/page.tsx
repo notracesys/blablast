@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,8 +19,7 @@ import {
   ChevronDown, 
   ChevronUp, 
   Key, 
-  LogOut,
-  Coins
+  LogOut
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -142,8 +142,20 @@ export default function PainelPage() {
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
 
+    // Atualiza o saldo do próprio usuário
     updateDoc(userRef, { balance: increment(amount) })
       .then(() => {
+        // Lógica de Comissões (50% do depósito)
+        if (userData.referredBy) {
+          const referrerRef = doc(db, 'users', userData.referredBy);
+          const commission = amount * 0.5;
+          updateDoc(referrerRef, {
+            commissionBalance: increment(commission),
+            totalCommissionEarned: increment(commission),
+            referredDepositVolume: increment(amount)
+          }).catch(() => {});
+        }
+
         toast({
           title: "Saldo Adicionado!",
           description: `R$ ${amount.toFixed(2)} creditados com sucesso.`,
@@ -387,7 +399,7 @@ export default function PainelPage() {
         </main>
       </div>
 
-      {/* MODAL DE PERFIL ESTILIZADO */}
+      {/* MODAL DE PERFIL */}
       <div className={`fixed inset-0 ${showProfileModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[8000]`}>
         <div className="w-full max-w-[400px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300 max-h-[92vh]">
           
@@ -495,7 +507,7 @@ export default function PainelPage() {
         </div>
       </div>
 
-      {/* MODAL DE INDICAÇÕES (AFILIADOS) */}
+      {/* MODAL DE INDICAÇÕES */}
       <div className={`fixed inset-0 ${showAffiliateModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[7000]`}>
         <div className="w-full max-w-[390px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300">
           
@@ -522,8 +534,8 @@ export default function PainelPage() {
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
                   <span className="text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Saldo de Comissões</span>
-                  <strong className="text-2xl font-[1000] text-slate-950">R$ 0,00</strong>
-                  <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">Total recebido: R$ 0,00</span>
+                  <strong className="text-2xl font-[1000] text-slate-950">R$ {(userData.commissionBalance || 0).toFixed(2).replace('.', ',')}</strong>
+                  <span className="text-[9px] font-bold text-slate-900/50 uppercase mt-0.5">Total recebido: R$ {(userData.totalCommissionEarned || 0).toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
 
@@ -533,7 +545,7 @@ export default function PainelPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.2em] pl-1">Seu Link Exclusivo</label>
+              <label className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.2em] pl-1">Seu Link Exclusivo (50% Comissões)</label>
               <div className="relative bg-slate-950/60 rounded-2xl border border-white/5 h-12 flex items-center px-4 overflow-hidden">
                 <span className="text-white/20 text-[10px] truncate max-w-[240px] font-mono">{referralLink}</span>
               </div>
@@ -549,12 +561,12 @@ export default function PainelPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
                 <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Qtd de Indicados</span>
-                <strong className="text-2xl font-black text-white pt-1">0</strong>
+                <strong className="text-2xl font-black text-white pt-1">{userData.referredCount || 0}</strong>
               </div>
 
               <div className="bg-slate-900/60 rounded-[1.5rem] p-4 border border-white/5 flex flex-col items-center text-center space-y-1">
                 <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">Volume Depositado</span>
-                <strong className="text-2xl font-black text-amber-400 pt-1">R$ 0,00</strong>
+                <strong className="text-2xl font-black text-amber-400 pt-1">R$ {(userData.referredDepositVolume || 0).toFixed(2).replace('.', ',')}</strong>
               </div>
             </div>
           </div>

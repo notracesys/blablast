@@ -39,6 +39,26 @@
           "type": "number",
           "description": "O maior prêmio individual já resgatado"
         },
+        "referredBy": {
+          "type": "string",
+          "description": "UID do usuário que indicou este perfil"
+        },
+        "commissionBalance": {
+          "type": "number",
+          "description": "Saldo disponível de comissões de afiliados"
+        },
+        "totalCommissionEarned": {
+          "type": "number",
+          "description": "Total histórico ganho com indicações"
+        },
+        "referredCount": {
+          "type": "number",
+          "description": "Quantidade de pessoas que se cadastraram pelo link"
+        },
+        "referredDepositVolume": {
+          "type": "number",
+          "description": "Volume total depositado pelos indicados"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
