@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -40,14 +39,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!db || !authUser) return;
 
-    // 1. Descobrir o cargo
+    // 1. Descobrir o cargo real do usuário
     getDoc(doc(db, 'users', authUser.uid)).then(snap => {
       if (snap.exists()) {
         const data = snap.data();
-        setRole(data.role || 'manager');
+        // Lógica: Se isAdmin é true ou role é owner, ele é o Dono Absoluto.
+        const detectedRole = (data.role === 'owner' || data.isAdmin === true) ? 'owner' : 'manager';
+        setRole(detectedRole);
         
         // 2. Se for Dono, vê o faturamento global
-        if (data.role === 'owner') {
+        if (detectedRole === 'owner') {
           onSnapshot(doc(db, 'settings', 'game'), (s) => {
             if (s.exists()) {
               setStats(prev => ({ 
@@ -59,23 +60,39 @@ export default function AdminDashboard() {
           });
 
           // Dono vê auditoria total
-          onSnapshot(query(collection(db, 'logs'), limit(5)), (s) => {
+          onSnapshot(query(collection(db, 'logs'), limit(10)), (s) => {
             const list: any[] = [];
             s.forEach(d => list.push({ id: d.id, ...d.data() }));
             setAuditLogs(list);
           });
+          
+          // Contagem de gerentes
+          onSnapshot(query(collection(db, 'users'), where('role', '==', 'manager')), (s) => {
+            setStats(prev => ({ ...prev, managerCount: s.size }));
+          });
         } 
         // 3. Se for Gerente, vê apenas os ganhos de rede dele
         else {
-          setStats(prev => ({ ...prev, grossRevenue: data.commissionBalance || 0, houseBalance: data.totalCommissionEarned || 0 }));
+          setStats(prev => ({ 
+            ...prev, 
+            grossRevenue: data.commissionBalance || 0, 
+            houseBalance: data.totalCommissionEarned || 0 
+          }));
           
-          // Gerente vê logs das suas promoções
-          onSnapshot(query(collection(db, 'logs'), where('actorId', '==', authUser.uid), limit(5)), (s) => {
+          // Gerente vê apenas seus próprios logs de ação
+          onSnapshot(query(collection(db, 'logs'), where('actorId', '==', authUser.uid), limit(10)), (s) => {
             const list: any[] = [];
             s.forEach(d => list.push({ id: d.id, ...d.data() }));
             setAuditLogs(list);
           });
         }
+
+        // Contagem de influenciadores (Global para Dono, Filtrada para Gerente)
+        const influencersRef = collection(db, 'influencers');
+        const infQuery = detectedRole === 'owner' ? influencersRef : query(influencersRef, where('managerId', '==', authUser.uid));
+        onSnapshot(infQuery, (s) => {
+          setStats(prev => ({ ...prev, activeInfluencers: s.size }));
+        });
       }
     });
 
@@ -110,7 +127,7 @@ export default function AdminDashboard() {
     <div className="p-8 md:p-12 space-y-10" id="admin-page">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-white uppercase tracking-tight italic italic">Painel de Operações</h2>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">Painel de Operações</h2>
           <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">
             {isOwner ? 'Visão Macro da Banca BlockCash' : 'Minha Performance de Rede'}
           </p>
@@ -155,7 +172,7 @@ export default function AdminDashboard() {
 
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Minha Atividade (Recente)</h3>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria de Ações (Recentes)</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -198,7 +215,7 @@ export default function AdminDashboard() {
                 <Activity size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black uppercase tracking-tight text-white italic italic">Ações Rápidas</h3>
+                <h3 className="text-lg font-black uppercase tracking-tight text-white italic">Ações Rápidas</h3>
                 <p className="text-[10px] text-white/30 font-bold uppercase">Gestão da Operação</p>
               </div>
             </div>
@@ -207,9 +224,14 @@ export default function AdminDashboard() {
                 Novo Influenciador
               </Button>
               {isOwner && (
-                <Button onClick={() => router.push('/admin/configuracoes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
-                  Ajustar Dificuldade
-                </Button>
+                <>
+                  <Button onClick={() => router.push('/admin/gerentes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
+                    Gerenciar Equipe
+                  </Button>
+                  <Button onClick={() => router.push('/admin/configuracoes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
+                    Ajustar Dificuldade
+                  </Button>
+                </>
               )}
             </div>
           </Card>

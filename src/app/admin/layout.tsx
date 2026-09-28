@@ -16,7 +16,8 @@ import {
   X,
   Loader2,
   ShieldAlert,
-  Terminal
+  Terminal,
+  Users as UsersIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -40,7 +41,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [verifiedRole, setVerifiedRole] = useState<string | null>(null);
 
-  // GATEKEEPER HÍBRIDO: Aceita Claim ou Campo no Firestore
   useEffect(() => {
     if (authLoading) return;
     
@@ -51,24 +51,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const checkAccess = async () => {
       // 1. Tenta por Claim (mais rápido)
-      if (claimRole === 'owner' || claimRole === 'manager') {
-        console.log(`[ADMIN] Acesso via Claim: ${claimRole}`);
-        setVerifiedRole(claimRole);
+      if (claimRole === 'owner') {
+        setVerifiedRole('owner');
         setChecking(false);
         return;
       }
 
-      // 2. Fallback por Firestore (Bootstrapping manual no console)
+      if (claimRole === 'manager') {
+        setVerifiedRole('manager');
+        setChecking(false);
+        return;
+      }
+
+      // 2. Fallback por Firestore (Bootstrapping manual)
       if (db) {
         try {
           const snap = await getDoc(doc(db, 'users', authUser.uid));
           if (snap.exists()) {
             const data = snap.data();
+            // Lógica de hierarquia: isAdmin ou role=='owner' ganha status de OWNER
             if (data.role === 'owner' || data.isAdmin === true) {
-              console.log("[ADMIN] Acesso via Firestore (Owner)");
               setVerifiedRole('owner');
             } else if (data.role === 'manager') {
-              console.log("[ADMIN] Acesso via Firestore (Manager)");
               setVerifiedRole('manager');
             }
           }
@@ -99,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Identidade...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Sincronizando Permissões...</span>
       </div>
     );
   }
@@ -129,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <ShieldAlert className="text-rose-500 mx-auto" size={48} />
               <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-[11px] text-white/40 px-4">Seu UID não possui privilégios administrativos no Firestore ou nas Claims.</p>
+                <p className="text-[11px] text-white/40 px-4">Esta conta não possui privilégios administrativos ativos.</p>
                 <div className="mt-4 p-3 bg-black/40 rounded-xl text-[9px] font-mono text-white/30 break-all select-all">
                   UID: {authUser.uid}
                 </div>
@@ -146,6 +150,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin', roles: ['owner', 'manager'] },
     { label: 'Gerentes', icon: ShieldCheck, href: '/admin/gerentes', roles: ['owner'] },
     { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores', roles: ['owner', 'manager'] },
+    { label: 'Usuários', icon: UsersIcon, href: '/admin/usuarios', roles: ['owner', 'manager'] },
     { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes', roles: ['owner'] },
   ].filter(item => item.roles.includes(verifiedRole));
 
@@ -190,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="flex flex-col text-right">
             <span className="text-[10px] font-black uppercase text-cyan-400">{authUser.email}</span>
-            <span className="text-[8px] font-bold text-white/20">Sessão Segura</span>
+            <span className="text-[8px] font-bold text-white/20">Sessão Administrador</span>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
