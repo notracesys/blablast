@@ -3,65 +3,44 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Dados da conta do usuário, saldo financeiro e estatísticas de jogo",
+      "description": "Dados da conta do usuário e controle de permissões",
       "type": "object",
       "properties": {
         "fullName": { "type": "string" },
-        "phone": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "balance": { "type": "number" },
-        "gamesPlayed": { "type": "number" },
-        "totalRedeems": { "type": "number" },
-        "totalWinnings": { "type": "number" },
-        "maxRedeem": { "type": "number" },
-        "referredBy": { "type": "string" },
-        "referralCode": { "type": "string" },
-        "commissionBalance": { "type": "number" },
-        "totalCommissionEarned": { "type": "number" },
-        "referredCount": { "type": "number" },
-        "referredDepositVolume": { "type": "number" },
+        "role": { "type": "string", "enum": ["owner", "manager", "user"], "default": "user" },
+        "active": { "type": "boolean", "default": true },
         "isAdmin": { "type": "boolean", "default": false },
-        "role": { "type": "string", "enum": ["owner", "manager", "player"], "default": "player" },
-        "managerCommissionRate": { "type": "number", "default": 0 },
-        "permissions": {
-          "type": "object",
-          "properties": {
-            "canViewGlobalRevenue": { "type": "boolean" },
-            "canChangeDifficulty": { "type": "boolean" },
-            "canModerateUsers": { "type": "boolean" },
-            "canManageInfluencers": { "type": "boolean" }
-          }
-        },
-        "status": { "type": "string", "enum": ["active", "blocked", "suspended"], "default": "active" },
-        "lastActivity": { "type": "string", "format": "date-time" },
+        "balance": { "type": "number", "default": 0 },
+        "managerId": { "type": "string", "description": "ID do gerente responsável por este usuário" },
         "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["fullName", "phone", "email", "balance"]
-    },
-    "InfluencerProfile": {
-      "title": "InfluencerProfile",
-      "description": "Dados de desempenho de influenciadores",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "managerId": { "type": "string" },
-        "code": { "type": "string" },
-        "clicks": { "type": "number" },
-        "registrations": { "type": "number" },
-        "activeUsers": { "type": "number" },
-        "commissionRate": { "type": "number" },
-        "status": { "type": "boolean" }
       }
     },
-    "GlobalSettings": {
-      "title": "GlobalSettings",
-      "description": "Configurações globais da plataforma",
+    "ManagerProfile": {
+      "title": "ManagerProfile",
+      "description": "Dados de performance e métricas de um gerente",
       "type": "object",
       "properties": {
-        "difficulty": { "type": "number" },
-        "totalDeposited": { "type": "number" },
-        "gridSize": { "type": "number" },
-        "maxLinesPerMatch": { "type": "number" }
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "active": { "type": "boolean" },
+        "commissionRate": { "type": "number" },
+        "influencersCount": { "type": "number" },
+        "totalNetworkVolume": { "type": "number" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Registro de ações administrativas",
+      "type": "object",
+      "properties": {
+        "actorUid": { "type": "string" },
+        "action": { "type": "string" },
+        "targetUid": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "details": { "type": "string" }
       }
     }
   },
@@ -71,15 +50,23 @@
   "firestore": {
     "users/{userId}": {
       "schema": "UserProfile",
-      "description": "Informações de perfil do usuário"
+      "description": "Perfis de usuários, gerentes e donos"
     },
-    "influencers/{influencerId}": {
+    "managers/{uid}": {
+      "schema": "ManagerProfile",
+      "description": "Métricas detalhadas de gerentes"
+    },
+    "influencers/{uid}": {
       "schema": "InfluencerProfile",
-      "description": "Dados de afiliados e influenciadores"
+      "description": "Afiliados vinculados a gerentes"
+    },
+    "auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Logs de auditoria master"
     },
     "settings/game": {
       "schema": "GlobalSettings",
-      "description": "Controle de dificuldade e métricas globais"
+      "description": "Configurações globais do sistema"
     }
   }
 }

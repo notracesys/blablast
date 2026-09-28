@@ -1,76 +1,75 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // HELPERS DE IDENTIDADE (MODO DEUS)
+    // HELPERS DE SEGURANÇA
     function isAuth() {
       return request.auth != null;
     }
     
-    function userPath() {
-      return /databases/$(database)/documents/users/$(request.auth.uid);
-    }
-    
-    function hasUserDoc() {
-      return isAuth() && exists(userPath());
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Verifica se o usuário é OWNER (Dono Absoluto)
-    // Checa primeiro o Token (Performance) e depois o Documento (Bootstrapping/Fallback)
+    // O OWNER é o Deus do sistema: Claim Admin ou Campo no Banco
     function isOwner() {
       return isAuth() && (
         request.auth.token.role == 'owner' || 
-        request.auth.token.isAdmin == true ||
-        (exists(userPath()) && (
-          get(userPath()).data.role == 'owner' || 
-          get(userPath()).data.isAdmin == true
-        ))
+        getUserData().role == 'owner' || 
+        getUserData().isAdmin == true
       );
     }
     
-    // Verifica se o usuário é MANAGER (Gerente)
+    // MANAGER: Claim ou Campo
     function isManager() {
       return isAuth() && (
-        request.auth.token.role == 'manager' ||
-        (exists(userPath()) && get(userPath()).data.role == 'manager')
+        request.auth.token.role == 'manager' || 
+        getUserData().role == 'manager'
       );
     }
 
     // REGRAS POR COLEÇÃO
     
     match /users/{userId} {
-      // Usuário vê a si mesmo, Owner vê todos, Manager vê sua rede (listagem filtrada no front)
-      allow get: if isAuth() && (request.auth.uid == userId || isOwner() || isManager());
-      allow list: if isOwner() || isManager();
-      
+      allow get: if isAuth() && (request.auth.uid == userId || isOwner());
+      allow list: if isOwner();
       allow create: if isAuth();
-      
-      // Update: Owner faz tudo. User só edita campos permitidos.
-      // Impede que o usuário mude seu próprio cargo ou saldo.
+      // Apenas Owner muda campos sensíveis
       allow update: if isOwner() || (
         isAuth() && request.auth.uid == userId && 
         !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['role', 'isAdmin', 'balance', 'commissionBalance', 'managerCommissionRate', 'permissions'])
+          .hasAny(['role', 'isAdmin', 'managerId', 'balance', 'commissionBalance'])
       );
     }
     
-    match /influencers/{influencerId} {
-      // Owner vê tudo. Manager vê somente o que é dele.
+    match /managers/{uid} {
+      allow read: if isOwner() || (isManager() && request.auth.uid == uid);
+      allow write: if isOwner();
+    }
+    
+    match /influencers/{uid} {
       allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid);
+      allow list: if isOwner() || isManager();
       allow write: if isOwner() || isManager();
     }
     
-    match /settings/{settingId} {
+    match /settings/game {
       allow read: if isAuth();
       allow write: if isOwner();
     }
     
-    match /logs/{logId} {
+    match /auditLogs/{logId} {
       allow read: if isOwner();
-      allow write: if isAuth(); 
+      allow create: if isAuth(); // Permite que o sistema registre ações
     }
 
-    // BLOQUEIO GLOBAL (Tudo que não foi definido acima exige ser Owner)
+    match /matches/{matchId} {
+      allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid) || (isAuth() && resource.data.userId == request.auth.uid);
+      allow create: if isAuth();
+    }
+
+    // BLOQUEIO GLOBAL PARA DESLOGADOS
     match /{document=**} {
       allow read, write: if isOwner();
     }

@@ -1,8 +1,9 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, onAuthStateChanged, User, getIdTokenResult } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, doc, getDoc } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -52,22 +53,39 @@ export const useFirestore = () => useContext(FirebaseContext).db;
 
 export function useUser() {
   const auth = useAuth();
+  const db = useFirestore();
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<'owner' | 'manager' | 'user' | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!auth || !db) return;
     
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setLoading(true);
       if (u) {
-        // Forçar atualização do token para pegar claims recentes
-        const tokenResult = await getIdTokenResult(u, true);
-        const userRole = (tokenResult.claims.role as string) || (tokenResult.claims.isAdmin ? 'owner' : 'user');
-        
-        console.log(`[AUTH] Identificado: ${u.email} | Role: ${userRole}`);
-        setUser(u);
-        setRole(userRole);
+        try {
+          // 1. Tenta pegar a role via Claim
+          const tokenResult = await getIdTokenResult(u, true);
+          let userRole = tokenResult.claims.role as any;
+
+          // 2. Fallback via Firestore se a claim não existir
+          if (!userRole) {
+            const userSnap = await getDoc(doc(db, 'users', u.uid));
+            if (userSnap.exists()) {
+              const data = userSnap.data();
+              userRole = (data.role === 'owner' || data.isAdmin) ? 'owner' : data.role || 'user';
+            }
+          }
+
+          console.log(`[AUTH] UID: ${u.uid} | ROLE: ${userRole || 'user'}`);
+          setRole(userRole || 'user');
+          setUser(u);
+        } catch (e) {
+          console.error("[AUTH] Erro ao carregar perfil", e);
+          setUser(u);
+          setRole('user');
+        }
       } else {
         setUser(null);
         setRole(null);
@@ -76,7 +94,7 @@ export function useUser() {
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, db]);
 
   return { user, role, loading };
 }

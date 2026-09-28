@@ -1,19 +1,19 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, onSnapshot, doc, query, where, limit, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, limit, orderBy } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { 
   DollarSign, 
   Zap,
-  ArrowUpRight,
-  ArrowDownRight,
   ShieldCheck,
   BarChart3,
   AlertTriangle,
   UserCircle,
-  Activity
+  Activity,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,127 +21,58 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
   const db = useFirestore();
-  const { user: authUser } = useUser();
   const router = useRouter();
-
-  const [role, setRole] = useState<'owner' | 'manager' | null>(null);
   const [stats, setStats] = useState({
-    grossRevenue: 0,
-    managerCount: 0,
-    fraudAlerts: 0,
-    retentionRate: 85,
-    houseBalance: 0,
-    activeInfluencers: 0
+    users: 0,
+    managers: 0,
+    influencers: 0,
+    revenue: 0
   });
-
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!db || !authUser) return;
+    if (!db) return;
 
-    // 1. Descobrir o cargo real do usuário
-    getDoc(doc(db, 'users', authUser.uid)).then(snap => {
-      if (snap.exists()) {
-        const data = snap.data();
-        // Lógica: Se isAdmin é true ou role é owner, ele é o Dono Absoluto.
-        const detectedRole = (data.role === 'owner' || data.isAdmin === true) ? 'owner' : 'manager';
-        setRole(detectedRole);
-        
-        // 2. Se for Dono, vê o faturamento global
-        if (detectedRole === 'owner') {
-          onSnapshot(doc(db, 'settings', 'game'), (s) => {
-            if (s.exists()) {
-              setStats(prev => ({ 
-                ...prev, 
-                grossRevenue: s.data().totalDeposited || 0,
-                houseBalance: (s.data().totalDeposited || 0) * 0.4 
-              }));
-            }
-          });
-
-          // Dono vê auditoria total
-          onSnapshot(query(collection(db, 'logs'), limit(10)), (s) => {
-            const list: any[] = [];
-            s.forEach(d => list.push({ id: d.id, ...d.data() }));
-            setAuditLogs(list);
-          });
-          
-          // Contagem de gerentes
-          onSnapshot(query(collection(db, 'users'), where('role', '==', 'manager')), (s) => {
-            setStats(prev => ({ ...prev, managerCount: s.size }));
-          });
-        } 
-        // 3. Se for Gerente, vê apenas os ganhos de rede dele
-        else {
-          setStats(prev => ({ 
-            ...prev, 
-            grossRevenue: data.commissionBalance || 0, 
-            houseBalance: data.totalCommissionEarned || 0 
-          }));
-          
-          // Gerente vê apenas seus próprios logs de ação
-          onSnapshot(query(collection(db, 'logs'), where('actorId', '==', authUser.uid), limit(10)), (s) => {
-            const list: any[] = [];
-            s.forEach(d => list.push({ id: d.id, ...d.data() }));
-            setAuditLogs(list);
-          });
-        }
-
-        // Contagem de influenciadores (Global para Dono, Filtrada para Gerente)
-        const influencersRef = collection(db, 'influencers');
-        const infQuery = detectedRole === 'owner' ? influencersRef : query(influencersRef, where('managerId', '==', authUser.uid));
-        onSnapshot(infQuery, (s) => {
-          setStats(prev => ({ ...prev, activeInfluencers: s.size }));
-        });
-      }
+    // Dashboard Master do Owner
+    onSnapshot(collection(db, 'users'), snap => {
+      const mgrs = snap.docs.filter(d => d.data().role === 'manager').length;
+      setStats(prev => ({ ...prev, users: snap.size, managers: mgrs }));
     });
 
-  }, [db, authUser]);
+    onSnapshot(collection(db, 'influencers'), snap => {
+      setStats(prev => ({ ...prev, influencers: snap.size }));
+    });
 
-  const isOwner = role === 'owner';
+    const logsQ = query(collection(db, 'auditLogs'), orderBy('timestamp', 'desc'), limit(10));
+    onSnapshot(logsQ, snap => {
+      const list: any[] = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      setLogs(list);
+    });
+  }, [db]);
 
-  const metricCards = [
-    { 
-      label: isOwner ? 'Faturamento Bruto' : 'Minhas Comissões', 
-      value: `R$ ${stats.grossRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 
-      icon: DollarSign, 
-      color: 'text-emerald-400', 
-      trend: '+12%', 
-      up: true 
-    },
-    { 
-      label: isOwner ? 'Lucro da Banca' : 'Total Recebido', 
-      value: `R$ ${stats.houseBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 
-      icon: BarChart3, 
-      color: 'text-cyan-400', 
-      trend: '+8.5%', 
-      up: true 
-    },
-    { label: 'Gerentes Ativos', value: stats.managerCount, icon: ShieldCheck, color: 'text-amber-400', trend: 'Equipe', up: true, hidden: !isOwner },
-    { label: 'Alertas Antifraude', value: stats.fraudAlerts, icon: AlertTriangle, color: 'text-rose-500', trend: 'Nível Seguro', up: true, hidden: !isOwner },
-    { label: 'Retenção Global', value: `${stats.retentionRate}%`, icon: Activity, color: 'text-purple-400', trend: 'Otimizado', up: true, hidden: !isOwner },
-    { label: 'Influenciadores', value: stats.activeInfluencers, icon: UserCircle, color: 'text-blue-400', trend: 'Expandindo', up: true },
-  ].filter(c => !c.hidden);
+  const cards = [
+    { label: 'Faturamento Bruto', value: 'R$ 0,00', icon: DollarSign, color: 'text-emerald-400' },
+    { label: 'Base de Jogadores', value: stats.users, icon: Users, color: 'text-cyan-400' },
+    { label: 'Gerentes Ativos', value: stats.managers, icon: ShieldCheck, color: 'text-amber-400' },
+    { label: 'Tropa de Influencers', value: stats.influencers, icon: UserCircle, color: 'text-purple-400' },
+  ];
 
   return (
     <div className="p-8 md:p-12 space-y-10" id="admin-page">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">Painel de Operações</h2>
-          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">
-            {isOwner ? 'Visão Macro da Banca BlockCash' : 'Minha Performance de Rede'}
-          </p>
+          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Visão Master da Plataforma BlockCash</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Arena Sincronizada
-          </div>
+        <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Sistema Ativo
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {metricCards.map((card, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {cards.map((card, i) => (
           <Card key={i} className="bg-[#111622] border-white/5 p-6 space-y-4 rounded-[2rem] shadow-xl hover:border-white/10 transition-all">
             <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-white/[0.03]", card.color)}>
               <card.icon size={20} />
@@ -150,29 +81,16 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-black text-white/30 uppercase tracking-widest block mb-1">{card.label}</span>
               <div className="text-xl font-black text-white">{card.value}</div>
             </div>
-            <div className={cn("text-[9px] font-bold flex items-center gap-1", card.up ? "text-emerald-400" : "text-rose-500")}>
-              {card.up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-              {card.trend}
-            </div>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 p-8 h-[400px] flex flex-col">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Lucratividade em Tempo Real</h3>
-            </div>
-            <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl space-y-4">
-              <div className="text-5xl font-black text-white">R$ {stats.grossRevenue.toFixed(0)}</div>
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Volume Processado</span>
-            </div>
-          </div>
-
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria de Ações (Recentes)</h3>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria Master</h3>
+              <Button onClick={() => router.push('/admin/logs')} variant="ghost" className="text-[10px] font-black uppercase text-cyan-400">Ver Tudo</Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -184,22 +102,13 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {auditLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="px-8 py-10 text-center text-white/10 font-black uppercase text-[10px] tracking-widest italic">Nenhuma ação recente</td>
-                    </tr>
-                  ) : auditLogs.map(log => (
+                  {logs.length === 0 ? (
+                    <tr><td colSpan={3} className="px-8 py-10 text-center text-white/10 font-black uppercase text-[10px] italic">Sem atividade recente</td></tr>
+                  ) : logs.map(log => (
                     <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recente'}</td>
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-white uppercase tracking-tight">{log.action}</span>
-                          <span className="text-[10px] text-white/20 truncate max-w-[200px]">{log.details}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                        <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase">Registrado</span>
-                      </td>
+                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                      <td className="px-8 py-5 text-xs font-bold text-white uppercase tracking-tight">{log.action}</td>
+                      <td className="px-8 py-5 text-right"><span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-[8px] font-black uppercase">Gravado</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -209,30 +118,23 @@ export default function AdminDashboard() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-gradient-to-br from-[#111622] to-[#0d111c] border-white/5 p-8 rounded-[2.5rem] shadow-2xl space-y-6">
+           <Card className="bg-gradient-to-br from-[#111622] to-[#0d111c] border-white/5 p-8 rounded-[2.5rem] shadow-2xl space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-                <Activity size={24} />
+                <Zap size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black uppercase tracking-tight text-white italic">Ações Rápidas</h3>
-                <p className="text-[10px] text-white/30 font-bold uppercase">Gestão da Operação</p>
+                <h3 className="text-lg font-black uppercase tracking-tight text-white italic">Motor Arena</h3>
+                <p className="text-[10px] text-white/30 font-bold uppercase">Configuração</p>
               </div>
             </div>
             <div className="space-y-3">
-              <Button onClick={() => router.push('/admin/influenciadores')} className="w-full h-12 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest text-xs rounded-2xl">
-                Novo Influenciador
+              <Button onClick={() => router.push('/admin/configuracoes')} className="w-full h-12 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest text-xs rounded-2xl">
+                Ajustar Dificuldade
               </Button>
-              {isOwner && (
-                <>
-                  <Button onClick={() => router.push('/admin/gerentes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
-                    Gerenciar Equipe
-                  </Button>
-                  <Button onClick={() => router.push('/admin/configuracoes')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
-                    Ajustar Dificuldade
-                  </Button>
-                </>
-              )}
+              <Button onClick={() => router.push('/admin/managers')} className="w-full h-12 bg-white/5 hover:bg-white/10 text-white font-black uppercase tracking-widest text-xs rounded-2xl">
+                Contratar Gerente
+              </Button>
             </div>
           </Card>
         </div>
