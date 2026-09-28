@@ -54,7 +54,6 @@ export default function PainelPage() {
 
   // Accordion states for profile
   const [showTransactions, setShowTransactions] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [showPassChange, setShowPassChange] = useState(false);
 
   const presets = [5, 10, 20, 30, 50, 100];
@@ -156,13 +155,6 @@ export default function PainelPage() {
         } satisfies SecurityRuleContext);
         errorEmitter.emit('permission-error', permissionError);
       });
-  };
-
-  const handleTestCredit = () => {
-    if (!user || !db || !userData) return;
-    const userRef = doc(db, 'users', user.uid);
-    updateDoc(userRef, { balance: increment(500) });
-    toast({ title: "Crédito Realizado!", description: "R$ 500,00 adicionados para teste." });
   };
 
   const handleRequestWithdraw = () => {
@@ -416,14 +408,6 @@ export default function PainelPage() {
                 </div>
               </div>
 
-              <button 
-                onClick={handleTestCredit}
-                className="w-full h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-all"
-              >
-                <Coins className="w-3.5 h-3.5" />
-                Creditar R$ 500 (Teste)
-              </button>
-
               <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
                 <span className="text-white/20 text-[10px] truncate max-w-[140px] font-mono">{referralLink}</span>
                 <button 
@@ -470,24 +454,6 @@ export default function PainelPage() {
                 {showTransactions && (
                   <div className="px-4 pb-5 pt-1 text-center">
                     <p className="text-white/20 text-[11px] font-medium italic">Nenhum depósito ou saque ainda.</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden">
-                <button 
-                  onClick={() => setShowHistory(!showHistory)}
-                  className="w-full p-4 flex items-center justify-between text-left"
-                >
-                  <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Histórico de Partidas</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold text-white/30 uppercase tracking-wider">{showHistory ? 'Ocultar' : 'Ver'}</span>
-                    {showHistory ? <ChevronUp className="w-3.5 h-3.5 text-white/30" /> : <ChevronDown className="w-3.5 h-3.5 text-white/30" />}
-                  </div>
-                </button>
-                {showHistory && (
-                  <div className="px-4 pb-5 pt-1 text-center">
-                    <p className="text-white/20 text-[11px] font-medium italic">Nenhuma partida ainda.</p>
                   </div>
                 )}
               </div>
