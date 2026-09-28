@@ -1,32 +1,21 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Função para verificar se o usuário é admin consultando o campo no banco
+    // Verifica se o usuário autenticado possui o campo isAdmin como true
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // Regras para a coleção de usuários
     match /users/{userId} {
-      // O próprio usuário pode ler seus dados. Admins podem ler tudo.
       allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      
-      // Apenas administradores podem listar todos os usuários
       allow list: if request.auth != null && isAdmin();
-      
-      // Registro permitido para o próprio usuário
       allow create: if request.auth != null && request.auth.uid == userId;
-      
-      // Atualização permitida para o dono ou admin
       allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Regras para as configurações globais
     match /settings/{document=**} {
-      // Leitura pública para que o jogo saiba a dificuldade
       allow read: if true;
-      // Apenas admins podem alterar dificuldade ou métricas globais
       allow write: if request.auth != null && isAdmin();
     }
   }
