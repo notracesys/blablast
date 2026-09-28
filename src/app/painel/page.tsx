@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -70,11 +69,8 @@ export default function PainelPage() {
   useEffect(() => {
     if (userData?.referralCode && typeof window !== 'undefined') {
       setReferralLink(`${window.location.origin}/register?ref=${userData.referralCode}`);
-    } else if (user && !userData?.referralCode && typeof window !== 'undefined') {
-        // Fallback para usuários antigos ou enquanto carrega o código
-        setReferralLink(`${window.location.origin}/register?ref=${user.uid}`);
     }
-  }, [user, userData]);
+  }, [userData]);
 
   useEffect(() => {
     setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
@@ -401,7 +397,7 @@ export default function PainelPage() {
       </div>
 
       {/* MODAL DE PERFIL */}
-      <div className={`fixed inset-0 ${showProfileModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[8000]`}>
+      <div className={`fixed inset-0 ${showProfileModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[8000]`}>
         <div className="w-full max-w-[400px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300 max-h-[92vh]">
           
           <div className="flex items-center justify-between p-6 pb-2">
@@ -509,7 +505,7 @@ export default function PainelPage() {
       </div>
 
       {/* MODAL DE INDICAÇÕES */}
-      <div className={`fixed inset-0 ${showAffiliateModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/95 backdrop-blur-md z-[7000]`}>
+      <div className={`fixed inset-0 ${showAffiliateModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[7000]`}>
         <div className="w-full max-w-[390px] border border-white/5 rounded-[2.5rem] bg-[#0c0f17] shadow-2xl overflow-hidden flex flex-col relative pb-6 animate-in fade-in zoom-in duration-300">
           
           <div className="relative w-full aspect-[2.7/1] bg-slate-900/50">
@@ -574,7 +570,7 @@ export default function PainelPage() {
         </div>
       </div>
 
-      <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-6 bg-black/90 backdrop-blur-sm z-[8000]`}>
+      <div className={`fixed inset-0 ${showInsufficientBalanceModal ? 'flex' : 'hidden'} items-center justify-center p-6 bg-black/60 backdrop-blur-sm z-[8000]`}>
         <div className="w-full max-w-[340px] border border-white/10 rounded-[2.5rem] bg-[#1a1d29] p-8 shadow-2xl text-center space-y-6 animate-in fade-in zoom-in duration-300">
           <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto text-amber-500 border border-amber-500/20">
             <AlertTriangle className="w-8 h-8" />
@@ -616,7 +612,7 @@ export default function PainelPage() {
         </div>
       </div>
 
-      <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
+      <div className={`fixed inset-0 ${showDepositModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative">
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
@@ -691,7 +687,7 @@ export default function PainelPage() {
         </div>
       </div>
 
-      <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/90 backdrop-blur-md z-[5000]`}>
+      <div className={`fixed inset-0 ${showWithdrawModal ? 'flex' : 'hidden'} items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[5000]`}>
         <div className="w-full max-w-[380px] border border-white/5 rounded-[2.5rem] bg-[#111622] shadow-2xl overflow-hidden flex flex-col relative pb-4">
           <div className="relative w-full aspect-[2.7/1] bg-slate-950/20">
             <Image 
