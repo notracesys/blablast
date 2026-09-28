@@ -10,18 +10,13 @@ import {
   ShieldCheck, 
   UserCircle, 
   Settings, 
-  AlertOctagon, 
-  BarChart4, 
-  FileText, 
-  History, 
   LogOut,
   ChevronRight,
   Menu,
   X,
   Loader2,
   ShieldAlert,
-  Terminal,
-  Users
+  Terminal
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -31,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user: authUser, role, loading: authLoading } = useUser();
+  const { user: authUser, role: claimRole, loading: authLoading } = useUser();
   const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
@@ -43,8 +38,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [password, setPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [verifiedRole, setVerifiedRole] = useState<string | null>(null);
 
-  // GATEKEEPER: Bloqueia tudo até confirmar que é OWNER ou MANAGER
+  // GATEKEEPER HÍBRIDO: Aceita Claim ou Campo no Firestore
   useEffect(() => {
     if (authLoading) return;
     
@@ -53,25 +49,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    // Se o token já tem a role correta, libera imediatamente
-    if (role === 'owner' || role === 'manager') {
-      setChecking(false);
-      return;
-    }
+    const checkAccess = async () => {
+      // 1. Tenta por Claim (mais rápido)
+      if (claimRole === 'owner' || claimRole === 'manager') {
+        console.log(`[ADMIN] Acesso via Claim: ${claimRole}`);
+        setVerifiedRole(claimRole);
+        setChecking(false);
+        return;
+      }
 
-    // Fallback: Se a claim ainda não propagou, tenta olhar no Firestore UMA vez
-    if (db) {
-      getDoc(doc(db, 'users', authUser.uid)).then(snap => {
-        if (snap.exists() && snap.data().isAdmin) {
-          console.log("[ADMIN] Acesso concedido via espelho Firestore. Claims pendentes.");
-          setChecking(false);
-        } else {
-          console.warn("[ADMIN] Acesso negado. Role insuficiente.");
-          setChecking(false);
+      // 2. Fallback por Firestore (Bootstrapping manual no console)
+      if (db) {
+        try {
+          const snap = await getDoc(doc(db, 'users', authUser.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data.role === 'owner' || data.isAdmin === true) {
+              console.log("[ADMIN] Acesso via Firestore (Owner)");
+              setVerifiedRole('owner');
+            } else if (data.role === 'manager') {
+              console.log("[ADMIN] Acesso via Firestore (Manager)");
+              setVerifiedRole('manager');
+            }
+          }
+        } catch (e) {
+          console.error("[ADMIN] Erro ao validar papel no Firestore", e);
         }
-      }).catch(() => setChecking(false));
-    }
-  }, [authUser, role, authLoading, db]);
+      }
+      setChecking(false);
+    };
+
+    checkAccess();
+  }, [authUser, claimRole, authLoading, db]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +88,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O useEffect acima cuidará do redirecionamento/liberação
     } catch (err) {
       toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas." });
     } finally {
@@ -91,15 +99,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Protocolos de Segurança...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Identidade...</span>
       </div>
     );
   }
 
-  // Se não estiver logado ou não for admin (nem via claim nem via firestore fallback)
-  const isAuthorized = role === 'owner' || role === 'manager';
-  
-  if (!authUser || !isAuthorized) {
+  if (!authUser || !verifiedRole) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-[#08090d] p-6">
         <div className="w-full max-w-md space-y-8 rounded-[2.5rem] bg-[#111622] p-10 border border-white/5 shadow-2xl">
@@ -107,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-cyan-500/20">
               <Terminal className="text-cyan-400" size={32} />
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-tight text-white italic">Terminal de Operações</h1>
+            <h1 className="text-2xl font-black uppercase tracking-tight text-white italic">Terminal Admin</h1>
             <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação Requerida</p>
           </div>
 
@@ -116,7 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Input placeholder="E-mail Operador" type="email" value={email} onChange={e => setEmail(e.target.value)} className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" />
               <Input placeholder="Chave de Segurança" type="password" value={password} onChange={e => setPassword(e.target.value)} className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" />
               <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase rounded-2xl shadow-xl">
-                {loginLoading ? <Loader2 className="animate-spin" /> : "DESBLOQUEAR TERMINAL"}
+                {loginLoading ? <Loader2 className="animate-spin" /> : "DESBLOQUEAR"}
               </Button>
             </form>
           ) : (
@@ -124,9 +129,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <ShieldAlert className="text-rose-500 mx-auto" size={48} />
               <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-[11px] text-white/40 px-4">Seu UID não possui permissões administrativas ativas.</p>
+                <p className="text-[11px] text-white/40 px-4">Seu UID não possui privilégios administrativos no Firestore ou nas Claims.</p>
+                <div className="mt-4 p-3 bg-black/40 rounded-xl text-[9px] font-mono text-white/30 break-all select-all">
+                  UID: {authUser.uid}
+                </div>
               </div>
-              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 underline text-[10px] uppercase">Trocar Conta</Button>
+              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 underline text-[10px] uppercase">Tentar Outra Conta</Button>
             </div>
           )}
         </div>
@@ -139,7 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Gerentes', icon: ShieldCheck, href: '/admin/gerentes', roles: ['owner'] },
     { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores', roles: ['owner', 'manager'] },
     { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes', roles: ['owner'] },
-  ].filter(item => item.roles.includes(role || 'manager'));
+  ].filter(item => item.roles.includes(verifiedRole));
 
   return (
     <div className="min-h-screen bg-[#08090d] flex" id="admin-page">
@@ -168,7 +176,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
           <div className="p-6 border-t border-white/5">
             <Button onClick={() => auth?.signOut().then(() => router.push('/'))} variant="ghost" className="w-full justify-start gap-3 text-rose-500 hover:bg-rose-500/10 rounded-xl">
-              <LogOut size={18} /> Encerrar Sessão
+              <LogOut size={18} /> Sair
             </Button>
           </div>
         </div>
@@ -178,11 +186,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="h-20 bg-[#111622]/50 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" className="md:hidden text-white" onClick={() => setSidebarOpen(true)}><Menu size={24} /></Button>
-            <h1 className="text-sm font-black uppercase tracking-widest text-white/60">Terminal <span className="text-cyan-400 ml-2">/ {role === 'owner' ? 'MASTER' : 'GERENTE'}</span></h1>
+            <h1 className="text-sm font-black uppercase tracking-widest text-white/60">Terminal <span className="text-cyan-400 ml-2">/ {verifiedRole.toUpperCase()}</span></h1>
           </div>
           <div className="flex flex-col text-right">
             <span className="text-[10px] font-black uppercase text-cyan-400">{authUser.email}</span>
-            <span className="text-[8px] font-bold text-white/20">UID: {authUser.uid.substring(0,8)}...</span>
+            <span className="text-[8px] font-bold text-white/20">Sessão Segura</span>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
