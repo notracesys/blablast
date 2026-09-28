@@ -7,14 +7,24 @@ service cloud.firestore {
       return request.auth != null;
     }
     
+    function userPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    
+    function hasUserDoc() {
+      return isAuth() && exists(userPath());
+    }
+
     // Verifica se o usuário é OWNER (Dono Absoluto)
     // Checa primeiro o Token (Performance) e depois o Documento (Bootstrapping/Fallback)
     function isOwner() {
       return isAuth() && (
         request.auth.token.role == 'owner' || 
         request.auth.token.isAdmin == true ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true
+        (exists(userPath()) && (
+          get(userPath()).data.role == 'owner' || 
+          get(userPath()).data.isAdmin == true
+        ))
       );
     }
     
@@ -22,7 +32,7 @@ service cloud.firestore {
     function isManager() {
       return isAuth() && (
         request.auth.token.role == 'manager' ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'manager'
+        (exists(userPath()) && get(userPath()).data.role == 'manager')
       );
     }
 
@@ -32,12 +42,20 @@ service cloud.firestore {
       // Usuário vê a si mesmo, Owner vê todos, Manager vê sua rede (listagem filtrada no front)
       allow get: if isAuth() && (request.auth.uid == userId || isOwner() || isManager());
       allow list: if isOwner() || isManager();
+      
       allow create: if isAuth();
-      allow update: if isOwner() || (isAuth() && request.auth.uid == userId && 
-                    !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin', 'balance', 'commissionBalance', 'managerCommissionRate']));
+      
+      // Update: Owner faz tudo. User só edita campos permitidos.
+      // Impede que o usuário mude seu próprio cargo ou saldo.
+      allow update: if isOwner() || (
+        isAuth() && request.auth.uid == userId && 
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['role', 'isAdmin', 'balance', 'commissionBalance', 'managerCommissionRate', 'permissions'])
+      );
     }
     
     match /influencers/{influencerId} {
+      // Owner vê tudo. Manager vê somente o que é dele.
       allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid);
       allow write: if isOwner() || isManager();
     }
