@@ -79,8 +79,7 @@ export default function ManagersAdmin() {
       }));
       setLoading(false);
     }, (error) => {
-      console.warn("[GERENTES] Snapshot com erro controlado:", error.message);
-      // Mantém o carregamento falso para não travar a interface
+      console.warn("[GERENTES] Snapshot controlado:", error.message);
       setLoading(false);
     });
 
@@ -340,7 +339,8 @@ export default function ManagersAdmin() {
                 >
                   FECHAR
                 </Button>
-              </>
+              </div>
+            </>
           )}
         </SheetContent>
       </Sheet>
