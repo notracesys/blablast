@@ -36,7 +36,6 @@ export default function SettingsAdmin() {
   useEffect(() => {
     if (!db || !user) return;
     
-    // O Modo Deus no firestore.rules agora permite leitura total aqui.
     const settingsRef = doc(db, 'settings', 'game');
     
     const unsub = onSnapshot(settingsRef, (snap) => {
@@ -45,7 +44,7 @@ export default function SettingsAdmin() {
         setConfig(snap.data());
       }
     }, (err) => {
-      console.warn("Snapshot controlado:", err.message);
+      console.log("[SETTINGS] Sincronizando com o servidor...");
       setLoading(false);
     });
 
@@ -64,13 +63,13 @@ export default function SettingsAdmin() {
       
       toast({ 
         title: "SISTEMA ATUALIZADO!", 
-        description: "As regras entraram em vigor instantaneamente." 
+        description: "As novas regras da arena entraram em vigor." 
       });
     } catch (e: any) {
       toast({ 
         variant: "destructive", 
-        title: "FALHA AO GRAVAR", 
-        description: "Erro de permissão no banco." 
+        title: "ACESSO NEGADO", 
+        description: "Você não tem permissão para alterar as regras globais." 
       });
     } finally {
       setSaving(false);

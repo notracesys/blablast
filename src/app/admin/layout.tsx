@@ -19,7 +19,8 @@ import {
   Menu,
   X,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  Terminal
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -57,20 +58,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const checkAdminStatus = async () => {
       if (!db) return;
       try {
+        // 1. Tenta verificar via Custom Claims (Sugestão do Dev)
+        const idTokenResult = await authUser.getIdTokenResult(true); // Força refresh para pegar novos claims
+        const hasClaim = idTokenResult.claims.isAdmin === true || idTokenResult.claims.admin === true;
+
+        if (hasClaim) {
+          console.log("[ADMIN] Acesso concedido via Custom Claims ✅");
+          setIsAdmin(true);
+          setChecking(false);
+          return;
+        }
+
+        // 2. Fallback: Verifica no Firestore caso o claim ainda não tenha sido injetado
         const snap = await getDoc(doc(db, 'users', authUser.uid));
         if (snap.exists()) {
           const data = snap.data();
-          // Aceita isAdmin ou roles de poder
-          const hasAccess = data.isAdmin === true || data.role === 'admin' || data.role === 'owner';
-          setIsAdmin(hasAccess);
+          const hasDocAccess = data.isAdmin === true || data.role === 'admin' || data.role === 'owner';
+          setIsAdmin(hasDocAccess);
+          
+          if (hasDocAccess) {
+            console.log("[ADMIN] Acesso concedido via Firestore Document 📄");
+          }
         } else {
-          // Se o documento não existe mas ele está logado no preview, 
-          // vamos permitir acesso básico para ele criar o próprio perfil
           setIsAdmin(false);
         }
       } catch (e) {
-        console.warn("[ADMIN] Erro ao validar cargo, tentando novamente...");
-        // Em caso de erro de permissão no layout, vamos assumir falso para segurança
+        console.error("[ADMIN] Falha na validação de privilégios:", e);
         setIsAdmin(false);
       } finally {
         setChecking(false);
@@ -87,7 +100,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas." });
+      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou acesso negado." });
     } finally {
       setLoginLoading(false);
     }
@@ -107,7 +120,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="h-screen w-full flex items-center justify-center bg-[#08090d] p-6">
         <div className="w-full max-w-md space-y-8 rounded-[2.5rem] bg-[#111622] p-10 border border-white/5 shadow-2xl">
           <div className="text-center space-y-2">
-            <Image src="/blockcash.png" alt="Logo" width={100} height={40} className="mx-auto filter brightness-125 mb-4" />
+            <div className="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-cyan-500/20">
+              <Terminal className="text-cyan-400" size={32} />
+            </div>
             <h1 className="text-2xl font-black uppercase tracking-tight text-white">Terminal Master</h1>
             <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação Necessária</p>
           </div>
@@ -139,10 +154,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Restrito</h3>
-                <p className="text-xs text-white/40 leading-relaxed px-4">Este e-mail ({authUser.email}) não está marcado como <b>isAdmin: true</b> no banco de dados.</p>
-                <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5">
-                  <span className="text-[8px] font-black text-white/30 uppercase block">Seu UID para liberar no console:</span>
-                  <code className="text-[9px] text-cyan-400 font-mono break-all">{authUser.uid}</code>
+                <p className="text-xs text-white/40 leading-relaxed px-4">Seu usuário não possui as <b>Custom Claims</b> de administrador necessárias para operar este terminal.</p>
+                <div className="mt-4 p-4 bg-black/40 rounded-2xl border border-white/5 text-left">
+                  <span className="text-[8px] font-black text-white/30 uppercase block mb-1">Seu Identificador Master (UID):</span>
+                  <code className="text-[10px] text-cyan-400 font-mono break-all bg-black/20 p-2 block rounded-lg">{authUser.uid}</code>
                 </div>
               </div>
               <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase underline">Trocar de Conta</Button>

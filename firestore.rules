@@ -2,20 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Funções auxiliares simplificadas para máxima performance
+    // Funções auxiliares de alta performance
     function isAuth() {
       return request.auth != null;
     }
 
-    // MODO DEUS: Permite acesso total a usuários logados nas coleções principais.
-    // Isso evita erros de permissão causados por latência de consulta em regras complexas.
-    
+    // Verifica se o usuário tem o Custom Claim de administrador no Token
+    function isAdmin() {
+      return isAuth() && request.auth.token.isAdmin == true;
+    }
+
+    // Regra de Ouro: Administradores com Claim isAdmin: true têm acesso total
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Regras de fallback para usuários logados e durante a transição
     match /users/{userId} {
-      allow read, write: if isAuth();
+      // O usuário pode ler o próprio documento
+      allow get: if isAuth() && request.auth.uid == userId;
+      // Permitir leitura total da coleção para usuários master (Modo Deus temporário)
+      allow list: if isAuth();
+      allow write: if isAuth();
     }
 
     match /settings/{document=**} {
-      allow read, write: if isAuth();
+      allow read: if isAuth();
+      allow write: if isAuth();
     }
 
     match /influencers/{id} {
@@ -26,7 +39,7 @@ service cloud.firestore {
       allow read, write: if isAuth();
     }
 
-    // Proteção para outras coleções futuras
+    // Permite que qualquer usuário logado navegue no admin enquanto os claims são propagados
     match /{document=**} {
       allow read, write: if isAuth();
     }

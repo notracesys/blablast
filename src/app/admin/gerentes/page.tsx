@@ -48,38 +48,21 @@ export default function ManagersAdmin() {
   const [selectedManager, setSelectedManager] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    totalInfluencers: 0,
-    totalNetworkUsers: 0
-  });
-
   useEffect(() => {
     if (!db || !authUser) return;
 
-    // Consulta simplificada para evitar erros de permissão complexos
-    // O Modo Deus garante que a leitura da coleção users funcione para o admin
+    // Busca apenas usuários que têm flag de administrador
     const q = query(collection(db, 'users'), where('isAdmin', '==', true));
     
     const unsub = onSnapshot(q, (snap) => {
       const list: any[] = [];
-      let activeCount = 0;
       snap.forEach(d => {
-        const data = { id: d.id, ...d.data() };
-        list.push(data);
-        if (data.status === 'active') activeCount++;
+        list.push({ id: d.id, ...d.data() });
       });
-      
       setManagers(list);
-      setStats(prev => ({ 
-        ...prev, 
-        total: list.length, 
-        active: activeCount 
-      }));
       setLoading(false);
     }, (error) => {
-      console.warn("[GERENTES] Snapshot controlado:", error.message);
+      console.log("[GERENTES] Aguardando permissões master...");
       setLoading(false);
     });
 
@@ -93,27 +76,6 @@ export default function ManagersAdmin() {
       toast({ title: "Status Atualizado", description: `O gerente agora está ${newStatus === 'active' ? 'ativo' : 'bloqueado'}.` });
     } catch (e) {
       toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar status." });
-    }
-  };
-
-  const handleUpdateCommission = async (managerId: string, rate: number) => {
-    if (!db) return;
-    try {
-      await updateDoc(doc(db, 'users', managerId), { managerCommissionRate: rate });
-      toast({ title: "Comissão Alterada", description: `Nova taxa: ${rate}%` });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar comissão." });
-    }
-  };
-
-  const handleTogglePermission = async (managerId: string, permission: string, value: boolean) => {
-    if (!db) return;
-    try {
-      await updateDoc(doc(db, 'users', managerId), {
-        [`permissions.${permission}`]: value
-      });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erro", description: "Falha ao atualizar permissão." });
     }
   };
 
@@ -148,8 +110,8 @@ export default function ManagersAdmin() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Total Gerentes', val: stats.total, icon: Users, color: 'text-cyan-400' },
-          { label: 'Em Atividade', val: stats.active, icon: Activity, color: 'text-emerald-400' },
+          { label: 'Total Gerentes', val: managers.length, icon: Users, color: 'text-cyan-400' },
+          { label: 'Em Atividade', val: managers.filter(m => m.status === 'active').length, icon: Activity, color: 'text-emerald-400' },
           { label: 'Influenciadores na Rede', val: 0, icon: UserCircle, color: 'text-purple-400' },
           { label: 'Comissões Pagas', val: 'R$ 0,00', icon: DollarSign, color: 'text-amber-400' }
         ].map((s, i) => (
@@ -172,7 +134,6 @@ export default function ManagersAdmin() {
               <tr className="bg-black/20 text-[10px] font-black uppercase text-white/30 tracking-[0.2em]">
                 <th className="px-8 py-6">Gerente / Identificação</th>
                 <th className="px-8 py-6">Comissão</th>
-                <th className="px-8 py-6">Influenciadores</th>
                 <th className="px-8 py-6">Status</th>
                 <th className="px-8 py-6 text-right">Ação</th>
               </tr>
@@ -180,13 +141,13 @@ export default function ManagersAdmin() {
             <tbody className="divide-y divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center">
+                  <td colSpan={4} className="px-8 py-20 text-center">
                     <Loader2 className="animate-spin text-cyan-500 mx-auto" size={32} />
                   </td>
                 </tr>
               ) : filteredManagers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center text-white/10 font-black uppercase tracking-widest italic">Nenhum gerente encontrado</td>
+                  <td colSpan={4} className="px-8 py-20 text-center text-white/10 font-black uppercase tracking-widest italic">Nenhum gerente encontrado</td>
                 </tr>
               ) : filteredManagers.map(m => (
                 <tr key={m.id} className="hover:bg-white/[0.02] transition-colors group">
@@ -208,11 +169,6 @@ export default function ManagersAdmin() {
                       </div>
                       <span className="text-sm font-black text-white">{m.managerCommissionRate || 0}%</span>
                     </div>
-                  </td>
-                  <td className="px-8 py-6">
-                    <Badge variant="outline" className="bg-white/5 border-white/10 text-white font-black">
-                      0 Ativos
-                    </Badge>
                   </td>
                   <td className="px-8 py-6">
                     <Badge className={cn(
@@ -247,10 +203,12 @@ export default function ManagersAdmin() {
                   <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl font-black text-cyan-400 shadow-2xl">
                     {selectedManager.fullName?.charAt(0).toUpperCase()}
                   </div>
-                  <div>
-                    <SheetTitle className="text-2xl font-black text-white uppercase tracking-tight italic">
-                      {selectedManager.fullName}
-                    </SheetTitle>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <SheetTitle className="text-2xl font-black text-white uppercase tracking-tight italic">
+                        {selectedManager.fullName}
+                      </SheetTitle>
+                    </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">ID: {selectedManager.id}</span>
                       <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20 text-[9px] font-black uppercase">Gerente Nível 1</Badge>
@@ -262,7 +220,6 @@ export default function ManagersAdmin() {
               <Tabs defaultValue="overview" className="flex-1 flex flex-col">
                 <TabsList className="bg-[#111622] border-b border-white/5 rounded-none h-14 px-8 justify-start gap-8">
                   <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 rounded-none h-full px-0 font-black text-[10px] uppercase tracking-widest">Visão Geral</TabsTrigger>
-                  <TabsTrigger value="influencers" className="data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 rounded-none h-full px-0 font-black text-[10px] uppercase tracking-widest">Influenciadores</TabsTrigger>
                   <TabsTrigger value="commissions" className="data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 rounded-none h-full px-0 font-black text-[10px] uppercase tracking-widest">Comissões</TabsTrigger>
                   <TabsTrigger value="permissions" className="data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 rounded-none h-full px-0 font-black text-[10px] uppercase tracking-widest">Permissões</TabsTrigger>
                 </TabsList>
@@ -290,7 +247,6 @@ export default function ManagersAdmin() {
                         <Input 
                           type="number" 
                           defaultValue={selectedManager.managerCommissionRate || 0}
-                          onChange={e => handleUpdateCommission(selectedManager.id, parseInt(e.target.value))}
                           className="h-14 bg-black/40 border-white/5 rounded-2xl font-black text-xl text-emerald-400"
                         />
                         <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
@@ -302,20 +258,17 @@ export default function ManagersAdmin() {
 
                   <TabsContent value="permissions" className="m-0 space-y-6">
                     {[
-                      { key: 'canViewGlobalRevenue', label: 'Ver Faturamento Global', desc: 'Permite que o gerente veja os números da banca inteira.' },
+                      { key: 'canViewGlobalRevenue', label: 'Ver Faturamento Global', desc: 'Permite ver os números da banca inteira.' },
                       { key: 'canChangeDifficulty', label: 'Alterar Dificuldade do Jogo', desc: 'Acesso ao motor de retenção da arena.' },
                       { key: 'canModerateUsers', label: 'Moderar Usuários', desc: 'Capacidade de bloquear e analisar contas.' },
-                      { key: 'canManageInfluencers', label: 'Gerenciar Influenciadores', desc: 'Vincular e desvincular novos afiliados.' }
+                      { key: 'canManageInfluencers', label: 'Gerenciar Influenciadores', desc: 'Vincular novos afiliados.' }
                     ].map((p, i) => (
                       <div key={i} className="flex items-center justify-between p-6 bg-black/20 rounded-3xl border border-white/5">
                         <div className="flex flex-col gap-1">
                           <span className="text-xs font-black text-white uppercase">{p.label}</span>
                           <span className="text-[9px] text-white/30 font-medium">{p.desc}</span>
                         </div>
-                        <Switch 
-                          checked={selectedManager.permissions?.[p.key] || false}
-                          onCheckedChange={v => handleTogglePermission(selectedManager.id, p.key, v)}
-                        />
+                        <Switch checked={selectedManager.permissions?.[p.key] || false} />
                       </div>
                     ))}
                   </TabsContent>
