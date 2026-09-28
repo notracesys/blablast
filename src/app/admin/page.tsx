@@ -25,8 +25,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function AdminPage() {
   const auth = useAuth();
@@ -56,7 +54,7 @@ export default function AdminPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Monitorar estado de autenticação
+  // 1. Monitorar estado de autenticação (sem redirecionar)
   useEffect(() => {
     if (!auth) return;
     const unsubAuth = onAuthStateChanged(auth, (u) => {
@@ -99,7 +97,6 @@ export default function AdminPage() {
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O useEffect do onAuthStateChanged cuidará da verificação
     } catch (error: any) {
       setLoginLoading(false);
       toast({ 
@@ -114,7 +111,7 @@ export default function AdminPage() {
     if (auth) signOut(auth);
   };
 
-  // 2. Carregar dados do Dashboard se for Admin
+  // 2. Carregar dados do Dashboard APENAS se for Admin verificado
   useEffect(() => {
     if (!isAdminVerified || !db) return;
 
@@ -129,10 +126,7 @@ export default function AdminPage() {
         }));
       }
     }, (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: settingsRef.path,
-        operation: 'get',
-      }));
+      console.warn("Aguardando propagação de permissões para configurações...");
     });
 
     const usersCollRef = collection(db, 'users');
@@ -151,10 +145,7 @@ export default function AdminPage() {
         totalBalance: balanceSum
       }));
     }, (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: usersCollRef.path,
-        operation: 'list',
-      }));
+      console.warn("Aguardando propagação de permissões para lista de usuários...");
     });
 
     return () => {
@@ -170,16 +161,11 @@ export default function AdminPage() {
       .then(() => {
         toast({ title: "Sucesso", description: `Dificuldade ajustada para ${val[0]}%` });
       })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: settingsRef.path,
-          operation: 'update',
-          requestResourceData: { difficulty: val[0] }
-        }));
+      .catch((err) => {
+        toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar a dificuldade." });
       });
   };
 
-  // ESTADO DE CARREGAMENTO INICIAL
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white">
@@ -188,8 +174,8 @@ export default function AdminPage() {
     );
   }
 
-  // TELA DE LOGIN (Se não estiver logado ou se o acesso foi negado)
-  if (!user || accessDenied) {
+  // TELA DE LOGIN OU ACESSO NEGADO
+  if (!user || !isAdminVerified) {
     return (
       <div className="min-h-screen w-full bg-[#060a17] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none"></div>
@@ -207,18 +193,18 @@ export default function AdminPage() {
                 <div>
                   <h1 className="text-xl font-black uppercase text-white mb-2">Acesso Restrito</h1>
                   <p className="text-white/40 text-[11px] font-medium leading-relaxed">
-                    Sua conta ({user?.email}) não possui privilégios de administrador no banco de dados.
+                    A conta logada ({user?.email}) não possui permissões administrativas.
                   </p>
                 </div>
                 <Button onClick={handleLogout} className="w-full h-12 bg-white/5 text-white font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-colors">
-                  TENTAR COM OUTRA CONTA
+                  LOGAR COM OUTRA CONTA
                 </Button>
               </div>
             ) : (
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="text-center mb-2">
-                  <h1 className="text-xl font-black uppercase tracking-tight mb-1">Terminal Master</h1>
-                  <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.2em]">Área de Controle Restrita</p>
+                  <h1 className="text-xl font-black uppercase tracking-tight mb-1">Terminal Admin</h1>
+                  <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.2em]">Identifique-se para prosseguir</p>
                 </div>
 
                 <div className="space-y-4">
@@ -236,7 +222,7 @@ export default function AdminPage() {
                       type={showPass ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Senha de Acesso" 
+                      placeholder="Senha" 
                       className="h-12 bg-[#060a17] border-white/5 rounded-2xl px-5 pr-12 text-sm placeholder:text-white/20"
                     />
                     <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20">
@@ -246,7 +232,7 @@ export default function AdminPage() {
                 </div>
 
                 <Button disabled={loginLoading || isVerifyingAdmin} className="w-full h-14 bg-gradient-to-r from-amber-400 to-orange-600 hover:opacity-95 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(245,158,11,0.2)]">
-                  {loginLoading || isVerifyingAdmin ? <Loader2 className="w-5 h-5 animate-spin" /> : 'AUTENTICAR TERMINAL'}
+                  {loginLoading || isVerifyingAdmin ? <Loader2 className="w-5 h-5 animate-spin" /> : 'AUTENTICAR'}
                 </Button>
               </form>
             )}
@@ -260,17 +246,7 @@ export default function AdminPage() {
     );
   }
 
-  // TELA DE CARREGAMENTO DOS DADOS (Se logado e verificado, mas dados ainda não chegaram)
-  if (!isAdminVerified) {
-    return (
-      <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white">
-        <RefreshCw className="w-8 h-8 animate-spin text-cyan-400" />
-        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/40">Sincronizando Banco...</p>
-      </div>
-    );
-  }
-
-  // DASHBOARD ADMIN COMPLETO
+  // DASHBOARD ADMIN (Apenas para Admin Verificado)
   const filteredUsers = usersList.filter(u => 
     u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -298,7 +274,6 @@ export default function AdminPage() {
       </header>
 
       <main className="p-6 max-w-[1200px] mx-auto w-full space-y-8">
-        {/* CARDS DE MÉTRICAS */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] space-y-2">
             <div className="flex justify-between items-start">
@@ -334,7 +309,6 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {/* CONTROLE DE DIFICULDADE */}
         <section className="bg-slate-900/80 border border-white/10 p-8 rounded-[2.5rem] relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-8 opacity-5">
             <Zap className="w-40 h-40" />
@@ -366,11 +340,6 @@ export default function AdminPage() {
                   onValueCommit={handleUpdateDifficulty}
                   className="py-4"
                 />
-                <div className="p-4 bg-black/40 rounded-2xl border border-white/5">
-                  <p className="text-xs text-white/50 leading-relaxed">
-                    <span className="text-rose-500 font-black">MODO DRENO:</span> Ao atingir 100%, o jogo passará a entregar apenas peças de 5 blocos, preenchendo o tabuleiro rapidamente e impedindo a conclusão de metas altas.
-                  </p>
-                </div>
               </div>
             </div>
 
@@ -383,7 +352,6 @@ export default function AdminPage() {
           </div>
         </section>
 
-        {/* LISTA DE USUÁRIOS */}
         <section className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-[1000] uppercase tracking-tighter flex items-center gap-3">
@@ -408,7 +376,6 @@ export default function AdminPage() {
                   <th className="pb-4">Saldo Real</th>
                   <th className="pb-4">Comissão</th>
                   <th className="pb-4">Status</th>
-                  <th className="pb-4 text-right pr-2">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -430,11 +397,6 @@ export default function AdminPage() {
                       <div className={`inline-flex items-center px-2 py-0.5 rounded text-[8px] font-black uppercase ${u.isAdmin ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-white/5 text-white/40'}`}>
                         {u.isAdmin ? 'Administrador' : 'Jogador'}
                       </div>
-                    </td>
-                    <td className="py-4 text-right pr-2">
-                      <button className="h-8 px-4 rounded-lg bg-white/5 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-colors">
-                        Visualizar
-                      </button>
                     </td>
                   </tr>
                 ))}
