@@ -4,24 +4,24 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, onSnapshot, doc, updateDoc, getDocs, where } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { 
-  LayoutDashboard, 
-  Users, 
-  Settings, 
-  TrendingUp, 
   ArrowLeft,
   ShieldAlert,
   Wallet,
-  Zap,
-  RefreshCw,
+  TrendingUp,
+  Users,
   Search,
-  Lock
+  Lock,
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function AdminPage() {
   const { user, loading: authLoading } = useUser();
@@ -50,56 +50,78 @@ export default function AdminPage() {
     
     if (!db) return;
 
-    // Verificar se é admin (Segurança de leitura no servidor)
+    // 1. Verificar Perfil do Admin
     const userRef = doc(db, 'users', user.uid);
-    const unsubUser = onSnapshot(userRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        if (!data.isAdmin) {
-          setAccessDenied(true);
-          setTimeout(() => router.push('/painel'), 3000);
-          return;
+    const unsubUser = onSnapshot(userRef, 
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (!data.isAdmin) {
+            setAccessDenied(true);
+            setTimeout(() => router.push('/painel'), 3000);
+            return;
+          }
+          setUserData(data);
         }
-        setUserData(data);
+      },
+      async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: userRef.path,
+          operation: 'get',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
       }
-    });
+    );
 
-    // Stats Globais (Configurações)
+    // 2. Stats Globais (Configurações)
     const settingsRef = doc(db, 'settings', 'game');
-    const unsubSettings = onSnapshot(settingsRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
+    const unsubSettings = onSnapshot(settingsRef, 
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setGlobalStats(prev => ({ 
+            ...prev, 
+            activeDifficulty: data.difficulty || 50,
+            totalDeposited: data.totalDeposited || 0
+          }));
+        }
+      },
+      async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'get',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      }
+    );
+
+    // 3. Lista de Usuários (Apenas Admin pode listar a coleção inteira)
+    const usersCollRef = collection(db, 'users');
+    const unsubUsers = onSnapshot(usersCollRef, 
+      (snap) => {
+        const list: any[] = [];
+        let balanceSum = 0;
+        snap.forEach(doc => {
+          const d = doc.data();
+          list.push({ id: doc.id, ...d });
+          balanceSum += (d.balance || 0);
+        });
+        setUsersList(list);
         setGlobalStats(prev => ({ 
           ...prev, 
-          activeDifficulty: data.difficulty || 50,
-          totalDeposited: data.totalDeposited || 0
+          totalUsers: list.length,
+          totalBalance: balanceSum
         }));
-      } else {
-        // Inicializar se não existir
-        updateDoc(settingsRef, { difficulty: 50, totalDeposited: 0 }).catch(() => {});
+      }, 
+      async (serverError) => {
+        const permissionError = new FirestorePermissionError({
+          path: usersCollRef.path,
+          operation: 'list',
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+        // Não bloqueamos a UI imediatamente aqui para permitir que o erro contextual apareça
       }
-    });
-
-    // Lista de Usuários e Cálculo de Faturamento
-    const usersQuery = query(collection(db, 'users'));
-    const unsubUsers = onSnapshot(usersQuery, (snap) => {
-      const list: any[] = [];
-      let balanceSum = 0;
-      snap.forEach(doc => {
-        const d = doc.data();
-        list.push({ id: doc.id, ...d });
-        balanceSum += (d.balance || 0);
-      });
-      setUsersList(list);
-      setGlobalStats(prev => ({ 
-        ...prev, 
-        totalUsers: list.length,
-        totalBalance: balanceSum
-      }));
-    }, (error) => {
-      console.error("Erro de permissão ao listar usuários");
-      setAccessDenied(true);
-    });
+    );
 
     return () => {
       unsubUser();
@@ -117,7 +139,15 @@ export default function AdminPage() {
         toast({ title: "Configuração Salva", description: `Dificuldade ajustada para ${val[0]}%` });
         setIsUpdating(false);
       })
-      .catch(() => setIsUpdating(false));
+      .catch(async (serverError) => {
+        setIsUpdating(false);
+        const permissionError = new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'update',
+          requestResourceData: { difficulty: val[0] }
+        } satisfies SecurityRuleContext);
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   if (accessDenied) {
