@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -63,10 +62,14 @@ export default function ManagersAdmin() {
   useEffect(() => {
     if (!db || !authUser) return;
 
-    // Consulta específica para gerentes
+    console.log("[GERENTES] Iniciando escuta de dados da rede...");
+    
+    // Consulta específica para gerentes/admins
+    // Como agora somos isAdmin no Layout, essa query deve ser aceita pelas rules
     const q = query(collection(db, 'users'), where('isAdmin', '==', true));
     
     const unsub = onSnapshot(q, (snap) => {
+      console.log(`[GERENTES] Snapshot recebido: ${snap.size} documentos.`);
       const list: any[] = [];
       let activeCount = 0;
       snap.forEach(d => {
@@ -82,8 +85,8 @@ export default function ManagersAdmin() {
         active: activeCount 
       }));
       setLoading(false);
-    }, async (error) => {
-      // Captura erro de permissão e emite para o sistema central
+    }, (error) => {
+      console.error("[GERENTES] Falha ao listar gerentes:", error);
       const permissionError = new FirestorePermissionError({
         path: 'users',
         operation: 'list',
@@ -292,24 +295,6 @@ export default function ManagersAdmin() {
                         <span className="text-[9px] font-bold text-white/40 italic">Retenção de 40%</span>
                       </div>
                     </div>
-                    <div className="bg-[#111622] p-8 rounded-[2.5rem] border border-white/5 space-y-6">
-                      <h4 className="text-xs font-black text-white uppercase tracking-widest">Log de Atividade Recente</h4>
-                      <div className="space-y-4">
-                        {[
-                          { action: 'Login no Terminal', time: '10 mins atrás', icon: Lock },
-                          { action: 'Alterou comissão de Influenciador', time: '2h atrás', icon: Settings },
-                          { action: 'Moderou Usuário Suspeito', time: 'Ontem', icon: ShieldAlert }
-                        ].map((act, i) => (
-                          <div key={i} className="flex items-center gap-4 text-[11px]">
-                            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-white/40"><act.icon size={14} /></div>
-                            <div className="flex-1">
-                              <p className="font-bold text-white/80">{act.action}</p>
-                              <span className="text-white/20 text-[9px] font-bold">{act.time}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </TabsContent>
 
                   <TabsContent value="commissions" className="m-0 space-y-8">
@@ -326,9 +311,6 @@ export default function ManagersAdmin() {
                           <CheckCircle2 className="text-emerald-500" />
                         </div>
                       </div>
-                      <p className="text-[10px] text-white/30 leading-relaxed font-medium italic">
-                        Esta taxa incide sobre o volume líquido gerado por toda a rede de influenciadores deste gerente.
-                      </p>
                     </div>
                   </TabsContent>
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -20,8 +19,7 @@ import {
   Menu,
   X,
   Loader2,
-  ShieldAlert,
-  Fingerprint
+  ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,26 +50,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (authLoading) return;
     
     if (!authUser || !db) {
+      console.log("[ADMIN] Aguardando autenticação...");
       setChecking(false);
       setIsAdmin(false);
       return;
     }
 
     const checkAdmin = async () => {
+      console.log(`[ADMIN] Validando privilégios para UID: ${authUser.uid}`);
       try {
         const snap = await getDoc(doc(db, 'users', authUser.uid));
         if (snap.exists()) {
           const data = snap.data();
           setAdminData(data);
-          if (data.isAdmin === true) {
-            setIsAdmin(true);
-          } else {
-            setIsAdmin(false);
-          }
+          const hasAccess = data.isAdmin === true || data.role === 'admin' || data.role === 'owner';
+          console.log(`[ADMIN] Acesso ${hasAccess ? 'PERMITIDO' : 'NEGADO'} para o usuário.`);
+          setIsAdmin(hasAccess);
         } else {
+          console.warn("[ADMIN] Documento de usuário não encontrado no Firestore.");
           setIsAdmin(false);
         }
       } catch (e) {
+        console.error("[ADMIN] Erro ao validar cargo:", e);
         setIsAdmin(false);
       } finally {
         setChecking(false);
@@ -87,7 +87,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O useEffect acima cuidará da validação isAdmin após o login
     } catch (err) {
       toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou sem permissão master." });
     } finally {
@@ -99,7 +98,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Terminal...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Terminal Master...</span>
       </div>
     );
   }
@@ -141,23 +140,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios administrativos.</p>
+                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios administrativos no banco de dados.</p>
               </div>
-              
-              <div className="bg-black/20 p-4 rounded-xl text-left space-y-3">
-                <div className="flex flex-col gap-1">
-                  <span className="text-[8px] font-black text-white/20 uppercase">Seu ID (UID)</span>
-                  <code className="text-[10px] text-white/60 font-mono break-all">{authUser.uid}</code>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[8px] font-black text-white/20 uppercase">isAdmin no Banco</span>
-                  <span className={cn("text-[9px] font-black px-2 py-0.5 rounded", adminData?.isAdmin ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-500")}>
-                    {adminData?.isAdmin === true ? 'TRUE' : 'FALSE/MISSING'}
-                  </span>
-                </div>
-              </div>
-
-              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase">Trocar de Conta</Button>
+              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase underline underline-offset-4">Trocar de Conta</Button>
             </div>
           )}
         </div>
@@ -246,7 +231,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#08090d]">
-          {children}
+          {/* Só renderizamos os filhos quando tivermos certeza absoluta do cargo isAdmin */}
+          {isAdmin ? children : null}
         </main>
       </div>
     </div>

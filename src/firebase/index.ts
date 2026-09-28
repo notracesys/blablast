@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -48,15 +47,22 @@ export const useFirestore = () => useContext(FirebaseContext).db;
 
 export function useUser() {
   const auth = useAuth();
-  const [user, setUser] = useState<User | null>(auth?.currentUser || null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!auth) return;
-    return onAuthStateChanged(auth, (u) => {
+    
+    // Sincroniza o estado inicial
+    setUser(auth.currentUser);
+    
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      console.log(`[AUTH] Estado alterado: ${u ? 'Logado (' + u.uid + ')' : 'Deslogado'}`);
       setUser(u);
       setLoading(false);
     });
+
+    return () => unsubscribe();
   }, [auth]);
 
   return { user, loading };

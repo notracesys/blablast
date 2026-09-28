@@ -1,14 +1,57 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // MODO DEUS ATIVADO: 
-    // Qualquer usuário autenticado tem permissão TOTAL de leitura e escrita.
-    // Isso elimina bloqueios de segurança enquanto você gerencia o sistema.
+    // Função auxiliar para verificar se o usuário está autenticado
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Função auxiliar para verificar se o usuário é o dono do documento
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    // Função principal de segurança: Verifica se o usuário tem cargo de Admin
+    // Checa tanto o campo boolean isAdmin quanto a string role == 'admin'
+    function isAdmin() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return isAuth() && (userDoc.isAdmin == true || userDoc.role == 'admin' || userDoc.role == 'owner');
+    }
+
+    // Regras para a coleção de usuários
+    match /users/{userId} {
+      // O próprio usuário pode ler seus dados. Admin pode listar e ler todos.
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      
+      // Criação: Qualquer um pode criar ao se registrar, mas não pode se definir como admin
+      allow create: if isAuth() && request.resource.data.isAdmin == false;
+      
+      // Escrita: O usuário pode atualizar seus dados (exceto campos sensíveis). Admin pode tudo.
+      allow update: if isAdmin() || (isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'role', 'managerCommissionRate']));
+      
+      allow delete: if isAdmin();
+    }
+
+    // Regras para Configurações Globais
+    match /settings/{document=**} {
+      allow read: if isAuth();
+      allow write: if isAdmin();
+    }
+
+    // Regras para Influenciadores e Logs
+    match /influencers/{id} {
+      allow read, write: if isAdmin();
+    }
     
+    match /logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // Proteção Padrão: Bloqueia tudo que não foi explicitamente permitido acima
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isAdmin();
     }
   }
 }
