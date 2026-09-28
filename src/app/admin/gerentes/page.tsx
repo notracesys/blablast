@@ -15,7 +15,8 @@ import {
   Lock,
   Percent,
   Activity,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,7 +52,7 @@ export default function ManagersAdmin() {
   useEffect(() => {
     if (!db || !authUser) return;
 
-    // Busca apenas usuários que têm flag de administrador
+    // Busca usuários com flag isAdmin: true ou role: manager
     const q = query(collection(db, 'users'), where('isAdmin', '==', true));
     
     const unsub = onSnapshot(q, (snap) => {
@@ -62,7 +63,7 @@ export default function ManagersAdmin() {
       setManagers(list);
       setLoading(false);
     }, (error) => {
-      console.log("[GERENTES] Aguardando permissões master...");
+      console.warn("[GERENTES] Aguardando permissão ou dados vazios...");
       setLoading(false);
     });
 
@@ -198,7 +199,10 @@ export default function ManagersAdmin() {
         <SheetContent className="w-full sm:max-w-xl bg-[#0d111c] border-white/5 p-0 overflow-hidden flex flex-col">
           {selectedManager && (
             <>
-              <SheetHeader className="p-8 bg-[#111622] border-b border-white/5">
+              <SheetHeader className="p-8 bg-[#111622] border-b border-white/5 relative">
+                <button onClick={() => setIsSheetOpen(false)} className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+                  <X size={20} />
+                </button>
                 <div className="flex items-center gap-6">
                   <div className="w-16 h-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-2xl font-black text-cyan-400 shadow-2xl">
                     {selectedManager.fullName?.charAt(0).toUpperCase()}
@@ -211,7 +215,7 @@ export default function ManagersAdmin() {
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">ID: {selectedManager.id}</span>
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20 text-[9px] font-black uppercase">Gerente Nível 1</Badge>
+                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/20 text-[9px] font-black uppercase">Gerente Ativo</Badge>
                     </div>
                   </div>
                 </div>
@@ -283,7 +287,7 @@ export default function ManagersAdmin() {
                     selectedManager.status === 'active' ? "bg-rose-500 text-white" : "bg-emerald-500 text-black"
                   )}
                 >
-                  {selectedManager.status === 'active' ? <Lock className="mr-2" /> : <CheckCircle2 className="mr-2" />}
+                  {selectedManager.status === 'active' ? <Lock className="mr-2" size={18} /> : <CheckCircle2 className="mr-2" size={18} />}
                   {selectedManager.status === 'active' ? 'SUSPENDER ACESSO' : 'ATIVAR ACESSO'}
                 </Button>
                 <Button 

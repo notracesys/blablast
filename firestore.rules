@@ -1,47 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Funções auxiliares de alta performance
-    function isAuth() {
-      return request.auth != null;
-    }
-
-    // Verifica se o usuário tem o Custom Claim de administrador no Token
-    function isAdmin() {
-      return isAuth() && request.auth.token.isAdmin == true;
-    }
-
-    // Regra de Ouro: Administradores com Claim isAdmin: true têm acesso total
+    // MODO DEUS: Permissão total para qualquer usuário autenticado.
+    // Isso garante que você nunca seja bloqueado enquanto estiver logado.
     match /{document=**} {
-      allow read, write: if isAdmin();
-    }
-
-    // Regras de fallback para usuários logados e durante a transição
-    match /users/{userId} {
-      // O usuário pode ler o próprio documento
-      allow get: if isAuth() && request.auth.uid == userId;
-      // Permitir leitura total da coleção para usuários master (Modo Deus temporário)
-      allow list: if isAuth();
-      allow write: if isAuth();
-    }
-
-    match /settings/{document=**} {
-      allow read: if isAuth();
-      allow write: if isAuth();
-    }
-
-    match /influencers/{id} {
-      allow read, write: if isAuth();
-    }
-    
-    match /logs/{id} {
-      allow read, write: if isAuth();
-    }
-
-    // Permite que qualquer usuário logado navegue no admin enquanto os claims são propagados
-    match /{document=**} {
-      allow read, write: if isAuth();
+      allow read, write: if request.auth != null;
     }
   }
 }

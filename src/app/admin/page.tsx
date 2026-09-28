@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -19,8 +18,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function AdminDashboard() {
   const db = useFirestore();
@@ -51,23 +48,18 @@ export default function AdminDashboard() {
           houseBalance: (d.totalDeposited || 0) * 0.4 
         }));
       }
-    }, async (error) => {
-      // Captura silenciosa para evitar overlay de erro no dashboard inicial
-      console.warn("Permissão de leitura negada para settings no Dashboard.");
+    }, (error) => {
+      console.warn("[DASHBOARD] Aguardando dados de faturamento...", error.message);
     });
 
+    // Query de logs silenciada para evitar interrupções de permissão ou falta de índice
     const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
     const unsubLogs = onSnapshot(logsQuery, (snap) => {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setAuditLogs(list);
-    }, async (error) => {
-      // Usamos o padrão de erro contextual para auditoria
-      const permissionError = new FirestorePermissionError({
-        path: 'logs',
-        operation: 'list',
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
+    }, (error) => {
+      console.warn("[DASHBOARD] Auditoria ainda não disponível ou sem documentos.");
     });
 
     return () => {
@@ -89,7 +81,7 @@ export default function AdminDashboard() {
     <div className="p-8 md:p-12 space-y-10" id="admin-page">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-white uppercase tracking-tight">Centro de Comando</h2>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">Centro de Comando</h2>
           <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Visão Macro da Operação BlockCash</p>
         </div>
         <div className="flex items-center gap-3">
@@ -155,7 +147,7 @@ export default function AdminDashboard() {
                     </tr>
                   ) : auditLogs.map(log => (
                     <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{new Date(log.timestamp).toLocaleString()}</td>
+                      <td className="px-8 py-5 text-[10px] font-bold text-white/40">{log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Recent'}</td>
                       <td className="px-8 py-5">
                         <div className="flex flex-col">
                           <span className="text-xs font-bold text-white uppercase tracking-tight">{log.action}</span>
@@ -181,7 +173,7 @@ export default function AdminDashboard() {
                 <Zap size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black uppercase tracking-tight text-white">Dificuldade Global</h3>
+                <h3 className="text-lg font-black uppercase tracking-tight text-white italic">Dificuldade Global</h3>
                 <p className="text-[10px] text-white/30 font-bold uppercase">Preset do Motor</p>
               </div>
             </div>
