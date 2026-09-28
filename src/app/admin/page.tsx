@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { collection, onSnapshot, doc, query, orderBy, limit } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { 
@@ -22,11 +22,12 @@ import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
   const db = useFirestore();
+  const { user: authUser } = useUser();
   const router = useRouter();
 
   const [stats, setStats] = useState({
     grossRevenue: 0,
-    managerCount: 1, // Valor fixo ou vindo de config global para evitar ler lista de users
+    managerCount: 1,
     fraudAlerts: 0,
     retentionRate: 85,
     houseBalance: 0,
@@ -36,9 +37,10 @@ export default function AdminDashboard() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!db) return;
+    // Só inicia os listeners se o banco e o usuário estiverem prontos
+    if (!db || !authUser) return;
 
-    // 1. Faturamento e Banca Total (Lendo apenas 1 documento, muito leve)
+    // 1. Faturamento (Documento único de configuração)
     const unsubSettings = onSnapshot(doc(db, 'settings', 'game'), (snap) => {
       if (snap.exists()) {
         const d = snap.data();
@@ -48,23 +50,26 @@ export default function AdminDashboard() {
           houseBalance: (d.totalDeposited || 0) * 0.4 
         }));
       }
+    }, (err) => {
+      console.warn("Permissão de leitura negada para settings (Aguardando Admin...)");
     });
 
-    // 2. Logs de Auditoria Recentes (Limitado a 5 registros)
+    // 2. Logs de Auditoria Recentes (Apenas 5 registros)
     const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
     const unsubLogs = onSnapshot(logsQuery, (snap) => {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setAuditLogs(list);
     }, (err) => {
-      console.warn("Aguardando permissões de logs...");
+      // Falha silenciosa para evitar assertion failure do SDK
+      console.warn("Permissão de leitura negada para logs.");
     });
 
     return () => {
       unsubSettings();
       unsubLogs();
     };
-  }, [db]);
+  }, [db, authUser]);
 
   const metricCards = [
     { label: 'Faturamento Bruto', value: `R$ ${stats.grossRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign, color: 'text-emerald-400', trend: '+12%', up: true },
@@ -125,7 +130,7 @@ export default function AdminDashboard() {
 
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria de Gerentes (Recente)</h3>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria Master (Recente)</h3>
               <Button onClick={() => router.push('/admin/logs')} variant="link" className="text-cyan-400 text-xs font-black uppercase">Ver Todos</Button>
             </div>
             <div className="overflow-x-auto">
