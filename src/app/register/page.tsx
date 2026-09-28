@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, increment, collection, query, where, getDocs } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -104,9 +104,32 @@ function RegisterForm() {
 
     setLoading(true);
     try {
+      // 1. Criar Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // 2. Gerar Referral Code próprio (curto e elegante)
+      const personalReferralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      // 3. Buscar Padrinho (Referrer) se houver código na URL
+      let referredByUID = null;
+      if (refCode) {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('referralCode', '==', refCode.toUpperCase()));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const referrerDoc = querySnapshot.docs[0];
+          referredByUID = referrerDoc.id;
+          
+          // Incrementa contador do padrinho
+          updateDoc(referrerDoc.ref, {
+            referredCount: increment(1)
+          }).catch(() => {});
+        }
+      }
+
+      // 4. Salvar Perfil
       const userRef = doc(db, 'users', user.uid);
       const userData = {
         fullName: nameTrimmed,
@@ -121,20 +144,12 @@ function RegisterForm() {
         totalCommissionEarned: 0,
         referredCount: 0,
         referredDepositVolume: 0,
-        referredBy: refCode || null,
+        referredBy: referredByUID,
+        referralCode: personalReferralCode,
         createdAt: new Date().toISOString(),
       };
 
       await setDoc(userRef, userData);
-
-      // Se houver indicação, incrementa o contador do padrinho
-      if (refCode) {
-        const referrerRef = doc(db, 'users', refCode);
-        updateDoc(referrerRef, {
-          referredCount: increment(1)
-        }).catch(() => { /* Ignorar erros se o padrinho não existir */ });
-      }
-
       router.push('/painel');
 
     } catch (error: any) {

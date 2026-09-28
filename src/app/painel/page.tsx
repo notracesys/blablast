@@ -68,10 +68,13 @@ export default function PainelPage() {
   ];
 
   useEffect(() => {
-    if (user && typeof window !== 'undefined') {
-      setReferralLink(`${window.location.origin}/register?ref=${user.uid}`);
+    if (userData?.referralCode && typeof window !== 'undefined') {
+      setReferralLink(`${window.location.origin}/register?ref=${userData.referralCode}`);
+    } else if (user && !userData?.referralCode && typeof window !== 'undefined') {
+        // Fallback para usuários antigos ou enquanto carrega o código
+        setReferralLink(`${window.location.origin}/register?ref=${user.uid}`);
     }
-  }, [user]);
+  }, [user, userData]);
 
   useEffect(() => {
     setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
@@ -142,10 +145,8 @@ export default function PainelPage() {
     setIsDepositing(true);
     const userRef = doc(db, 'users', user.uid);
 
-    // Atualiza o saldo do próprio usuário
     updateDoc(userRef, { balance: increment(amount) })
       .then(() => {
-        // Lógica de Comissões (50% do depósito)
         if (userData.referredBy) {
           const referrerRef = doc(db, 'users', userData.referredBy);
           const commission = amount * 0.5;
