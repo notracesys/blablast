@@ -2,29 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Função otimizada para verificar admin sem recursão
+    // Função para verificar se o usuário logado é admin consultando o banco
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     match /users/{userId} {
-      // Qualquer um logado lê seu próprio perfil. Admins lêem qualquer um.
+      // Permite ler o próprio perfil ou se for admin ler qualquer um
       allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
       
-      // Apenas Admins podem listar a coleção inteira (essencial para o Dashboard)
+      // Permite listar a coleção inteira de usuários APENAS para admins
       allow list: if request.auth != null && isAdmin();
       
-      // Criação apenas pelo próprio usuário
+      // Criação de perfil no registro
       allow create: if request.auth != null && request.auth.uid == userId;
       
-      // Edição do próprio perfil ou por um Admin
+      // Atualização do próprio perfil ou por admin
       allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      
+      // Deleção proibida por segurança
+      allow delete: if false;
     }
 
-    match /settings/{document=**} {
-      // Configurações globais (como dificuldade) são lidas por todos, mas alteradas só por admin
+    match /settings/{docId} {
+      // Configurações de jogo podem ser lidas por qualquer um (para carregar dificuldade no jogo)
       allow read: if true;
+      // Apenas admin altera dificuldade ou métricas globais
       allow write: if request.auth != null && isAdmin();
     }
   }

@@ -10,8 +10,6 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut, TrendingUp, Users, Wallet, Zap, ShieldAlert, BarChart3, Save } from 'lucide-react';
 import Image from 'next/image';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function AdminPage() {
   const auth = useAuth();
@@ -38,6 +36,7 @@ export default function AdminPage() {
   const [tempDifficulty, setTempDifficulty] = useState(50);
   const [isUpdatingDiff, setIsUpdatingDiff] = useState(false);
 
+  // 1. Monitorar estado de autenticação e verificar isAdmin
   useEffect(() => {
     if (!auth) return;
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -53,6 +52,7 @@ export default function AdminPage() {
             setUser(u);
           }
         } catch (e) {
+          console.error("Erro ao verificar privilégios:", e);
           setIsAdmin(false);
           setUser(u);
         }
@@ -65,9 +65,11 @@ export default function AdminPage() {
     return () => unsub();
   }, [auth, db]);
 
+  // 2. Buscar dados apenas se for admin confirmado
   useEffect(() => {
     if (!isAdmin || !db) return;
 
+    // Monitorar Configurações Globais
     const settingsRef = doc(db, 'settings', 'game');
     const unsubSettings = onSnapshot(settingsRef, (snap) => {
       if (snap.exists()) {
@@ -81,9 +83,10 @@ export default function AdminPage() {
         setTempDifficulty(diff);
       }
     }, (err) => {
-      console.error("Erro ao ler settings:", err);
+      console.warn("Aguardando propagação de permissões para settings...");
     });
 
+    // Monitorar Lista de Usuários
     const usersCollRef = collection(db, 'users');
     const unsubUsers = onSnapshot(usersCollRef, (snap) => {
       const list: any[] = [];
@@ -96,10 +99,7 @@ export default function AdminPage() {
       setUsersList(list);
       setStats(prev => ({ ...prev, userCount: list.length, totalBalance: balanceSum }));
     }, (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: usersCollRef.path,
-        operation: 'list',
-      } satisfies SecurityRuleContext));
+      console.warn("Aguardando propagação de permissões para listagem...");
     });
 
     return () => {
@@ -116,7 +116,7 @@ export default function AdminPage() {
       await updateDoc(settingsRef, { difficulty: tempDifficulty });
       toast({ title: "Sucesso!", description: `Dificuldade alterada para ${tempDifficulty}%` });
     } catch (e) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar a dificuldade." });
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar. Verifique se o documento settings/game existe no console." });
     } finally {
       setIsUpdatingDiff(false);
     }
@@ -142,6 +142,7 @@ export default function AdminPage() {
     );
   }
 
+  // Tela de Login/Identificação
   if (!user || !isAdmin) {
     return (
       <div id="admin-page" className="flex h-screen w-full items-center justify-center bg-[#08090d] p-6">
@@ -151,16 +152,16 @@ export default function AdminPage() {
               <Image src="/blockcash.png" alt="Logo" width={100} height={40} className="filter brightness-125" />
             </div>
             <h1 className="text-2xl font-black uppercase tracking-tight text-white">Acesso Master</h1>
-            <p className="text-xs text-white/40 uppercase tracking-widest">Identifique-se para continuar</p>
+            <p className="text-xs text-white/40 uppercase tracking-widest">Identifique-se para gerenciar a plataforma</p>
           </div>
 
           {user && !isAdmin ? (
             <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-center space-y-3">
               <ShieldAlert className="mx-auto text-rose-500" size={24} />
               <p className="text-xs font-bold text-rose-400 uppercase leading-relaxed">
-                Acesso negado. Sua conta não tem permissão de administrador.
+                Acesso negado. Essa conta não possui privilégios de administrador no banco de dados.
               </p>
-              <Button onClick={() => signOut(auth!)} variant="ghost" className="text-[10px] text-white/40 hover:text-white uppercase">Sair</Button>
+              <Button onClick={() => signOut(auth!)} variant="ghost" className="text-[10px] text-white/40 hover:text-white uppercase">Sair e tentar outra</Button>
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-4">
@@ -187,7 +188,7 @@ export default function AdminPage() {
                 />
               </div>
               <Button disabled={loginLoading} className="w-full h-12 bg-cyan-500 hover:bg-cyan-600 text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_10px_20px_rgba(6,182,212,0.2)]">
-                {loginLoading ? <Loader2 className="animate-spin" /> : "AUTENTICAR"}
+                {loginLoading ? <Loader2 className="animate-spin" /> : "ENTRAR NO TERMINAL"}
               </Button>
             </form>
           )}
@@ -196,17 +197,18 @@ export default function AdminPage() {
     );
   }
 
+  // Painel Administrativo Principal (Desktop)
   return (
     <div id="admin-page" className="min-h-screen w-full bg-[#08090d] text-white">
       <header className="flex h-20 items-center justify-between border-b border-white/5 bg-[#111622]/80 backdrop-blur-xl px-10 sticky top-0 z-50">
         <div className="flex items-center gap-6">
           <Image src="/blockcash.png" alt="Logo" width={80} height={32} />
           <div className="h-6 w-px bg-white/10 hidden md:block"></div>
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-cyan-400 hidden md:block">Terminal Master</h2>
+          <h2 className="text-sm font-black uppercase tracking-[0.2em] text-cyan-400">Terminal Master</h2>
         </div>
         <div className="flex items-center gap-6">
-          <div className="flex flex-col text-right hidden sm:flex">
-            <span className="text-[10px] font-black text-white/30 uppercase leading-none">Admin Logado</span>
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] font-black text-white/30 uppercase leading-none">Admin</span>
             <span className="text-xs font-bold text-white/60">{user?.email}</span>
           </div>
           <button onClick={() => signOut(auth!)} className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
@@ -215,48 +217,50 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-[1400px] mx-auto p-10 space-y-10">
+      <main className="max-w-[1600px] mx-auto p-10 space-y-10">
+        {/* Métricas Rápidas */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="rounded-[2rem] border border-white/5 bg-[#111622] p-8 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-white/40">
-              <Wallet size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Saldo em Custódia</span>
+              <Wallet size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Saldo Total Jogadores</span>
             </div>
-            <div className="text-3xl font-black tracking-tight">R$ {stats.totalBalance.toFixed(2).replace('.', ',')}</div>
+            <div className="text-3xl font-black tracking-tight text-white">R$ {stats.totalBalance.toFixed(2).replace('.', ',')}</div>
           </div>
           
           <div className="rounded-[2rem] border border-white/5 bg-[#111622] p-8 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-emerald-400/60">
-              <TrendingUp size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Total Depositado</span>
+              <TrendingUp size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Faturamento Bruto</span>
             </div>
             <div className="text-3xl font-black tracking-tight text-emerald-400">R$ {stats.totalDeposited.toFixed(2).replace('.', ',')}</div>
           </div>
 
           <div className="rounded-[2rem] border border-white/5 bg-[#111622] p-8 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-purple-400/60">
-              <Users size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Jogadores Reais</span>
+              <Users size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Jogadores Registrados</span>
             </div>
-            <div className="text-3xl font-black tracking-tight">{stats.userCount}</div>
+            <div className="text-3xl font-black tracking-tight text-white">{stats.userCount}</div>
           </div>
 
           <div className="rounded-[2rem] border border-cyan-500/20 bg-[#111622] p-8 space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-cyan-400">
-              <BarChart3 size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Lucratividade</span>
+              <BarChart3 size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Saúde da Banca</span>
             </div>
             <div className="text-3xl font-black tracking-tight text-cyan-400">
-              {((stats.totalDeposited / (stats.totalBalance || 1)) || 0).toFixed(1)}x
+              {stats.totalDeposited > 0 ? (stats.totalDeposited / (stats.totalBalance || 1)).toFixed(1) : 0}x
             </div>
           </div>
         </section>
 
-        <section className="space-y-8">
-          <div className="rounded-[2.5rem] border border-white/5 bg-[#111622] p-10 space-y-8 shadow-2xl">
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Controle de Dificuldade */}
+          <div className="lg:col-span-4 rounded-[2.5rem] border border-white/5 bg-[#111622] p-10 space-y-8 shadow-2xl h-fit">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500">
                 <Zap size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black uppercase tracking-tight">Dificuldade Global</h3>
-                <p className="text-xs text-white/40 font-medium">Define a probabilidade de peças complexas (5 blocos) para todos.</p>
+                <h3 className="text-lg font-black uppercase tracking-tight">Dificuldade</h3>
+                <p className="text-[10px] text-white/30 font-bold uppercase tracking-widest">Controle Global</p>
               </div>
               <div className="ml-auto text-2xl font-black text-orange-500">{tempDifficulty}%</div>
             </div>
@@ -269,51 +273,66 @@ export default function AdminPage() {
                 step={1} 
                 className="py-4"
               />
-              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-1 text-white/20">
-                <span>Fácil (Padrão)</span>
+              <div className="flex flex-col gap-4">
+                <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em] text-white/20">
+                  <span>Modo Fácil</span>
+                  <span>Modo Dreno</span>
+                </div>
                 <Button 
                   onClick={handleUpdateDifficulty} 
                   disabled={isUpdatingDiff || tempDifficulty === stats.difficulty}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-black font-black"
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-black uppercase tracking-widest text-xs h-12 rounded-2xl"
                 >
                   {isUpdatingDiff ? <Loader2 className="animate-spin" /> : <><Save className="mr-2" size={14} /> SALVAR ALTERAÇÃO</>}
                 </Button>
-                <span>Drenar (Impossível)</span>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2.5rem] border border-white/5 bg-[#111622] overflow-hidden shadow-2xl">
+          {/* Tabela de Usuários */}
+          <div className="lg:col-span-8 rounded-[2.5rem] border border-white/5 bg-[#111622] overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-[0.2em]">Gerenciamento de Contas</h3>
+              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{usersList.length} usuários totais</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-black/20 text-[10px] font-black uppercase tracking-widest text-white/30">
-                    <th className="px-8 py-5">Nome</th>
+                    <th className="px-8 py-5">Usuário</th>
                     <th className="px-8 py-5">E-mail</th>
                     <th className="px-8 py-5">Saldo</th>
-                    <th className="px-8 py-5 text-center">Partidas</th>
-                    <th className="px-8 py-5 text-right">Status</th>
+                    <th className="px-8 py-5 text-center">Jogos</th>
+                    <th className="px-8 py-5 text-right">Cargo</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {usersList.map(u => (
-                    <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-8 py-6 text-sm font-bold uppercase">{u.fullName}</td>
-                      <td className="px-8 py-6 text-xs text-white/50">{u.email}</td>
+                    <tr key={u.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-8 py-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold uppercase text-white/90">{u.fullName}</span>
+                          <span className="text-[10px] font-medium text-white/20">{u.phone}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-xs text-white/40 font-medium">{u.email}</td>
                       <td className="px-8 py-6 text-sm font-black text-emerald-400">R$ {(u.balance || 0).toFixed(2).replace('.', ',')}</td>
                       <td className="px-8 py-6 text-center text-xs font-bold text-white/30">{u.gamesPlayed || 0}</td>
                       <td className="px-8 py-6 text-right">
                         <span className={`text-[9px] font-black px-3 py-1 rounded-full border ${u.isAdmin ? 'border-amber-500/50 text-amber-500 bg-amber-500/5' : 'border-white/10 text-white/20'}`}>
-                          {u.isAdmin ? 'ADMIN' : 'PLAYER'}
+                          {u.isAdmin ? 'MASTER' : 'PLAYER'}
                         </span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              {usersList.length === 0 && (
+                <div className="p-20 text-center space-y-4">
+                  <Loader2 className="animate-spin text-white/10 mx-auto" size={40} />
+                  <p className="text-xs font-bold text-white/20 uppercase tracking-widest">Sincronizando usuários do banco...</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
