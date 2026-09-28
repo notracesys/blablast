@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Função auxiliar para verificar se o usuário é um administrador
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Regras para a coleção de usuários
+    match /users/{userId} {
+      // Qualquer um logado pode ver e editar seu próprio perfil
+      // Administradores podem ver e listar todos os perfis
+      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      
+      // Apenas o próprio usuário pode criar sua conta inicial
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Usuários podem atualizar seus saldos (jogando/depositando)
+      // Administradores podem atualizar qualquer campo de qualquer usuário
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Regras para as configurações globais (faturamento e dificuldade)
+    match /settings/game {
+      // Todos precisam ler para saber a dificuldade atual do jogo
+      allow read: if true;
+      // Apenas administradores podem alterar o faturamento total ou a dificuldade
+      allow write: if isAdmin();
+    }
+  }
+}
