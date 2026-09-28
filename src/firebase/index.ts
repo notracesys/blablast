@@ -62,29 +62,32 @@ export function useUser() {
     if (!auth || !db) return;
     
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setLoading(true);
       if (u) {
+        setUser(u);
         try {
-          setUser(u);
-          // 1. Tenta Claims
+          // 1. Tenta Claims primeiro (mais rápido)
           const tokenResult = await getIdTokenResult(u, true);
-          let userRole = tokenResult.claims.role as any;
+          let detectedRole = tokenResult.claims.role as any;
 
-          // 2. Fallback Firestore (o que você tem no print)
-          if (!userRole) {
-            const userSnap = await getDoc(doc(db, 'users', u.uid));
-            if (userSnap.exists()) {
-              const data = userSnap.data();
-              // Prioridade total para Owner
-              if (data.role === 'owner' || data.isAdmin === true) {
-                userRole = 'owner';
-              } else {
-                userRole = data.role || 'user';
-              }
+          // 2. Fallback Firestore - ESSENCIAL PARA O BOOTSTRAP
+          const userSnap = await getDoc(doc(db, 'users', u.uid));
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            // Se for admin no banco, ele É owner para o sistema
+            if (data.role === 'owner' || data.isAdmin === true) {
+              detectedRole = 'owner';
+            } else if (data.role === 'manager') {
+              detectedRole = 'manager';
+            } else {
+              detectedRole = 'user';
             }
           }
 
-          setRole(userRole || 'user');
+          console.log(`[AUTH] UID: ${u.uid} | ROLE DETECTADA: ${detectedRole}`);
+          setRole(detectedRole || 'user');
         } catch (e) {
+          console.error("[AUTH] Erro ao validar permissões:", e);
           setRole('user');
         }
       } else {

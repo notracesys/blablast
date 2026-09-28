@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useUser, useAuth } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
@@ -16,8 +16,7 @@ import {
   Loader2,
   Users as UsersIcon,
   Gamepad2,
-  FileText,
-  ShieldAlert
+  FileText
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -29,29 +28,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const auth = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
+        console.log("[GATEKEEPER] Sem usuário. Indo para login.");
         router.push('/login');
       } else if (role !== 'owner') {
-        // Redireciona se não for dono
+        console.log("[GATEKEEPER] Acesso negado. Role:", role);
         router.push(role === 'manager' ? '/manager' : '/painel');
       }
     }
   }, [user, role, loading, router]);
 
+  // Enquanto carrega ou se não for o dono, não mostra NADA
   if (loading) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Autenticando Owner...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Acesso Master...</span>
       </div>
     );
   }
 
-  // Só renderiza se for owner
+  // Barreira final: se não for owner, trava a renderização aqui
   if (role !== 'owner') return null;
 
   const menuItems = [
@@ -60,8 +61,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores' },
     { label: 'Usuários', icon: UsersIcon, href: '/admin/usuarios' },
     { label: 'Partidas', icon: Gamepad2, href: '/admin/partidas' },
-    { label: 'Auditoria', icon: FileText, href: '/admin/logs' },
     { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes' },
+    { label: 'Logs', icon: FileText, href: '/admin/logs' },
   ];
 
   return (

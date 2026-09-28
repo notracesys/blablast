@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // HELPERS DE SEGURANÇA
+    // HELPERS BÁSICOS
     function isAuth() {
       return request.auth != null;
     }
@@ -12,7 +12,7 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    // O OWNER é o Deus do sistema
+    // O OWNER É DEUS
     function isOwner() {
       return isAuth() && (
         request.auth.token.role == 'owner' || 
@@ -21,7 +21,7 @@ service cloud.firestore {
       );
     }
     
-    // MANAGER
+    // MANAGER (Acesso restrito)
     function isManager() {
       return isAuth() && (
         request.auth.token.role == 'manager' || 
@@ -42,20 +42,15 @@ service cloud.firestore {
       );
     }
     
-    match /managers/{uid} {
-      allow read: if isOwner() || (isManager() && request.auth.uid == uid);
+    match /settings/{docId} {
+      allow read: if isAuth();
       allow write: if isOwner();
     }
     
-    match /influencers/{uid} {
+    match /influencers/{influencerId} {
       allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid);
       allow list: if isOwner() || isManager();
       allow write: if isOwner() || isManager();
-    }
-    
-    match /settings/game {
-      allow read: if isAuth();
-      allow write: if isOwner();
     }
     
     match /logs/{logId} {
@@ -69,11 +64,12 @@ service cloud.firestore {
     }
 
     match /matches/{matchId} {
-      allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid) || (isAuth() && resource.data.userId == request.auth.uid);
+      allow read: if isOwner() || (isAuth() && resource.data.userId == request.auth.uid);
+      allow list: if isOwner() || isManager();
       allow create: if isAuth();
     }
 
-    // BLOQUEIO GLOBAL
+    // BLOQUEIO GLOBAL PARA SEGURANÇA
     match /{document=**} {
       allow read, write: if isOwner();
     }
