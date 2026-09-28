@@ -3,20 +3,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, onSnapshot, query, where, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc } from 'firebase/firestore';
 import { 
   Users, 
-  ShieldCheck, 
   Search, 
   UserPlus, 
-  MoreHorizontal, 
   TrendingUp, 
   DollarSign, 
   UserCircle,
   Settings,
   ShieldAlert,
   Loader2,
-  X,
   CheckCircle2,
   Lock,
   Percent,
@@ -42,6 +39,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function ManagersAdmin() {
   const db = useFirestore();
@@ -54,7 +53,6 @@ export default function ManagersAdmin() {
   const [selectedManager, setSelectedManager] = useState<any>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Stats
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
@@ -63,9 +61,9 @@ export default function ManagersAdmin() {
   });
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !authUser) return;
 
-    // Buscar todos os usuários que são administradores (Gerentes)
+    // Consulta específica para gerentes
     const q = query(collection(db, 'users'), where('isAdmin', '==', true));
     
     const unsub = onSnapshot(q, (snap) => {
@@ -84,10 +82,18 @@ export default function ManagersAdmin() {
         active: activeCount 
       }));
       setLoading(false);
+    }, async (error) => {
+      // Captura erro de permissão e emite para o sistema central
+      const permissionError = new FirestorePermissionError({
+        path: 'users',
+        operation: 'list',
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
+      setLoading(false);
     });
 
     return () => unsub();
-  }, [db]);
+  }, [db, authUser]);
 
   const handleUpdateStatus = async (managerId: string, newStatus: string) => {
     if (!db) return;
@@ -128,7 +134,6 @@ export default function ManagersAdmin() {
 
   return (
     <div className="p-8 md:p-12 space-y-8" id="admin-page">
-      {/* Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">Corpo Administrativo</h2>
@@ -169,7 +174,6 @@ export default function ManagersAdmin() {
         ))}
       </div>
 
-      {/* Main Table */}
       <div className="bg-[#111622] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -245,7 +249,6 @@ export default function ManagersAdmin() {
         </div>
       </div>
 
-      {/* Side Panel / Drawer */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent className="w-full sm:max-w-xl bg-[#0d111c] border-white/5 p-0 overflow-hidden flex flex-col">
           {selectedManager && (

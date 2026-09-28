@@ -19,6 +19,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function AdminDashboard() {
   const db = useFirestore();
@@ -37,11 +39,10 @@ export default function AdminDashboard() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   useEffect(() => {
-    // Só inicia os listeners se o banco e o usuário estiverem prontos
     if (!db || !authUser) return;
 
-    // 1. Faturamento (Documento único de configuração)
-    const unsubSettings = onSnapshot(doc(db, 'settings', 'game'), (snap) => {
+    const settingsRef = doc(db, 'settings', 'game');
+    const unsubSettings = onSnapshot(settingsRef, (snap) => {
       if (snap.exists()) {
         const d = snap.data();
         setStats(prev => ({ 
@@ -50,19 +51,23 @@ export default function AdminDashboard() {
           houseBalance: (d.totalDeposited || 0) * 0.4 
         }));
       }
-    }, (err) => {
-      console.warn("Permissão de leitura negada para settings (Aguardando Admin...)");
+    }, async (error) => {
+      // Captura silenciosa para evitar overlay de erro no dashboard inicial
+      console.warn("Permissão de leitura negada para settings no Dashboard.");
     });
 
-    // 2. Logs de Auditoria Recentes (Apenas 5 registros)
     const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
     const unsubLogs = onSnapshot(logsQuery, (snap) => {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setAuditLogs(list);
-    }, (err) => {
-      // Falha silenciosa para evitar assertion failure do SDK
-      console.warn("Permissão de leitura negada para logs.");
+    }, async (error) => {
+      // Usamos o padrão de erro contextual para auditoria
+      const permissionError = new FirestorePermissionError({
+        path: 'logs',
+        operation: 'list',
+      } satisfies SecurityRuleContext);
+      errorEmitter.emit('permission-error', permissionError);
     });
 
     return () => {
