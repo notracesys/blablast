@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useFirestore } from '@/firebase';
-import { doc, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { 
   Zap, 
   Grid3X3, 
@@ -22,44 +22,63 @@ import { cn } from '@/lib/utils';
 
 export default function SettingsAdmin() {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
   
   const [config, setConfig] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!db) return;
+    if (!db || !user) return;
     
     // Listener para o documento de configuração
-    const unsub = onSnapshot(doc(db, 'settings', 'game'), (snap) => {
+    const settingsRef = doc(db, 'settings', 'game');
+    
+    const unsub = onSnapshot(settingsRef, (snap) => {
       if (snap.exists()) {
         setConfig(snap.data());
-        setError(false);
+        setError(null);
       } else {
-        // Se não existir, oferece para criar
-        setConfig({ difficulty: 50, gridSize: 8, maxLinesPerMatch: 5, antiFraudEnabled: true, totalDeposited: 0 });
+        // Se não existir, carrega valores padrão para o formulário
+        setConfig({ 
+          difficulty: 50, 
+          gridSize: 8, 
+          maxLinesPerMatch: 5, 
+          antiFraudEnabled: true, 
+          totalDeposited: 0 
+        });
+        setError(null);
       }
     }, (err) => {
-      console.error("Erro nas regras de configurações:", err);
-      setError(true);
+      console.error("Erro ao ler configurações:", err);
+      setError("O Firebase negou o acesso. Verifique se seu UID está como isAdmin: true (tipo Boolean) no banco.");
     });
 
     return () => unsub();
-  }, [db]);
+  }, [db, user]);
 
   const handleSave = async () => {
     if (!db || !config) return;
     setSaving(true);
     try {
-      // Usa setDoc com merge para garantir que o documento exista
-      await setDoc(doc(db, 'settings', 'game'), config, { merge: true });
-      toast({ title: "Configurações Master Salvas", description: "O motor do jogo foi atualizado com sucesso." });
+      // Salva ou cria o documento
+      await setDoc(doc(db, 'settings', 'game'), {
+        ...config,
+        lastUpdatedBy: user?.uid,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+      
+      toast({ 
+        title: "Sucesso!", 
+        description: "Configurações do motor de jogo atualizadas." 
+      });
+      setError(null);
     } catch (e: any) {
       toast({ 
         variant: "destructive", 
-        title: "Erro de Permissão", 
-        description: "Você precisa ser Admin para salvar estas alterações." 
+        title: "Erro de Escrita", 
+        description: "Você não tem permissão para alterar as configurações." 
       });
     } finally {
       setSaving(false);
@@ -68,49 +87,68 @@ export default function SettingsAdmin() {
 
   if (error) {
     return (
-      <div className="h-[60vh] flex flex-col items-center justify-center p-10 text-center space-y-4">
-        <AlertCircle className="text-rose-500" size={48} />
-        <h2 className="text-xl font-black text-white uppercase">Erro de Acesso ao Banco</h2>
-        <p className="text-white/40 text-sm max-w-md">O Firebase negou a leitura das configurações. Verifique se você é Admin e se as Regras de Segurança foram publicadas.</p>
+      <div className="h-[60vh] flex flex-col items-center justify-center p-10 text-center space-y-6">
+        <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 border border-rose-500/20">
+          <AlertCircle size={40} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-black text-white uppercase">Acesso Negado pelo Banco</h2>
+          <p className="text-white/40 text-sm max-w-md mx-auto">{error}</p>
+        </div>
+        <div className="bg-black/20 p-4 rounded-xl text-left font-mono text-[10px] text-white/60 border border-white/5">
+          UID Atual: {user?.uid}
+        </div>
         <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl font-black uppercase text-[10px]">Tentar Novamente</Button>
       </div>
     );
   }
 
-  if (!config) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-cyan-500" /></div>;
+  if (!config) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Conectando ao Motor...</span>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8 md:p-10 space-y-10" id="admin-page">
-      <div className="flex items-center justify-between">
+    <div className="p-8 md:p-12 space-y-10" id="admin-page">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-black text-white uppercase tracking-tight">Arquitetura da Arena</h2>
-          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Parâmetros técnicos e regras de lucratividade do motor de jogo.</p>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tight">Arquitetura do Jogo</h2>
+          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Controle de retenção, dificuldade e regras técnicas globais.</p>
         </div>
         <Button 
           onClick={handleSave} 
           disabled={saving}
-          className="h-12 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase px-8 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.2)]"
+          className="h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase px-10 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)] transition-all active:scale-95"
         >
-          {saving ? <Loader2 className="animate-spin" /> : <Save className="mr-2" size={18} />}
-          SALVAR ALTERAÇÕES
+          {saving ? <Loader2 className="animate-spin" /> : <Save className="mr-2" size={20} />}
+          SALVAR CONFIGURAÇÕES
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {/* Controle de Dificuldade */}
-        <Card className="bg-[#111622] border-white/5 p-8 rounded-[2.5rem] space-y-8">
+        <Card className="bg-[#111622] border-white/5 p-10 rounded-[3rem] space-y-10 shadow-2xl">
           <div className="flex items-center gap-4 text-cyan-400">
-            <Zap size={24} />
-            <h3 className="text-lg font-black uppercase tracking-tight">Motor de Dificuldade</h3>
+            <div className="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center">
+              <Zap size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tight text-white">Motor de Retenção</h3>
+              <p className="text-[10px] text-white/30 font-bold uppercase">Algoritmo de Geração de Peças</p>
+            </div>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div className="flex justify-between items-end">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Nível de Retenção</span>
-                <span className="text-xs text-white/60 font-bold">Define a raridade de peças favoráveis.</span>
+                <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Nível de Dificuldade Atual</span>
+                <span className="text-xs text-white/60 font-bold max-w-xs">Define a probabilidade do sistema enviar peças que "travam" o tabuleiro.</span>
               </div>
-              <span className="text-4xl font-black text-white">{config.difficulty}%</span>
+              <span className="text-6xl font-black text-white tabular-nums">{config.difficulty}%</span>
             </div>
             
             <Slider 
@@ -118,73 +156,89 @@ export default function SettingsAdmin() {
               onValueChange={v => setConfig({...config, difficulty: v[0]})}
               max={100}
               step={1}
-              className="py-4"
+              className="py-6"
             />
 
-            <div className="grid grid-cols-3 gap-2">
-              {[0, 50, 100].map(v => (
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: 'Fácil (Modo Loss)', val: 0, color: 'hover:bg-emerald-500/20' },
+                { label: 'Equilibrado', val: 50, color: 'hover:bg-cyan-500/20' },
+                { label: 'Máximo (Modo Dreno)', val: 100, color: 'hover:bg-rose-500/20' }
+              ].map(item => (
                 <button 
-                  key={v}
-                  onClick={() => setConfig({...config, difficulty: v})}
+                  key={item.val}
+                  onClick={() => setConfig({...config, difficulty: item.val})}
                   className={cn(
-                    "py-2 rounded-xl text-[9px] font-black uppercase border transition-all",
-                    config.difficulty === v ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400" : "bg-black/20 border-white/5 text-white/30"
+                    "py-4 rounded-2xl text-[10px] font-black uppercase border transition-all",
+                    config.difficulty === item.val 
+                      ? "bg-white text-black border-white shadow-lg" 
+                      : "bg-black/20 border-white/5 text-white/40 " + item.color
                   )}
                 >
-                  {v === 0 ? 'Fácil (Loss)' : v === 50 ? 'Equilibrado' : 'Máximo (Win)'}
+                  {item.label}
                 </button>
               ))}
             </div>
           </div>
         </Card>
 
-        {/* Parâmetros do Grid */}
-        <Card className="bg-[#111622] border-white/5 p-8 rounded-[2.5rem] space-y-8">
+        {/* Parâmetros Técnicos */}
+        <Card className="bg-[#111622] border-white/5 p-10 rounded-[3rem] space-y-10 shadow-2xl">
           <div className="flex items-center gap-4 text-purple-400">
-            <Grid3X3 size={24} />
-            <h3 className="text-lg font-black uppercase tracking-tight">Dimensões & Regras</h3>
+            <div className="w-12 h-12 bg-purple-500/10 rounded-2xl flex items-center justify-center">
+              <Grid3X3 size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black uppercase tracking-tight text-white">Grid & Gameplay</h3>
+              <p className="text-[10px] text-white/30 font-bold uppercase">Limites técnicos da Arena</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-1">Tamanho do Tabuleiro</label>
               <Input 
                 type="number" 
                 value={config.gridSize} 
                 onChange={e => setConfig({...config, gridSize: parseInt(e.target.value)})}
-                className="h-12 bg-black/40 border-white/5 rounded-2xl font-black"
+                className="h-14 bg-black/40 border-white/5 rounded-2xl font-black text-lg focus:border-purple-500/50 transition-colors"
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-[10px] font-black text-white/30 uppercase tracking-widest pl-1">Meta de Linhas (Geral)</label>
               <Input 
                 type="number" 
                 value={config.maxLinesPerMatch} 
                 onChange={e => setConfig({...config, maxLinesPerMatch: parseInt(e.target.value)})}
-                className="h-12 bg-black/40 border-white/5 rounded-2xl font-black"
+                className="h-14 bg-black/40 border-white/5 rounded-2xl font-black text-lg focus:border-purple-500/50 transition-colors"
               />
             </div>
           </div>
 
-          <div className="pt-4 flex items-center justify-between bg-black/20 p-5 rounded-2xl border border-white/5">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-black text-white uppercase tracking-tight">Filtro Antifraude Master</span>
-              <span className="text-[10px] text-white/30 font-bold">Bloqueia movimentos impossíveis automaticamente.</span>
+          <div className="pt-6">
+            <div className="flex items-center justify-between bg-black/40 p-6 rounded-3xl border border-white/5">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-black text-white uppercase tracking-tight">Filtro Antifraude Realtime</span>
+                <span className="text-[10px] text-white/30 font-bold">Monitora a velocidade de encaixe das peças.</span>
+              </div>
+              <Switch 
+                checked={config.antiFraudEnabled} 
+                onCheckedChange={v => setConfig({...config, antiFraudEnabled: v})} 
+                className="data-[state=checked]:bg-purple-500"
+              />
             </div>
-            <Switch 
-              checked={config.antiFraudEnabled} 
-              onCheckedChange={v => setConfig({...config, antiFraudEnabled: v})} 
-            />
           </div>
         </Card>
       </div>
 
-      <div className="p-6 bg-rose-500/5 border border-rose-500/10 rounded-[2rem] flex items-start gap-4">
-        <AlertCircle className="text-rose-500 shrink-0 mt-1" size={20} />
+      <div className="p-8 bg-rose-500/5 border border-rose-500/10 rounded-[2.5rem] flex items-start gap-6">
+        <div className="w-12 h-12 bg-rose-500/10 rounded-2xl flex items-center justify-center text-rose-500 shrink-0">
+          <AlertCircle size={24} />
+        </div>
         <div>
-          <h4 className="text-sm font-black text-rose-500 uppercase tracking-tight">Zona de Perigo</h4>
-          <p className="text-[11px] text-white/40 font-medium leading-relaxed mt-1">
-            Alterações nestes parâmetros afetam imediatamente todas as partidas em curso. O uso de dificuldades acima de 80% pode causar evasão de jogadores. Recomenda-se manter o preset equilibrado para maior tempo de vida útil (LTV).
+          <h4 className="text-base font-black text-rose-500 uppercase tracking-tight">Zona de Impacto Financeiro</h4>
+          <p className="text-xs text-white/40 font-medium leading-relaxed mt-2 max-w-3xl">
+            Alterações nestes parâmetros são aplicadas em tempo real para todos os jogadores na Arena. O aumento da dificuldade para níveis acima de 70% reduzirá drasticamente o faturamento dos prêmios, mas pode impactar a retenção de longo prazo (LTV). Monitore o lucro da banca no Dashboard após realizar mudanças.
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Função ultra-segura para verificar se o usuário é Admin
+    // Função para verificar se o usuário é Admin (UID deve ter isAdmin: true no documento)
     function isAdmin() {
       return request.auth != null && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -14,7 +14,7 @@ service cloud.firestore {
       // Regras de leitura: próprio ou admin
       allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
       
-      // Listagem geral: Apenas admins master (proteção contra vazamento de base)
+      // Listagem geral: Bloqueada para evitar peso de leads (Apenas Master se necessário)
       allow list: if request.auth != null && isAdmin();
       
       // Criação/Update
@@ -25,8 +25,8 @@ service cloud.firestore {
     }
 
     match /settings/{docId} {
-      // Configurações globais: leitura pública para o motor do jogo, escrita só Admin
-      allow read: if true;
+      // Configurações globais: Leitura pública para o motor do jogo funcionar, escrita só Admin
+      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
 
@@ -41,7 +41,7 @@ service cloud.firestore {
     }
 
     match /logs/{logId} {
-      // Logs de auditoria são críticos: apenas leitura e criação permitida para admins
+      // Logs de auditoria: Leitura exclusiva admin, criação permitida para registro de ações
       allow read, list: if isAdmin();
       allow create: if request.auth != null;
     }
