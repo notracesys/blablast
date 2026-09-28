@@ -1,20 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Verifica se o usuário autenticado possui o campo isAdmin como true
+    
+    // Função otimizada para verificar admin sem recursão
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     match /users/{userId} {
+      // Qualquer um logado lê seu próprio perfil. Admins lêem qualquer um.
       allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      
+      // Apenas Admins podem listar a coleção inteira (essencial para o Dashboard)
       allow list: if request.auth != null && isAdmin();
+      
+      // Criação apenas pelo próprio usuário
       allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Edição do próprio perfil ou por um Admin
       allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
     match /settings/{document=**} {
+      // Configurações globais (como dificuldade) são lidas por todos, mas alteradas só por admin
       allow read: if true;
       allow write: if request.auth != null && isAdmin();
     }

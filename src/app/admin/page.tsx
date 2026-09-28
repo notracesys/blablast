@@ -1,15 +1,14 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogOut, TrendingUp, Users, Wallet, Zap, ShieldAlert, BarChart3 } from 'lucide-react';
+import { Loader2, LogOut, TrendingUp, Users, Wallet, Zap, ShieldAlert, BarChart3, Save } from 'lucide-react';
 import Image from 'next/image';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
@@ -36,6 +35,8 @@ export default function AdminPage() {
     difficulty: 50
   });
   const [usersList, setUsersList] = useState<any[]>([]);
+  const [tempDifficulty, setTempDifficulty] = useState(50);
+  const [isUpdatingDiff, setIsUpdatingDiff] = useState(false);
 
   useEffect(() => {
     if (!auth) return;
@@ -52,7 +53,6 @@ export default function AdminPage() {
             setUser(u);
           }
         } catch (e) {
-          console.error("Erro ao validar admin:", e);
           setIsAdmin(false);
           setUser(u);
         }
@@ -68,26 +68,22 @@ export default function AdminPage() {
   useEffect(() => {
     if (!isAdmin || !db) return;
 
-    // Listen to Global Settings
     const settingsRef = doc(db, 'settings', 'game');
     const unsubSettings = onSnapshot(settingsRef, (snap) => {
       if (snap.exists()) {
         const d = snap.data();
+        const diff = d.difficulty ?? 50;
         setStats(prev => ({ 
           ...prev, 
-          difficulty: d.difficulty || 50, 
+          difficulty: diff, 
           totalDeposited: d.totalDeposited || 0 
         }));
+        setTempDifficulty(diff);
       }
-    }, async (serverError) => {
-      const permissionError = new FirestorePermissionError({
-        path: settingsRef.path,
-        operation: 'get',
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
+    }, (err) => {
+      console.error("Erro ao ler settings:", err);
     });
 
-    // Listen to Users
     const usersCollRef = collection(db, 'users');
     const unsubUsers = onSnapshot(usersCollRef, (snap) => {
       const list: any[] = [];
@@ -99,12 +95,11 @@ export default function AdminPage() {
       });
       setUsersList(list);
       setStats(prev => ({ ...prev, userCount: list.length, totalBalance: balanceSum }));
-    }, async (serverError) => {
-      const permissionError = new FirestorePermissionError({
+    }, (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: usersCollRef.path,
         operation: 'list',
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
+      } satisfies SecurityRuleContext));
     });
 
     return () => {
@@ -113,13 +108,26 @@ export default function AdminPage() {
     };
   }, [isAdmin, db]);
 
+  const handleUpdateDifficulty = async () => {
+    if (!db) return;
+    setIsUpdatingDiff(true);
+    try {
+      const settingsRef = doc(db, 'settings', 'game');
+      await updateDoc(settingsRef, { difficulty: tempDifficulty });
+      toast({ title: "Sucesso!", description: `Dificuldade alterada para ${tempDifficulty}%` });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível salvar a dificuldade." });
+    } finally {
+      setIsUpdatingDiff(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // O useEffect do onAuthStateChanged cuidará do resto
     } catch (err) {
       toast({ variant: "destructive", title: "Erro", description: "Credenciais inválidas." });
       setLoginLoading(false);
@@ -150,9 +158,9 @@ export default function AdminPage() {
             <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-center space-y-3">
               <ShieldAlert className="mx-auto text-rose-500" size={24} />
               <p className="text-xs font-bold text-rose-400 uppercase leading-relaxed">
-                Sua conta ({user.email}) não possui privilégios de administrador no banco de dados.
+                Acesso negado. Sua conta não tem permissão de administrador.
               </p>
-              <Button onClick={() => signOut(auth!)} variant="ghost" className="text-[10px] text-white/40 hover:text-white uppercase">Sair e tentar outro</Button>
+              <Button onClick={() => signOut(auth!)} variant="ghost" className="text-[10px] text-white/40 hover:text-white uppercase">Sair</Button>
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-4">
@@ -235,7 +243,7 @@ export default function AdminPage() {
               <BarChart3 size={16} /><span className="text-[10px] font-black uppercase tracking-widest">Lucratividade</span>
             </div>
             <div className="text-3xl font-black tracking-tight text-cyan-400">
-              {((stats.totalDeposited / stats.totalBalance) || 0).toFixed(1)}x
+              {((stats.totalDeposited / (stats.totalBalance || 1)) || 0).toFixed(1)}x
             </div>
           </div>
         </section>
@@ -248,22 +256,29 @@ export default function AdminPage() {
               </div>
               <div>
                 <h3 className="text-lg font-black uppercase tracking-tight">Dificuldade Global</h3>
-                <p className="text-xs text-white/40 font-medium">Define a probabilidade de peças difíceis para todos.</p>
+                <p className="text-xs text-white/40 font-medium">Define a probabilidade de peças complexas (5 blocos) para todos.</p>
               </div>
-              <div className="ml-auto text-2xl font-black text-orange-500">{stats.difficulty}%</div>
+              <div className="ml-auto text-2xl font-black text-orange-500">{tempDifficulty}%</div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-10">
               <Slider 
-                value={[stats.difficulty]} 
+                value={[tempDifficulty]} 
+                onValueChange={(val) => setTempDifficulty(val[0])}
                 max={100} 
                 step={1} 
-                disabled 
-                className="py-4 opacity-50 cursor-not-allowed"
+                className="py-4"
               />
               <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest px-1 text-white/20">
-                <span>Fácil</span>
-                <span>Impossível</span>
+                <span>Fácil (Padrão)</span>
+                <Button 
+                  onClick={handleUpdateDifficulty} 
+                  disabled={isUpdatingDiff || tempDifficulty === stats.difficulty}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-black font-black"
+                >
+                  {isUpdatingDiff ? <Loader2 className="animate-spin" /> : <><Save className="mr-2" size={14} /> SALVAR ALTERAÇÃO</>}
+                </Button>
+                <span>Drenar (Impossível)</span>
               </div>
             </div>
           </div>
