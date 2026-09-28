@@ -21,42 +21,22 @@
         "referredCount": { "type": "number" },
         "referredDepositVolume": { "type": "number" },
         "isAdmin": { "type": "boolean", "default": false },
-        "status": { "type": "string", "enum": ["active", "blocked", "suspended"] },
+        "role": { "type": "string", "enum": ["owner", "manager", "player"], "default": "player" },
+        "managerCommissionRate": { "type": "number", "default": 0 },
+        "permissions": {
+          "type": "object",
+          "properties": {
+            "canViewGlobalRevenue": { "type": "boolean" },
+            "canChangeDifficulty": { "type": "boolean" },
+            "canModerateUsers": { "type": "boolean" },
+            "canManageInfluencers": { "type": "boolean" }
+          }
+        },
+        "status": { "type": "string", "enum": ["active", "blocked", "suspended"], "default": "active" },
         "lastActivity": { "type": "string", "format": "date-time" },
-        "deviceInfo": { "type": "string" },
-        "ipAddress": { "type": "string" },
-        "fraudFlags": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["fullName", "phone", "email", "balance"]
-    },
-    "GlobalSettings": {
-      "title": "GlobalSettings",
-      "description": "Configurações globais da plataforma",
-      "type": "object",
-      "properties": {
-        "difficulty": { "type": "number", "description": "0 a 100 (0=Fácil, 100=Impossível)" },
-        "totalDeposited": { "type": "number" },
-        "gridSize": { "type": "number", "default": 8 },
-        "maxLinesPerMatch": { "type": "number", "default": 5 },
-        "antiFraudEnabled": { "type": "boolean", "default": true }
-      }
-    },
-    "MatchRecord": {
-      "title": "MatchRecord",
-      "description": "Histórico detalhado de cada partida jogada",
-      "type": "object",
-      "properties": {
-        "userId": { "type": "string" },
-        "startTime": { "type": "string", "format": "date-time" },
-        "duration": { "type": "number" },
-        "entryFee": { "type": "number" },
-        "result": { "type": "number" },
-        "linesCompleted": { "type": "number" },
-        "piecesGenerated": { "type": "array", "items": { "type": "object" } },
-        "movements": { "type": "array", "items": { "type": "object" } },
-        "fraudDetected": { "type": "boolean" }
-      }
     },
     "InfluencerProfile": {
       "title": "InfluencerProfile",
@@ -64,6 +44,7 @@
       "type": "object",
       "properties": {
         "userId": { "type": "string" },
+        "managerId": { "type": "string" },
         "code": { "type": "string" },
         "clicks": { "type": "number" },
         "registrations": { "type": "number" },
@@ -72,17 +53,15 @@
         "status": { "type": "boolean" }
       }
     },
-    "AuditLog": {
-      "title": "AuditLog",
-      "description": "Registro de ações administrativas",
+    "GlobalSettings": {
+      "title": "GlobalSettings",
+      "description": "Configurações globais da plataforma",
       "type": "object",
       "properties": {
-        "timestamp": { "type": "string", "format": "date-time" },
-        "actorId": { "type": "string" },
-        "action": { "type": "string" },
-        "details": { "type": "string" },
-        "oldValue": { "type": "any" },
-        "newValue": { "type": "any" }
+        "difficulty": { "type": "number" },
+        "totalDeposited": { "type": "number" },
+        "gridSize": { "type": "number" },
+        "maxLinesPerMatch": { "type": "number" }
       }
     }
   },
@@ -94,21 +73,13 @@
       "schema": "UserProfile",
       "description": "Informações de perfil do usuário"
     },
-    "settings/game": {
-      "schema": "GlobalSettings",
-      "description": "Controle de dificuldade e métricas globais"
-    },
-    "matches/{matchId}": {
-      "schema": "MatchRecord",
-      "description": "Registros de partidas"
-    },
     "influencers/{influencerId}": {
       "schema": "InfluencerProfile",
       "description": "Dados de afiliados e influenciadores"
     },
-    "logs/{logId}": {
-      "schema": "AuditLog",
-      "description": "Logs de auditoria do sistema"
+    "settings/game": {
+      "schema": "GlobalSettings",
+      "description": "Controle de dificuldade e métricas globais"
     }
   }
 }
