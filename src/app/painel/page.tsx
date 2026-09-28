@@ -51,6 +51,7 @@ export default function PainelPage() {
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
   const [onlinePlayers, setOnlinePlayers] = useState<number>(803);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [referralLink, setReferralLink] = useState<string>('');
 
   // Accordion states for profile
   const [showTransactions, setShowTransactions] = useState(false);
@@ -67,7 +68,11 @@ export default function PainelPage() {
     { val: 200, tag: 'MÁXIMO', color: 'bg-fuchsia-500 text-white' },
   ];
 
-  const referralLink = user ? `https://blockwins.net/register?ref=${user.uid}` : '';
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      setReferralLink(`${window.location.origin}/register?ref=${user.uid}`);
+    }
+  }, [user]);
 
   useEffect(() => {
     setOnlinePlayers(Math.floor(Math.random() * (1500 - 500 + 1)) + 500);
@@ -111,6 +116,7 @@ export default function PainelPage() {
   }, [user, authLoading, db, router]);
 
   const handleCopyLink = () => {
+    if (!referralLink) return;
     navigator.clipboard.writeText(referralLink);
     setLinkCopied(true);
     toast({
