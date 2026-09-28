@@ -47,43 +47,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
+    // Só inicia a verificação se o Auth terminou de carregar
     if (authLoading) return;
     
     if (!authUser) {
-      setChecking(false);
       setIsAdmin(false);
+      setChecking(false);
       return;
     }
 
     const checkAdminStatus = async () => {
-      if (!db) return;
+      if (!db || !authUser) return;
+      
       try {
-        // 1. Tenta verificar via Custom Claims (Sugestão do Dev)
-        const idTokenResult = await authUser.getIdTokenResult(true); // Força refresh para pegar novos claims
-        const hasClaim = idTokenResult.claims.isAdmin === true || idTokenResult.claims.admin === true;
+        // MODO DEUS: Verifica Claims e Documento em paralelo de forma resiliente
+        const idToken = await authUser.getIdTokenResult();
+        const hasClaim = !!(idToken.claims.isAdmin || idToken.claims.admin);
 
         if (hasClaim) {
-          console.log("[ADMIN] Acesso concedido via Custom Claims ✅");
+          console.log("[ADMIN] Acesso Total via Token ✅");
           setIsAdmin(true);
-          setChecking(false);
-          return;
-        }
-
-        // 2. Fallback: Verifica no Firestore caso o claim ainda não tenha sido injetado
-        const snap = await getDoc(doc(db, 'users', authUser.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          const hasDocAccess = data.isAdmin === true || data.role === 'admin' || data.role === 'owner';
-          setIsAdmin(hasDocAccess);
-          
-          if (hasDocAccess) {
-            console.log("[ADMIN] Acesso concedido via Firestore Document 📄");
-          }
         } else {
-          setIsAdmin(false);
+          // Fallback para documento caso o claim não esteja pronto
+          const snap = await getDoc(doc(db, 'users', authUser.uid));
+          const hasDocAccess = snap.exists() && (snap.data().isAdmin === true || snap.data().role === 'admin');
+          setIsAdmin(hasDocAccess);
+          console.log(hasDocAccess ? "[ADMIN] Acesso via Documento 📄" : "[ADMIN] Acesso Recusado ❌");
         }
       } catch (e) {
-        console.error("[ADMIN] Falha na validação de privilégios:", e);
+        console.error("[ADMIN] Erro na validação:", e);
         setIsAdmin(false);
       } finally {
         setChecking(false);
@@ -100,17 +92,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou acesso negado." });
+      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas." });
     } finally {
       setLoginLoading(false);
     }
   };
 
-  if (checking || authLoading) {
+  if (authLoading || (checking && authUser)) {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-[#08090d]">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Validando Terminal Master...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Autenticando Master...</span>
       </div>
     );
   }
@@ -154,10 +146,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Restrito</h3>
-                <p className="text-xs text-white/40 leading-relaxed px-4">Seu usuário não possui as <b>Custom Claims</b> de administrador necessárias para operar este terminal.</p>
+                <p className="text-xs text-white/40 leading-relaxed px-4">Seu usuário não possui as credenciais administrativas necessárias.</p>
                 <div className="mt-4 p-4 bg-black/40 rounded-2xl border border-white/5 text-left">
-                  <span className="text-[8px] font-black text-white/30 uppercase block mb-1">Seu Identificador Master (UID):</span>
-                  <code className="text-[10px] text-cyan-400 font-mono break-all bg-black/20 p-2 block rounded-lg">{authUser.uid}</code>
+                  <span className="text-[8px] font-black text-white/30 uppercase block mb-1">Seu Identificador (UID):</span>
+                  <code className="text-[10px] text-cyan-400 font-mono break-all">{authUser.uid}</code>
                 </div>
               </div>
               <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase underline">Trocar de Conta</Button>

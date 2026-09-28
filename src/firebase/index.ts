@@ -6,12 +6,18 @@ import { getFirestore, Firestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-// Centraliza a inicialização para evitar múltiplas instâncias
+// Singleton para instâncias do Firebase
+let appInstance: FirebaseApp | undefined;
+let authInstance: Auth | undefined;
+let dbInstance: Firestore | undefined;
+
 export function initializeFirebase() {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  return { app, auth, db };
+  if (!appInstance) {
+    appInstance = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    authInstance = getAuth(appInstance);
+    dbInstance = getFirestore(appInstance);
+  }
+  return { app: appInstance, auth: authInstance!, db: dbInstance! };
 }
 
 interface FirebaseContextType {
@@ -53,11 +59,8 @@ export function useUser() {
   useEffect(() => {
     if (!auth) return;
     
-    // Sincroniza o estado inicial
-    setUser(auth.currentUser);
-    
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      console.log(`[AUTH] Estado alterado: ${u ? 'Logado (' + u.uid + ')' : 'Deslogado'}`);
+      console.log(`[AUTH] Autenticado: ${u ? u.email : 'Ninguém'}`);
       setUser(u);
       setLoading(false);
     });
