@@ -20,7 +20,8 @@ import {
   Menu,
   X,
   Loader2,
-  ShieldAlert
+  ShieldAlert,
+  Fingerprint
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -40,6 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [adminData, setAdminData] = useState<any>(null);
 
   // Login State
   const [email, setEmail] = useState('');
@@ -58,8 +60,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const checkAdmin = async () => {
       try {
         const snap = await getDoc(doc(db, 'users', authUser.uid));
-        if (snap.exists() && snap.data().isAdmin === true) {
-          setIsAdmin(true);
+        if (snap.exists()) {
+          const data = snap.data();
+          setAdminData(data);
+          if (data.isAdmin === true) {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
         } else {
           setIsAdmin(false);
         }
@@ -79,6 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setLoginLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // O useEffect acima cuidará da validação isAdmin após o login
     } catch (err) {
       toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou sem permissão master." });
     } finally {
@@ -126,14 +135,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Button>
             </form>
           ) : (
-            <div className="text-center py-6 space-y-4">
+            <div className="text-center py-6 space-y-6">
               <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto text-rose-500 border border-rose-500/20">
                 <ShieldAlert size={32} />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios de Administrador Master.</p>
+                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios administrativos.</p>
               </div>
+              
+              <div className="bg-black/20 p-4 rounded-xl text-left space-y-3">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[8px] font-black text-white/20 uppercase">Seu ID (UID)</span>
+                  <code className="text-[10px] text-white/60 font-mono break-all">{authUser.uid}</code>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[8px] font-black text-white/20 uppercase">isAdmin no Banco</span>
+                  <span className={cn("text-[9px] font-black px-2 py-0.5 rounded", adminData?.isAdmin ? "bg-emerald-500/20 text-emerald-400" : "bg-rose-500/20 text-rose-500")}>
+                    {adminData?.isAdmin === true ? 'TRUE' : 'FALSE/MISSING'}
+                  </span>
+                </div>
+              </div>
+
               <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase">Trocar de Conta</Button>
             </div>
           )}

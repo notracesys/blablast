@@ -1,18 +1,16 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useFirestore } from '@/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, setDoc } from 'firebase/firestore';
 import { 
-  Settings, 
   Zap, 
   Grid3X3, 
-  Trophy, 
-  ShieldCheck, 
   Save, 
-  RefreshCw,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  RefreshCcw
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -20,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function SettingsAdmin() {
   const db = useFirestore();
@@ -27,13 +26,25 @@ export default function SettingsAdmin() {
   
   const [config, setConfig] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!db) return;
+    
+    // Listener para o documento de configuração
     const unsub = onSnapshot(doc(db, 'settings', 'game'), (snap) => {
-      if (snap.exists()) setConfig(snap.data());
-      else setConfig({ difficulty: 50, gridSize: 8, maxLinesPerMatch: 5, antiFraudEnabled: true });
+      if (snap.exists()) {
+        setConfig(snap.data());
+        setError(false);
+      } else {
+        // Se não existir, oferece para criar
+        setConfig({ difficulty: 50, gridSize: 8, maxLinesPerMatch: 5, antiFraudEnabled: true, totalDeposited: 0 });
+      }
+    }, (err) => {
+      console.error("Erro nas regras de configurações:", err);
+      setError(true);
     });
+
     return () => unsub();
   }, [db]);
 
@@ -41,14 +52,30 @@ export default function SettingsAdmin() {
     if (!db || !config) return;
     setSaving(true);
     try {
-      await updateDoc(doc(db, 'settings', 'game'), config);
-      toast({ title: "Configurações Salvas", description: "As regras da Arena foram atualizadas para todos os jogadores." });
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erro", description: "Falha ao salvar configurações master." });
+      // Usa setDoc com merge para garantir que o documento exista
+      await setDoc(doc(db, 'settings', 'game'), config, { merge: true });
+      toast({ title: "Configurações Master Salvas", description: "O motor do jogo foi atualizado com sucesso." });
+    } catch (e: any) {
+      toast({ 
+        variant: "destructive", 
+        title: "Erro de Permissão", 
+        description: "Você precisa ser Admin para salvar estas alterações." 
+      });
     } finally {
       setSaving(false);
     }
   };
+
+  if (error) {
+    return (
+      <div className="h-[60vh] flex flex-col items-center justify-center p-10 text-center space-y-4">
+        <AlertCircle className="text-rose-500" size={48} />
+        <h2 className="text-xl font-black text-white uppercase">Erro de Acesso ao Banco</h2>
+        <p className="text-white/40 text-sm max-w-md">O Firebase negou a leitura das configurações. Verifique se você é Admin e se as Regras de Segurança foram publicadas.</p>
+        <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl font-black uppercase text-[10px]">Tentar Novamente</Button>
+      </div>
+    );
+  }
 
   if (!config) return <div className="p-20 text-center"><Loader2 className="animate-spin mx-auto text-cyan-500" /></div>;
 
@@ -104,7 +131,7 @@ export default function SettingsAdmin() {
                     config.difficulty === v ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400" : "bg-black/20 border-white/5 text-white/30"
                   )}
                 >
-                  {v === 0 ? 'Fácil (Loss)' : v === 50 ? 'Equilibrado' : 'Impossível (Win)'}
+                  {v === 0 ? 'Fácil (Loss)' : v === 50 ? 'Equilibrado' : 'Máximo (Win)'}
                 </button>
               ))}
             </div>
@@ -157,7 +184,7 @@ export default function SettingsAdmin() {
         <div>
           <h4 className="text-sm font-black text-rose-500 uppercase tracking-tight">Zona de Perigo</h4>
           <p className="text-[11px] text-white/40 font-medium leading-relaxed mt-1">
-            Alterações nestes parâmetros afetam imediatamente todas as partidas em curso. O uso de dificuldades acima de 80% pode causar evasão de jogadores. Recomenda-se manter o preset equilibrado para maior tempo de vida útil (LTV) da rede.
+            Alterações nestes parâmetros afetam imediatamente todas as partidas em curso. O uso de dificuldades acima de 80% pode causar evasão de jogadores. Recomenda-se manter o preset equilibrado para maior tempo de vida útil (LTV).
           </p>
         </div>
       </div>

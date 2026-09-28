@@ -14,7 +14,6 @@ import {
   BarChart3,
   AlertTriangle,
   UserCircle,
-  History,
   Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,10 +24,9 @@ export default function AdminDashboard() {
   const db = useFirestore();
   const router = useRouter();
 
-  // Stats State
   const [stats, setStats] = useState({
     grossRevenue: 0,
-    managerCount: 0,
+    managerCount: 1, // Valor fixo ou vindo de config global para evitar ler lista de users
     fraudAlerts: 0,
     retentionRate: 85,
     houseBalance: 0,
@@ -40,36 +38,30 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!db) return;
 
-    // 1. Faturamento e Banca Total
+    // 1. Faturamento e Banca Total (Lendo apenas 1 documento, muito leve)
     const unsubSettings = onSnapshot(doc(db, 'settings', 'game'), (snap) => {
       if (snap.exists()) {
         const d = snap.data();
         setStats(prev => ({ 
           ...prev, 
           grossRevenue: d.totalDeposited || 0,
-          houseBalance: (d.totalDeposited || 0) * 0.4 // Simulação de 40% de lucro retido
+          houseBalance: (d.totalDeposited || 0) * 0.4 
         }));
       }
-    }, () => {});
+    });
 
-    // 2. Contagem de Gerentes (Somente Admins)
-    const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
-      let admins = 0;
-      snap.forEach(d => { if (d.data().isAdmin) admins++; });
-      setStats(prev => ({ ...prev, managerCount: admins }));
-    }, () => {});
-
-    // 3. Logs de Auditoria Recentes
+    // 2. Logs de Auditoria Recentes (Limitado a 5 registros)
     const logsQuery = query(collection(db, 'logs'), orderBy('timestamp', 'desc'), limit(5));
     const unsubLogs = onSnapshot(logsQuery, (snap) => {
       const list: any[] = [];
       snap.forEach(d => list.push({ id: d.id, ...d.data() }));
       setAuditLogs(list);
-    }, () => {});
+    }, (err) => {
+      console.warn("Aguardando permissões de logs...");
+    });
 
     return () => {
       unsubSettings();
-      unsubUsers();
       unsubLogs();
     };
   }, [db]);
@@ -77,14 +69,14 @@ export default function AdminDashboard() {
   const metricCards = [
     { label: 'Faturamento Bruto', value: `R$ ${stats.grossRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: DollarSign, color: 'text-emerald-400', trend: '+12%', up: true },
     { label: 'Lucro da Banca', value: `R$ ${stats.houseBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, icon: BarChart3, color: 'text-cyan-400', trend: '+8.5%', up: true },
-    { label: 'Gerentes Master', value: stats.managerCount, icon: ShieldCheck, color: 'text-amber-400', trend: 'Equipe Ativa', up: true },
+    { label: 'Gerentes Ativos', value: stats.managerCount, icon: ShieldCheck, color: 'text-amber-400', trend: 'Equipe', up: true },
     { label: 'Alertas Antifraude', value: stats.fraudAlerts, icon: AlertTriangle, color: 'text-rose-500', trend: 'Nível Seguro', up: true },
     { label: 'Retenção Global', value: `${stats.retentionRate}%`, icon: Activity, color: 'text-purple-400', trend: 'Otimizado', up: true },
-    { label: 'Influenciadores', value: stats.activeInfluencers, icon: UserCircle, color: 'text-blue-400', trend: 'Em expansão', up: true },
+    { label: 'Influenciadores', value: stats.activeInfluencers, icon: UserCircle, color: 'text-blue-400', trend: 'Expandindo', up: true },
   ];
 
   return (
-    <div className="p-8 md:p-12 space-y-10">
+    <div className="p-8 md:p-12 space-y-10" id="admin-page">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight">Centro de Comando</h2>
@@ -120,21 +112,21 @@ export default function AdminDashboard() {
         <div className="lg:col-span-8 space-y-6">
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 p-8 h-[400px] flex flex-col">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Lucratividade vs Volume</h3>
+              <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Lucratividade em Tempo Real</h3>
               <div className="flex gap-2">
-                <Button size="sm" variant="ghost" className="text-[10px] font-black bg-white/5">DIÁRIO</Button>
-                <Button size="sm" variant="ghost" className="text-[10px] font-black">MENSAL</Button>
+                <Button size="sm" variant="ghost" className="text-[10px] font-black bg-white/5 text-cyan-400">ATIVO</Button>
               </div>
             </div>
-            <div className="flex-1 flex items-center justify-center border border-dashed border-white/5 rounded-3xl">
-              <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em]">Motor de Gráficos Recharts em Standby...</span>
+            <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl space-y-4">
+              <div className="text-5xl font-black text-white">R$ {stats.grossRevenue.toFixed(0)}</div>
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.5em]">Volume Total Processado</span>
             </div>
           </div>
 
           <div className="rounded-[2.5rem] bg-[#111622] border border-white/5 overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-white/5 flex items-center justify-between">
               <h3 className="text-sm font-black uppercase tracking-[0.2em] text-white">Auditoria de Gerentes (Recente)</h3>
-              <Button onClick={() => router.push('/admin/logs')} variant="link" className="text-cyan-400 text-xs font-black uppercase">Ver Todos os Logs</Button>
+              <Button onClick={() => router.push('/admin/logs')} variant="link" className="text-cyan-400 text-xs font-black uppercase">Ver Todos</Button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -180,7 +172,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-black uppercase tracking-tight text-white">Dificuldade Global</h3>
-                <p className="text-[10px] text-white/30 font-bold uppercase">Preset do Motor de Jogo</p>
+                <p className="text-[10px] text-white/30 font-bold uppercase">Preset do Motor</p>
               </div>
             </div>
             <div className="p-6 bg-black/20 rounded-[1.5rem] border border-white/5 text-center space-y-2">
