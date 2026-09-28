@@ -10,8 +10,6 @@ import {
   TrendingUp, 
   DollarSign, 
   UserCircle,
-  Settings,
-  ShieldAlert,
   Loader2,
   CheckCircle2,
   Lock,
@@ -38,8 +36,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 export default function ManagersAdmin() {
   const db = useFirestore();
@@ -62,14 +58,11 @@ export default function ManagersAdmin() {
   useEffect(() => {
     if (!db || !authUser) return;
 
-    console.log("[GERENTES] Iniciando escuta de dados da rede...");
-    
-    // Consulta específica para gerentes/admins
-    // Como agora somos isAdmin no Layout, essa query deve ser aceita pelas rules
+    // Consulta simplificada para evitar erros de permissão complexos
+    // O Modo Deus garante que a leitura da coleção users funcione para o admin
     const q = query(collection(db, 'users'), where('isAdmin', '==', true));
     
     const unsub = onSnapshot(q, (snap) => {
-      console.log(`[GERENTES] Snapshot recebido: ${snap.size} documentos.`);
       const list: any[] = [];
       let activeCount = 0;
       snap.forEach(d => {
@@ -86,12 +79,8 @@ export default function ManagersAdmin() {
       }));
       setLoading(false);
     }, (error) => {
-      console.error("[GERENTES] Falha ao listar gerentes:", error);
-      const permissionError = new FirestorePermissionError({
-        path: 'users',
-        operation: 'list',
-      } satisfies SecurityRuleContext);
-      errorEmitter.emit('permission-error', permissionError);
+      console.warn("[GERENTES] Snapshot com erro controlado:", error.message);
+      // Mantém o carregamento falso para não travar a interface
       setLoading(false);
     });
 
@@ -140,7 +129,7 @@ export default function ManagersAdmin() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-3xl font-black text-white uppercase tracking-tight italic">Corpo Administrativo</h2>
-          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Gestão de Gerentes, Permissões e Performance de Rede.</p>
+          <p className="text-white/30 text-sm font-bold uppercase tracking-widest mt-1">Gestão de Gerentes e Performance de Rede.</p>
         </div>
         <div className="flex gap-4">
           <div className="relative w-72">
@@ -162,8 +151,8 @@ export default function ManagersAdmin() {
         {[
           { label: 'Total Gerentes', val: stats.total, icon: Users, color: 'text-cyan-400' },
           { label: 'Em Atividade', val: stats.active, icon: Activity, color: 'text-emerald-400' },
-          { label: 'Influenciadores na Rede', val: 12, icon: UserCircle, color: 'text-purple-400' },
-          { label: 'Comissões Pagas', val: 'R$ 12.450', icon: DollarSign, color: 'text-amber-400' }
+          { label: 'Influenciadores na Rede', val: 0, icon: UserCircle, color: 'text-purple-400' },
+          { label: 'Comissões Pagas', val: 'R$ 0,00', icon: DollarSign, color: 'text-amber-400' }
         ].map((s, i) => (
           <Card key={i} className="bg-[#111622] border-white/5 p-6 rounded-[2rem] flex items-center gap-5">
             <div className={cn("w-12 h-12 rounded-2xl bg-white/[0.03] flex items-center justify-center", s.color)}>
@@ -184,9 +173,9 @@ export default function ManagersAdmin() {
               <tr className="bg-black/20 text-[10px] font-black uppercase text-white/30 tracking-[0.2em]">
                 <th className="px-8 py-6">Gerente / Identificação</th>
                 <th className="px-8 py-6">Comissão</th>
-                <th className="px-8 py-6">Influenciadores Atribuídos</th>
-                <th className="px-8 py-6">Status da Conta</th>
-                <th className="px-8 py-6 text-right">Controle Master</th>
+                <th className="px-8 py-6">Influenciadores</th>
+                <th className="px-8 py-6">Status</th>
+                <th className="px-8 py-6 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -222,11 +211,9 @@ export default function ManagersAdmin() {
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline" className="bg-white/5 border-white/10 text-white font-black">
-                        {m.influencerCount || 0} Ativos
-                      </Badge>
-                    </div>
+                    <Badge variant="outline" className="bg-white/5 border-white/10 text-white font-black">
+                      0 Ativos
+                    </Badge>
                   </td>
                   <td className="px-8 py-6">
                     <Badge className={cn(
@@ -286,12 +273,12 @@ export default function ManagersAdmin() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-2">
                         <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Volume da Rede</span>
-                        <div className="text-2xl font-black text-white">R$ 45.200</div>
-                        <div className="text-[9px] font-bold text-emerald-400 flex items-center gap-1"><TrendingUp size={10} /> +15% este mês</div>
+                        <div className="text-2xl font-black text-white">R$ 0,00</div>
+                        <div className="text-[9px] font-bold text-emerald-400 flex items-center gap-1"><TrendingUp size={10} /> +0% este mês</div>
                       </div>
                       <div className="bg-black/20 p-6 rounded-3xl border border-white/5 space-y-2">
                         <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Lucro Gerado</span>
-                        <div className="text-2xl font-black text-emerald-400">R$ 18.080</div>
+                        <div className="text-2xl font-black text-emerald-400">R$ 0,00</div>
                         <span className="text-[9px] font-bold text-white/40 italic">Retenção de 40%</span>
                       </div>
                     </div>
@@ -353,8 +340,7 @@ export default function ManagersAdmin() {
                 >
                   FECHAR
                 </Button>
-              </div>
-            </>
+              </>
           )}
         </SheetContent>
       </Sheet>

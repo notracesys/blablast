@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -9,8 +8,7 @@ import {
   Grid3X3, 
   Save, 
   Loader2,
-  CheckCircle2,
-  Target
+  CheckCircle2
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
@@ -38,6 +36,7 @@ export default function SettingsAdmin() {
   useEffect(() => {
     if (!db || !user) return;
     
+    // O Modo Deus no firestore.rules agora permite leitura total aqui.
     const settingsRef = doc(db, 'settings', 'game');
     
     const unsub = onSnapshot(settingsRef, (snap) => {
@@ -46,8 +45,7 @@ export default function SettingsAdmin() {
         setConfig(snap.data());
       }
     }, (err) => {
-      // Mesmo com erro de permissão (que não deve ocorrer agora), liberamos o carregamento
-      console.warn("Snapshot error (ignored in God Mode):", err);
+      console.warn("Snapshot controlado:", err.message);
       setLoading(false);
     });
 
@@ -66,13 +64,13 @@ export default function SettingsAdmin() {
       
       toast({ 
         title: "SISTEMA ATUALIZADO!", 
-        description: "As novas regras de arena entraram em vigor instantaneamente." 
+        description: "As regras entraram em vigor instantaneamente." 
       });
     } catch (e: any) {
       toast({ 
         variant: "destructive", 
         title: "FALHA AO GRAVAR", 
-        description: "Ocorreu um erro técnico ao salvar no banco." 
+        description: "Erro de permissão no banco." 
       });
     } finally {
       setSaving(false);
@@ -83,7 +81,7 @@ export default function SettingsAdmin() {
     return (
       <div className="h-[60vh] flex flex-col items-center justify-center">
         <Loader2 className="animate-spin text-cyan-500 mb-4" size={32} />
-        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Sincronizando com a Arena...</span>
+        <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Carregando Configurações...</span>
       </div>
     );
   }
@@ -202,8 +200,8 @@ export default function SettingsAdmin() {
       <div className="bg-emerald-500/5 border border-emerald-500/10 p-8 rounded-[2.5rem] flex items-center gap-6">
         <CheckCircle2 className="text-emerald-500" size={32} />
         <div className="space-y-1">
-          <h4 className="text-sm font-black text-white uppercase italic">Status: Conectado ao Core</h4>
-          <p className="text-[11px] text-white/40 font-medium">Você possui privilégios de escrita direta. Todas as alterações são replicadas para a base de dados global imediatamente.</p>
+          <h4 className="text-sm font-black text-white uppercase italic">Status: Arena Conectada</h4>
+          <p className="text-[11px] text-white/40 font-medium">As alterações feitas aqui refletem instantaneamente para todos os jogadores online.</p>
         </div>
       </div>
     </div>

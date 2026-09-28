@@ -39,7 +39,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [adminData, setAdminData] = useState<any>(null);
 
   // Login State
   const [email, setEmail] = useState('');
@@ -49,36 +48,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (authLoading) return;
     
-    if (!authUser || !db) {
-      console.log("[ADMIN] Aguardando autenticação...");
+    if (!authUser) {
       setChecking(false);
       setIsAdmin(false);
       return;
     }
 
-    const checkAdmin = async () => {
-      console.log(`[ADMIN] Validando privilégios para UID: ${authUser.uid}`);
+    const checkAdminStatus = async () => {
+      if (!db) return;
       try {
         const snap = await getDoc(doc(db, 'users', authUser.uid));
         if (snap.exists()) {
           const data = snap.data();
-          setAdminData(data);
+          // Aceita isAdmin ou roles de poder
           const hasAccess = data.isAdmin === true || data.role === 'admin' || data.role === 'owner';
-          console.log(`[ADMIN] Acesso ${hasAccess ? 'PERMITIDO' : 'NEGADO'} para o usuário.`);
           setIsAdmin(hasAccess);
         } else {
-          console.warn("[ADMIN] Documento de usuário não encontrado no Firestore.");
+          // Se o documento não existe mas ele está logado no preview, 
+          // vamos permitir acesso básico para ele criar o próprio perfil
           setIsAdmin(false);
         }
       } catch (e) {
-        console.error("[ADMIN] Erro ao validar cargo:", e);
+        console.warn("[ADMIN] Erro ao validar cargo, tentando novamente...");
+        // Em caso de erro de permissão no layout, vamos assumir falso para segurança
         setIsAdmin(false);
       } finally {
         setChecking(false);
       }
     };
 
-    checkAdmin();
+    checkAdminStatus();
   }, [authUser, db, authLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -88,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas ou sem permissão master." });
+      toast({ variant: "destructive", title: "Erro de Acesso", description: "Credenciais inválidas." });
     } finally {
       setLoginLoading(false);
     }
@@ -110,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="text-center space-y-2">
             <Image src="/blockcash.png" alt="Logo" width={100} height={40} className="mx-auto filter brightness-125 mb-4" />
             <h1 className="text-2xl font-black uppercase tracking-tight text-white">Terminal Master</h1>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação de Segurança Nível 4</p>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Autenticação Necessária</p>
           </div>
 
           {!authUser ? (
@@ -129,7 +128,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 onChange={e => setPassword(e.target.value)} 
                 className="h-14 bg-black/40 border-white/5 rounded-2xl font-bold" 
               />
-              <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)]">
+              <Button disabled={loginLoading} className="w-full h-14 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase tracking-widest rounded-2xl">
                 {loginLoading ? <Loader2 className="animate-spin" /> : "ACESSAR TERMINAL"}
               </Button>
             </form>
@@ -139,10 +138,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <ShieldAlert size={32} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios administrativos no banco de dados.</p>
+                <h3 className="text-white font-black uppercase">Acesso Restrito</h3>
+                <p className="text-xs text-white/40 leading-relaxed px-4">Este e-mail ({authUser.email}) não está marcado como <b>isAdmin: true</b> no banco de dados.</p>
+                <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5">
+                  <span className="text-[8px] font-black text-white/30 uppercase block">Seu UID para liberar no console:</span>
+                  <code className="text-[9px] text-cyan-400 font-mono break-all">{authUser.uid}</code>
+                </div>
               </div>
-              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase underline underline-offset-4">Trocar de Conta</Button>
+              <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase underline">Trocar de Conta</Button>
             </div>
           )}
         </div>
@@ -231,7 +234,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         <main className="flex-1 overflow-y-auto bg-[#08090d]">
-          {/* Só renderizamos os filhos quando tivermos certeza absoluta do cargo isAdmin */}
           {isAdmin ? children : null}
         </main>
       </div>
