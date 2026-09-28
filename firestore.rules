@@ -1,7 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Função auxiliar para verificar se o usuário é um administrador
+    // Função auxiliar para verificar se o usuário logado é um administrador
+    // Ela busca o documento do usuário no banco e checa o campo isAdmin
     function isAdmin() {
       return request.auth != null && 
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
@@ -9,25 +10,25 @@ service cloud.firestore {
 
     // Regras para a coleção de usuários
     match /users/{userId} {
-      // Qualquer um logado pode ver e editar seu próprio perfil
-      // Administradores podem ver e listar todos os perfis
+      // O próprio usuário ou um admin podem ler os dados individuais
       allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow list: if isAdmin();
       
-      // Apenas o próprio usuário pode criar sua conta inicial
+      // APENAS administradores podem listar TODOS os usuários de uma vez
+      allow list: if request.auth != null && isAdmin();
+      
+      // Criação permitida apenas para o dono da conta
       allow create: if request.auth != null && request.auth.uid == userId;
       
-      // Usuários podem atualizar seus saldos (jogando/depositando)
-      // Administradores podem atualizar qualquer campo de qualquer usuário
+      // Atualização permitida para o dono da conta (saldo) ou admins
       allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Regras para as configurações globais (faturamento e dificuldade)
+    // Regras para as configurações globais (dificuldade e faturamento)
     match /settings/game {
-      // Todos precisam ler para saber a dificuldade atual do jogo
+      // Leitura pública (necessário para o jogo carregar a dificuldade)
       allow read: if true;
-      // Apenas administradores podem alterar o faturamento total ou a dificuldade
-      allow write: if isAdmin();
+      // Escrita permitida APENAS para administradores
+      allow write: if request.auth != null && isAdmin();
     }
   }
 }

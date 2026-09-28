@@ -1,10 +1,9 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { 
   ArrowLeft,
   ShieldAlert,
@@ -29,7 +28,7 @@ export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [userData, setUserData] = useState<any>(null);
+  const [isAdminVerified, setIsAdminVerified] = useState(false);
   const [globalStats, setGlobalStats] = useState({
     totalBalance: 0,
     totalUsers: 0,
@@ -37,34 +36,24 @@ export default function AdminPage() {
     totalDeposited: 0
   });
   const [usersList, setUsersList] = useState<any[]>([]);
-  const [searchTerm, setSearchType] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
-  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    
-    if (!db) return;
+    if (authLoading || !user || !db) return;
 
-    // 1. Verificar Perfil do Admin
+    // 1. Verificar se é Admin de verdade no servidor
     const userRef = doc(db, 'users', user.uid);
-    const unsubUser = onSnapshot(userRef, 
+    const unsubAdminCheck = onSnapshot(userRef, 
       (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          if (!data.isAdmin) {
-            setAccessDenied(true);
-            setTimeout(() => router.push('/painel'), 3000);
-            return;
-          }
-          setUserData(data);
+        if (snap.exists() && snap.data().isAdmin === true) {
+          setIsAdminVerified(true);
+        } else {
+          // Se não for admin, manda de volta pro painel
+          router.push('/painel');
         }
       },
-      async (serverError) => {
+      async (err) => {
         const permissionError = new FirestorePermissionError({
           path: userRef.path,
           operation: 'get',
@@ -73,62 +62,58 @@ export default function AdminPage() {
       }
     );
 
-    // 2. Stats Globais (Configurações)
-    const settingsRef = doc(db, 'settings', 'game');
-    const unsubSettings = onSnapshot(settingsRef, 
-      (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          setGlobalStats(prev => ({ 
-            ...prev, 
-            activeDifficulty: data.difficulty || 50,
-            totalDeposited: data.totalDeposited || 0
-          }));
-        }
-      },
-      async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-          path: settingsRef.path,
-          operation: 'get',
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
-      }
-    );
+    return () => unsubAdminCheck();
+  }, [user, authLoading, db, router]);
 
-    // 3. Lista de Usuários (Apenas Admin pode listar a coleção inteira)
-    const usersCollRef = collection(db, 'users');
-    const unsubUsers = onSnapshot(usersCollRef, 
-      (snap) => {
-        const list: any[] = [];
-        let balanceSum = 0;
-        snap.forEach(doc => {
-          const d = doc.data();
-          list.push({ id: doc.id, ...d });
-          balanceSum += (d.balance || 0);
-        });
-        setUsersList(list);
+  useEffect(() => {
+    if (!isAdminVerified || !db) return;
+
+    // 2. Carregar Configurações (Dificuldade/Faturamento)
+    const settingsRef = doc(db, 'settings', 'game');
+    const unsubSettings = onSnapshot(settingsRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
         setGlobalStats(prev => ({ 
           ...prev, 
-          totalUsers: list.length,
-          totalBalance: balanceSum
+          activeDifficulty: data.difficulty || 50,
+          totalDeposited: data.totalDeposited || 0
         }));
-      }, 
-      async (serverError) => {
-        const permissionError = new FirestorePermissionError({
-          path: usersCollRef.path,
-          operation: 'list',
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
-        // Não bloqueamos a UI imediatamente aqui para permitir que o erro contextual apareça
       }
-    );
+    }, async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: settingsRef.path,
+        operation: 'get',
+      }));
+    });
+
+    // 3. Carregar Lista de Usuários
+    const usersCollRef = collection(db, 'users');
+    const unsubUsers = onSnapshot(usersCollRef, (snap) => {
+      const list: any[] = [];
+      let balanceSum = 0;
+      snap.forEach(doc => {
+        const d = doc.data();
+        list.push({ id: doc.id, ...d });
+        balanceSum += (d.balance || 0);
+      });
+      setUsersList(list);
+      setGlobalStats(prev => ({ 
+        ...prev, 
+        totalUsers: list.length,
+        totalBalance: balanceSum
+      }));
+    }, async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: usersCollRef.path,
+        operation: 'list',
+      }));
+    });
 
     return () => {
-      unsubUser();
       unsubSettings();
       unsubUsers();
     };
-  }, [user, authLoading, db, router]);
+  }, [isAdminVerified, db]);
 
   const handleUpdateDifficulty = (val: number[]) => {
     if (!db) return;
@@ -136,36 +121,24 @@ export default function AdminPage() {
     const settingsRef = doc(db, 'settings', 'game');
     updateDoc(settingsRef, { difficulty: val[0] })
       .then(() => {
-        toast({ title: "Configuração Salva", description: `Dificuldade ajustada para ${val[0]}%` });
+        toast({ title: "Sucesso", description: `Dificuldade ajustada para ${val[0]}%` });
         setIsUpdating(false);
       })
-      .catch(async (serverError) => {
+      .catch(async (err) => {
         setIsUpdating(false);
-        const permissionError = new FirestorePermissionError({
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: settingsRef.path,
           operation: 'update',
           requestResourceData: { difficulty: val[0] }
-        } satisfies SecurityRuleContext);
-        errorEmitter.emit('permission-error', permissionError);
+        }));
       });
   };
 
-  if (accessDenied) {
-    return (
-      <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white p-6 text-center">
-        <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mb-6 border border-rose-500/20">
-          <Lock className="w-10 h-10 text-rose-500" />
-        </div>
-        <h1 className="text-2xl font-black uppercase mb-2">Acesso Restrito</h1>
-        <p className="text-white/40 text-sm max-w-xs">Você não possui permissão para acessar este terminal. Redirecionando...</p>
-      </div>
-    );
-  }
-
-  if (authLoading || !userData) {
+  if (authLoading || (!isAdminVerified && !authLoading)) {
     return (
       <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white">
         <RefreshCw className="w-8 h-8 animate-spin text-cyan-400" />
+        <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-white/40">Verificando Autorização...</p>
       </div>
     );
   }
@@ -186,7 +159,7 @@ export default function AdminPage() {
           <div>
             <h1 className="text-lg font-black uppercase tracking-tighter">Master Control</h1>
             <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Sistema Protegido
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Terminal Autenticado
             </p>
           </div>
         </div>
@@ -201,10 +174,10 @@ export default function AdminPage() {
               <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-cyan-400">
                 <Wallet className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Total Custódia</span>
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Total em Carteiras</span>
             </div>
             <strong className="text-3xl font-[1000] text-white block">R$ {globalStats.totalBalance.toFixed(2).replace('.', ',')}</strong>
-            <p className="text-[10px] text-white/40 font-bold uppercase">Soma de todos os saldos de usuários</p>
+            <p className="text-[10px] text-white/40 font-bold uppercase">Saldo total dos jogadores</p>
           </div>
 
           <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] space-y-2">
@@ -212,10 +185,10 @@ export default function AdminPage() {
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                 <TrendingUp className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Volume Entradas</span>
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Total Depositado</span>
             </div>
             <strong className="text-3xl font-[1000] text-emerald-400 block">R$ {globalStats.totalDeposited.toFixed(2).replace('.', ',')}</strong>
-            <p className="text-[10px] text-white/40 font-bold uppercase">Volume total processado no sistema</p>
+            <p className="text-[10px] text-white/40 font-bold uppercase">Volume bruto de entradas</p>
           </div>
 
           <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] space-y-2">
@@ -223,10 +196,10 @@ export default function AdminPage() {
               <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-400">
                 <Users className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Base Ativa</span>
+              <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Base de Dados</span>
             </div>
             <strong className="text-3xl font-[1000] text-white block">{globalStats.totalUsers}</strong>
-            <p className="text-[10px] text-white/40 font-bold uppercase">Jogadores registrados no banco</p>
+            <p className="text-[10px] text-white/40 font-bold uppercase">Usuários cadastrados</p>
           </div>
         </section>
 
@@ -243,34 +216,35 @@ export default function AdminPage() {
                   <ShieldAlert className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-[1000] uppercase tracking-tighter">Dificuldade da Arena</h2>
-                  <p className="text-xs text-white/40 font-medium italic">Ajuste o algoritmo de entrega de peças em tempo real.</p>
+                  <h2 className="text-xl font-[1000] uppercase tracking-tighter">Algoritmo de Dificuldade</h2>
+                  <p className="text-xs text-white/40 font-medium italic">Define a probabilidade de peças complexas na Arena Real.</p>
                 </div>
               </div>
 
               <div className="pt-4 space-y-6">
                 <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
-                  <span className="text-emerald-400">0% (LUCRO PARA O USER)</span>
-                  <span className="text-orange-500">50% (EQUILIBRADO)</span>
-                  <span className="text-rose-600">100% (MODO DRENO)</span>
+                  <span className="text-emerald-400">FÁCIL</span>
+                  <span className="text-orange-500">EQUILIBRADO</span>
+                  <span className="text-rose-600">IMPOSSÍVEL</span>
                 </div>
                 <Slider 
-                  defaultValue={[globalStats.activeDifficulty]} 
+                  value={[globalStats.activeDifficulty]} 
                   max={100} 
                   step={1} 
+                  onValueChange={(val) => setGlobalStats(prev => ({ ...prev, activeDifficulty: val[0] }))}
                   onValueCommit={handleUpdateDifficulty}
                   className="py-4"
                 />
                 <div className="p-4 bg-black/40 rounded-2xl border border-white/5">
                   <p className="text-xs text-white/50 leading-relaxed">
-                    <span className="text-rose-500 font-black">IMPORTANTE:</span> Acima de 80%, o sistema enviará prioritariamente peças de 5 blocos, tornando quase impossível completar linhas sem lotar o tabuleiro.
+                    <span className="text-rose-500 font-black">MODO DRENO:</span> Ao atingir 100%, o jogo passará a entregar apenas peças de 5 blocos, preenchendo o tabuleiro rapidamente e impedindo a conclusão de metas altas.
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="w-full md:w-48 aspect-square rounded-[2rem] bg-gradient-to-br from-slate-900 to-black border border-white/10 flex flex-col items-center justify-center shadow-xl">
-               <span className="text-[10px] font-black text-white/20 uppercase mb-1">Status Atual</span>
+               <span className="text-[10px] font-black text-white/20 uppercase mb-1">Nível Atual</span>
                <strong className={`text-5xl font-[1000] ${globalStats.activeDifficulty > 70 ? 'text-rose-500' : 'text-cyan-400'}`}>
                  {globalStats.activeDifficulty}%
                </strong>
@@ -282,14 +256,14 @@ export default function AdminPage() {
         <section className="bg-slate-900/40 border border-white/5 rounded-[2.5rem] p-6 space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-[1000] uppercase tracking-tighter flex items-center gap-3">
-              <Users className="w-5 h-5 text-cyan-400" /> Gerenciar Jogadores
+              <Users className="w-5 h-5 text-cyan-400" /> Base de Jogadores
             </h2>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <Input 
                 placeholder="Buscar por nome, email ou tel..." 
                 value={searchTerm}
-                onChange={(e) => setSearchType(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-black/20 border-white/5 h-12 pl-11 rounded-2xl text-xs"
               />
             </div>
@@ -328,7 +302,7 @@ export default function AdminPage() {
                     </td>
                     <td className="py-4 text-right pr-2">
                       <button className="h-8 px-4 rounded-lg bg-white/5 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-colors">
-                        Detalhes
+                        Visualizar
                       </button>
                     </td>
                   </tr>
