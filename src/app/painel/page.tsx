@@ -20,7 +20,8 @@ import {
   ChevronUp, 
   Key, 
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Fingerprint
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -308,6 +309,17 @@ export default function PainelPage() {
                   <ShieldCheck className="w-4 h-4" /> PAINEL ADMIN MASTER
                 </button>
               )}
+
+              {/* UID Info para ajuda no Firebase */}
+              <div className="p-3 bg-black/40 rounded-xl border border-white/5 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                  <Fingerprint className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Seu ID no Banco (UID)</span>
+                  <code className="text-[10px] text-white/60 font-mono select-all">{user?.uid}</code>
+                </div>
+              </div>
 
               <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
                 <span className="text-white/20 text-[10px] truncate max-w-[140px] font-mono">{referralLink}</span>
