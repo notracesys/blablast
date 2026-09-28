@@ -8,10 +8,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
-  Users, 
   ShieldCheck, 
   UserCircle, 
-  Gamepad2, 
   Settings, 
   AlertOctagon, 
   BarChart4, 
@@ -134,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="space-y-1">
                 <h3 className="text-white font-black uppercase">Acesso Negado</h3>
-                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios de Administrador Master. Entre em contato com o proprietário.</p>
+                <p className="text-xs text-white/40 leading-relaxed">Sua conta não possui privilégios de Administrador Master.</p>
               </div>
               <Button onClick={() => auth?.signOut()} variant="ghost" className="text-white/40 hover:text-white font-bold text-[10px] uppercase">Trocar de Conta</Button>
             </div>
@@ -146,10 +144,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-    { label: 'Usuários', icon: Users, href: '/admin/usuarios' },
     { label: 'Gerentes', icon: ShieldCheck, href: '/admin/gerentes' },
     { label: 'Influenciadores', icon: UserCircle, href: '/admin/influenciadores' },
-    { label: 'Partidas', icon: Gamepad2, href: '/admin/partidas' },
     { label: 'Config. Jogo', icon: Settings, href: '/admin/configuracoes' },
     { label: 'Antifraude', icon: AlertOctagon, href: '/admin/antifraude' },
     { label: 'Comissões', icon: BarChart4, href: '/admin/comissoes' },
@@ -217,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           
           <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col text-right mr-4">
-              <span className="text-[10px] font-black text-emerald-400 uppercase">Sistema Online</span>
+              <span className="text-[10px] font-black text-emerald-400 uppercase">Acesso Root</span>
               <span className="text-xs font-bold text-white/30 truncate max-w-[150px]">{authUser?.email}</span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-black">
