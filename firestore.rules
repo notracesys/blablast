@@ -1,10 +1,60 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // MODO DEUS: Permissão total para qualquer usuário autenticado.
-    // Isso garante que você nunca seja bloqueado enquanto estiver logado.
+    
+    // HELPERS DE AUTORIZAÇÃO
+    function isAuth() {
+      return request.auth != null;
+    }
+    
+    function getRole() {
+      return request.auth.token.role;
+    }
+    
+    function isOwner() {
+      return isAuth() && (getRole() == 'owner' || request.auth.token.isAdmin == true);
+    }
+    
+    function isManager() {
+      return isAuth() && getRole() == 'manager';
+    }
+    
+    function isInfluencer() {
+      return isAuth() && getRole() == 'influencer';
+    }
+
+    // REGRAS POR COLEÇÃO
+    
+    // Usuários: Owner gerencia tudo, Manager lista sua rede, User vê a si mesmo
+    match /users/{userId} {
+      allow get: if isAuth() && (request.auth.uid == userId || isOwner() || isManager());
+      allow list: if isOwner() || isManager();
+      allow create: if isAuth(); // Cadastro inicial
+      allow update: if isOwner() || (isAuth() && request.auth.uid == userId && 
+                    !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin', 'balance', 'commissionBalance']));
+    }
+    
+    // Influenciadores: Owner total, Manager apenas os dele
+    match /influencers/{influencerId} {
+      allow read: if isOwner() || (isManager() && resource.data.managerId == request.auth.uid);
+      allow write: if isOwner() || isManager();
+    }
+    
+    // Configurações: Apenas Owner altera, todos leem para o jogo funcionar
+    match /settings/{settingId} {
+      allow read: if isAuth();
+      allow write: if isOwner();
+    }
+    
+    // Logs e Auditoria: Apenas Owner
+    match /logs/{logId} {
+      allow read: if isOwner();
+      allow write: if isAuth(); // Backend ou ações de log
+    }
+
+    // Default: Bloqueio Total
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isOwner();
     }
   }
 }
