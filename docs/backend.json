@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -20,6 +21,11 @@
         "referredCount": { "type": "number" },
         "referredDepositVolume": { "type": "number" },
         "isAdmin": { "type": "boolean", "default": false },
+        "status": { "type": "string", "enum": ["active", "blocked", "suspended"] },
+        "lastActivity": { "type": "string", "format": "date-time" },
+        "deviceInfo": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "fraudFlags": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["fullName", "phone", "email", "balance"]
@@ -30,7 +36,53 @@
       "type": "object",
       "properties": {
         "difficulty": { "type": "number", "description": "0 a 100 (0=Fácil, 100=Impossível)" },
-        "totalDeposited": { "type": "number" }
+        "totalDeposited": { "type": "number" },
+        "gridSize": { "type": "number", "default": 8 },
+        "maxLinesPerMatch": { "type": "number", "default": 5 },
+        "antiFraudEnabled": { "type": "boolean", "default": true }
+      }
+    },
+    "MatchRecord": {
+      "title": "MatchRecord",
+      "description": "Histórico detalhado de cada partida jogada",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "duration": { "type": "number" },
+        "entryFee": { "type": "number" },
+        "result": { "type": "number" },
+        "linesCompleted": { "type": "number" },
+        "piecesGenerated": { "type": "array", "items": { "type": "object" } },
+        "movements": { "type": "array", "items": { "type": "object" } },
+        "fraudDetected": { "type": "boolean" }
+      }
+    },
+    "InfluencerProfile": {
+      "title": "InfluencerProfile",
+      "description": "Dados de desempenho de influenciadores",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "code": { "type": "string" },
+        "clicks": { "type": "number" },
+        "registrations": { "type": "number" },
+        "activeUsers": { "type": "number" },
+        "commissionRate": { "type": "number" },
+        "status": { "type": "boolean" }
+      }
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Registro de ações administrativas",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "actorId": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "oldValue": { "type": "any" },
+        "newValue": { "type": "any" }
       }
     }
   },
@@ -45,6 +97,18 @@
     "settings/game": {
       "schema": "GlobalSettings",
       "description": "Controle de dificuldade e métricas globais"
+    },
+    "matches/{matchId}": {
+      "schema": "MatchRecord",
+      "description": "Registros de partidas"
+    },
+    "influencers/{influencerId}": {
+      "schema": "InfluencerProfile",
+      "description": "Dados de afiliados e influenciadores"
+    },
+    "logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Logs de auditoria do sistema"
     }
   }
 }
