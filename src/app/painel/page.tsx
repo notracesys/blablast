@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -516,13 +515,6 @@ export default function PainelPage() {
             >
               <X className="w-4 h-4 stroke-[3]" />
             </button>
-
-            <div className="absolute bottom-3 left-5">
-              <h2 className="text-xl font-[1000] text-white uppercase tracking-tighter leading-none">
-                Indique e Ganhe <br/>
-                <span className="text-emerald-400">50% R$</span>
-              </h2>
-            </div>
           </div>
 
           <div className="p-5 flex flex-col space-y-5">
