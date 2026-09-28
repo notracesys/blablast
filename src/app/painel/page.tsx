@@ -20,8 +20,7 @@ import {
   ChevronUp, 
   Key, 
   LogOut,
-  ShieldCheck,
-  ShieldAlert
+  ShieldCheck
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -56,7 +55,6 @@ export default function PainelPage() {
 
   const [showTransactions, setShowTransactions] = useState(false);
   const [showPassChange, setShowPassChange] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false);
 
   const presets = [5, 10, 20, 30, 50, 100];
 
@@ -112,31 +110,6 @@ export default function PainelPage() {
 
     return () => unsubscribe();
   }, [user, authLoading, db, router]);
-
-  const handleClaimAdmin = async () => {
-    if (!db || !user || isClaiming) return;
-    setIsClaiming(true);
-
-    try {
-      // Verifica se já existe algum admin no sistema
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('isAdmin', '==', true), limit(1));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        // Se não há admin, promove o usuário atual
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, { isAdmin: true });
-        toast({ title: "Sucesso!", description: "Você agora é o Administrador Master do sistema." });
-      } else {
-        toast({ variant: "destructive", title: "Acesso negado", description: "O sistema já possui um administrador configurado." });
-      }
-    } catch (e) {
-      toast({ variant: "destructive", title: "Erro", description: "Não foi possível verificar privilégios." });
-    } finally {
-      setIsClaiming(false);
-    }
-  };
 
   const handleCopyLink = () => {
     if (!referralLink) return;
@@ -330,17 +303,9 @@ export default function PainelPage() {
                 </div>
               </div>
               
-              {userData.isAdmin ? (
+              {userData.isAdmin && (
                 <button onClick={() => router.push('/admin')} className="w-full h-11 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
                   <ShieldCheck className="w-4 h-4" /> PAINEL ADMIN MASTER
-                </button>
-              ) : (
-                <button 
-                  onClick={handleClaimAdmin}
-                  disabled={isClaiming}
-                  className="w-full h-10 rounded-xl bg-white/5 border border-white/5 text-white/30 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:text-white transition-colors"
-                >
-                  {isClaiming ? 'VERIFICANDO...' : <><ShieldAlert className="w-3.5 h-3.5" /> VERIFICAR PRIVILÉGIOS</>}
                 </button>
               )}
 
@@ -477,3 +442,4 @@ export default function PainelPage() {
     </div>
   );
 }
+
