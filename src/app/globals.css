@@ -93,11 +93,18 @@
   max-width: 480px;
 }
 
+/* Breakout rule for Admin Page */
+body:has(#admin-page) .mobile-container {
+  max-width: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
 @media (min-width: 481px) {
-  body {
+  body:not(:has(#admin-page)) {
     background-color: #030a1a;
   }
-  .mobile-container {
+  body:not(:has(#admin-page)) .mobile-container {
     box-shadow: 0 0 100px rgba(0, 0, 0, 0.8);
     background-color: #06122b;
   }
