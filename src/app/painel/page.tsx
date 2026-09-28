@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useAuth } from '@/firebase';
-import { doc, updateDoc, onSnapshot, increment } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, increment, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { 
   Wallet, 
   Users, 
@@ -20,7 +20,8 @@ import {
   ChevronUp, 
   Key, 
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ export default function PainelPage() {
 
   const [showTransactions, setShowTransactions] = useState(false);
   const [showPassChange, setShowPassChange] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const presets = [5, 10, 20, 30, 50, 100];
 
@@ -110,6 +112,31 @@ export default function PainelPage() {
 
     return () => unsubscribe();
   }, [user, authLoading, db, router]);
+
+  const handleClaimAdmin = async () => {
+    if (!db || !user || isClaiming) return;
+    setIsClaiming(true);
+
+    try {
+      // Verifica se já existe algum admin no sistema
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('isAdmin', '==', true), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        // Se não há admin, promove o usuário atual
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, { isAdmin: true });
+        toast({ title: "Sucesso!", description: "Você agora é o Administrador Master do sistema." });
+      } else {
+        toast({ variant: "destructive", title: "Acesso negado", description: "O sistema já possui um administrador configurado." });
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível verificar privilégios." });
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   const handleCopyLink = () => {
     if (!referralLink) return;
@@ -233,7 +260,7 @@ export default function PainelPage() {
           </div>
         </header>
 
-        <nav className="fixed bottom-0 max-w-[480px] w-full mx-auto left-0 right-0 z-40 bg-[#0c0f17] border-t border-white/5 h-20 px-2 flex items-center justify-around shadow-xl">
+        <nav className="fixed bottom-0 max-w-[480px] w-full mx-auto left-0 right-0 z-40 bg-[#0c0f17]/90 backdrop-blur-md border-t border-white/5 h-20 px-2 flex items-center justify-around shadow-xl">
           <button onClick={() => setShowDepositModal(true)} className="flex flex-col items-center justify-center flex-1 gap-1 text-white/40 hover:text-white transition-colors">
             <Wallet className="w-4 h-4" /><span className="text-[9px] font-bold uppercase tracking-wider">Depositar</span>
           </button>
@@ -302,11 +329,21 @@ export default function PainelPage() {
                   <span className="text-white/40 text-xs font-medium">({userData.phone?.substring(0,2)}) {userData.phone?.substring(2,7)}-{userData.phone?.substring(7)}</span>
                 </div>
               </div>
-              {userData.isAdmin && (
-                <button onClick={() => router.push('/admin')} className="w-full h-10 rounded-xl bg-amber-500 text-slate-950 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg">
+              
+              {userData.isAdmin ? (
+                <button onClick={() => router.push('/admin')} className="w-full h-11 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
                   <ShieldCheck className="w-4 h-4" /> PAINEL ADMIN MASTER
                 </button>
+              ) : (
+                <button 
+                  onClick={handleClaimAdmin}
+                  disabled={isClaiming}
+                  className="w-full h-10 rounded-xl bg-white/5 border border-white/5 text-white/30 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:text-white transition-colors"
+                >
+                  {isClaiming ? 'VERIFICANDO...' : <><ShieldAlert className="w-3.5 h-3.5" /> VERIFICAR PRIVILÉGIOS</>}
+                </button>
               )}
+
               <div className="relative bg-slate-950/80 rounded-2xl border border-white/5 h-12 flex items-center px-4 justify-between">
                 <span className="text-white/20 text-[10px] truncate max-w-[140px] font-mono">{referralLink}</span>
                 <button onClick={handleCopyLink} className="bg-slate-800/80 text-white font-black text-[10px] px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition-transform">

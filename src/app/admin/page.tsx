@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, getDocs, where } from 'firebase/firestore';
 import { 
   LayoutDashboard, 
   Users, 
@@ -15,7 +15,8 @@ import {
   Wallet,
   Zap,
   RefreshCw,
-  Search
+  Search,
+  Lock
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,7 @@ export default function AdminPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [searchTerm, setSearchType] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -48,13 +50,14 @@ export default function AdminPage() {
     
     if (!db) return;
 
-    // Verificar se é admin
+    // Verificar se é admin (Segurança de leitura no servidor)
     const userRef = doc(db, 'users', user.uid);
     const unsubUser = onSnapshot(userRef, (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         if (!data.isAdmin) {
-          router.push('/painel');
+          setAccessDenied(true);
+          setTimeout(() => router.push('/painel'), 3000);
           return;
         }
         setUserData(data);
@@ -93,6 +96,9 @@ export default function AdminPage() {
         totalUsers: list.length,
         totalBalance: balanceSum
       }));
+    }, (error) => {
+      console.error("Erro de permissão ao listar usuários");
+      setAccessDenied(true);
     });
 
     return () => {
@@ -114,6 +120,18 @@ export default function AdminPage() {
       .catch(() => setIsUpdating(false));
   };
 
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white p-6 text-center">
+        <div className="w-20 h-20 bg-rose-500/10 rounded-full flex items-center justify-center mb-6 border border-rose-500/20">
+          <Lock className="w-10 h-10 text-rose-500" />
+        </div>
+        <h1 className="text-2xl font-black uppercase mb-2">Acesso Restrito</h1>
+        <p className="text-white/40 text-sm max-w-xs">Você não possui permissão para acessar este terminal. Redirecionando...</p>
+      </div>
+    );
+  }
+
   if (authLoading || !userData) {
     return (
       <div className="min-h-screen bg-[#060a17] flex flex-col items-center justify-center text-white">
@@ -132,13 +150,13 @@ export default function AdminPage() {
     <div className="min-h-screen w-full bg-[#060a17] text-white flex flex-col pb-10">
       <header className="w-full bg-[#0b1426] border-b border-white/5 h-20 px-6 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.push('/painel')} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+          <button onClick={() => router.push('/painel')} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <h1 className="text-lg font-black uppercase tracking-tighter">Master Control</h1>
             <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Sistema Online
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Sistema Protegido
             </p>
           </div>
         </div>
@@ -280,7 +298,7 @@ export default function AdminPage() {
                     </td>
                     <td className="py-4 text-right pr-2">
                       <button className="h-8 px-4 rounded-lg bg-white/5 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-colors">
-                        Editar
+                        Detalhes
                       </button>
                     </td>
                   </tr>
