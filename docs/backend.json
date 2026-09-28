@@ -6,82 +6,46 @@
       "description": "Dados da conta do usuário, saldo financeiro e estatísticas de jogo",
       "type": "object",
       "properties": {
-        "fullName": {
-          "type": "string",
-          "description": "Nome completo do usuário"
-        },
-        "phone": {
-          "type": "string",
-          "description": "Telefone de contato"
-        },
-        "email": {
-          "type": "string",
-          "format": "email",
-          "description": "Email para login"
-        },
-        "balance": {
-          "type": "number",
-          "description": "Saldo atual em conta"
-        },
-        "gamesPlayed": {
-          "type": "number",
-          "description": "Total de partidas iniciadas"
-        },
-        "totalRedeems": {
-          "type": "number",
-          "description": "Quantidade total de resgates realizados"
-        },
-        "totalWinnings": {
-          "type": "number",
-          "description": "Soma total de todos os prêmios ganhos"
-        },
-        "maxRedeem": {
-          "type": "number",
-          "description": "O maior prêmio individual já resgatado"
-        },
-        "referredBy": {
-          "type": "string",
-          "description": "UID do usuário que indicou este perfil"
-        },
-        "commissionBalance": {
-          "type": "number",
-          "description": "Saldo disponível de comissões de afiliados"
-        },
-        "totalCommissionEarned": {
-          "type": "number",
-          "description": "Total histórico ganho com indicações"
-        },
-        "referredCount": {
-          "type": "number",
-          "description": "Quantidade de pessoas que se cadastraram pelo link"
-        },
-        "referredDepositVolume": {
-          "type": "number",
-          "description": "Volume total depositado pelos indicados"
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Data de criação da conta"
-        }
+        "fullName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "balance": { "type": "number" },
+        "gamesPlayed": { "type": "number" },
+        "totalRedeems": { "type": "number" },
+        "totalWinnings": { "type": "number" },
+        "maxRedeem": { "type": "number" },
+        "referredBy": { "type": "string" },
+        "referralCode": { "type": "string" },
+        "commissionBalance": { "type": "number" },
+        "totalCommissionEarned": { "type": "number" },
+        "referredCount": { "type": "number" },
+        "referredDepositVolume": { "type": "number" },
+        "isAdmin": { "type": "boolean", "default": false },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "fullName",
-        "phone",
-        "email",
-        "balance"
-      ]
+      "required": ["fullName", "phone", "email", "balance"]
+    },
+    "GlobalSettings": {
+      "title": "GlobalSettings",
+      "description": "Configurações globais da plataforma",
+      "type": "object",
+      "properties": {
+        "difficulty": { "type": "number", "description": "0 a 100 (0=Fácil, 100=Impossível)" },
+        "totalDeposited": { "type": "number" }
+      }
     }
   },
   "auth": {
-    "providers": [
-      "password"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "users/{userId}": {
       "schema": "UserProfile",
-      "description": "Informações de perfil do usuário indexadas pelo UID"
+      "description": "Informações de perfil do usuário"
+    },
+    "settings/game": {
+      "schema": "GlobalSettings",
+      "description": "Controle de dificuldade e métricas globais"
     }
   }
 }

@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Volume2, VolumeX, Info, Award, Loader2, CheckCircle2 } from 'lucide-react';
 import { GameAudio } from './audios';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, updateDoc, increment, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, increment, getDoc, onSnapshot } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
@@ -24,8 +24,8 @@ function GameContent() {
   const [linesCompleted, setLinesCompleted] = useState(0);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [userData, setUserData] = useState<any>(null);
+  const [globalDifficulty, setGlobalDifficulty] = useState(50);
 
-  // Lógica dinâmica baseada na entrada: meta 5 linhas, cada linha vale 1x a entrada.
   const entryValue = parseFloat(searchParams.get('entry') || '10');
   const TARGET_LINES = 5;
   const VALUE_PER_LINE = entryValue;
@@ -39,6 +39,15 @@ function GameContent() {
       getDoc(userRef).then(snap => {
         if (snap.exists()) setUserData(snap.data());
       });
+
+      // Buscar dificuldade do admin
+      const settingsRef = doc(db, 'settings', 'game');
+      const unsubSettings = onSnapshot(settingsRef, (snap) => {
+        if (snap.exists()) {
+          setGlobalDifficulty(snap.data().difficulty || 50);
+        }
+      });
+      return () => unsubSettings();
     }
   }, [user, db]);
 
@@ -76,7 +85,12 @@ function GameContent() {
       { matrix: [[1, 0, 0], [1, 1, 1]], complexity: 3 },
       { matrix: [[0, 0, 1], [1, 1, 1]], complexity: 3 },
       { matrix: [[1, 1, 1], [1, 0, 0]], complexity: 3 },
-      { matrix: [[1, 1, 1], [0, 0, 1]], complexity: 3 }
+      { matrix: [[1, 1, 1], [0, 0, 1]], complexity: 3 },
+      // Peças de dificuldade ALTA (5 blocos)
+      { matrix: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], complexity: 4 },
+      { matrix: [[1, 0, 1], [1, 1, 1]], complexity: 4 },
+      { matrix: [[1, 1, 1, 1], [0, 0, 1, 0]], complexity: 4 },
+      { matrix: [[1, 1, 1], [1, 0, 1]], complexity: 4 }
     ];
 
     const COLOR_PALETTES = [
@@ -409,8 +423,21 @@ function GameContent() {
 
     function generateShapes(count: number) {
       gameState.shapes = [] as any[];
+      
+      // Lógica de dificuldade do ADMIN
+      // Se diff > 80, só manda peça complexa
+      const isExtreme = globalDifficulty > 80;
+      const isHard = globalDifficulty > 50;
+
       for (let i = 0; i < count; i++) {
-        const def = SHAPE_DEFINITIONS[Math.floor(Math.random() * SHAPE_DEFINITIONS.length)];
+        let pool = SHAPE_DEFINITIONS;
+        if (isExtreme) {
+          pool = SHAPE_DEFINITIONS.filter(s => s.complexity >= 4);
+        } else if (isHard) {
+          pool = SHAPE_DEFINITIONS.filter(s => s.complexity >= 3);
+        }
+
+        const def = pool[Math.floor(Math.random() * pool.length)];
         gameState.shapes.push({ id: i, matrix: def.matrix, color: generateColor() } as any);
       }
       renderShapes();
@@ -719,7 +746,7 @@ function GameContent() {
       if (dragGhost) dragGhost.remove();
       GameAudio.stopMusic();
     };
-  }, [user, db]);
+  }, [user, db, globalDifficulty]);
 
   const toggleSound = () => {
     GameAudio.unlock();
